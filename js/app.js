@@ -11,6 +11,7 @@
 /* ---------- 設定 ---------- */
 const STORAGE_KEY = 'manabi-card-v1';
 const TIME_LIMIT = 10;          // 4択テストの制限時間（秒）
+const TYPE_TIME_LIMIT = 15;     // タイピングテストの制限時間（秒）
 const MASTER_STREAK = 2;        // 連続正解が何回で「習得」になるか
 
 /* ============================================================
@@ -169,7 +170,7 @@ const Speech = {
 /* ============================================================
    4. 画面の切り替え
    ============================================================ */
-const SCREENS = ['home', 'sets', 'mode', 'card', 'quiz', 'result', 'mypage', 'import'];
+const SCREENS = ['home', 'sets', 'mode', 'card', 'quiz', 'type', 'result', 'mypage', 'import'];
 const $ = (id) => document.getElementById(id);
 let navStack = [];
 
@@ -280,6 +281,8 @@ function openSubject(id) {
         current.set = set.items;
         current.label = `${sub.name} ${lv.name} セット${set.no}`;
         $('modeTitle').textContent = current.label;
+        // つづりを入力できる問題（英単語など）のときだけタイピングを出す
+        $('modeTyping').hidden = !isTypable(set.items);
         show('mode', current.label);
       };
       grid.appendChild(btn);
@@ -462,17 +465,167 @@ $('fbNext').onclick = () => {
     quiz.idx++;
     drawQuiz();
   } else {
+    const opts = { review: quiz.review, subjectOf: quiz.subjectOf, pool: quiz.pool };
+    const label = quiz.label;
+    const items = quiz.items;
     showResult({
       mode: 'quiz',
       total: quiz.items.length,
       correct: quiz.correct,
       wrong: quiz.wrong,
+      isReview: quiz.review,
+      retryFn: (wrong) => startQuiz(wrong, label, opts),
+      againFn: () => startQuiz(items, label, opts),
     });
   }
 };
 
 /* ============================================================
-   8. 結果画面
+   8. タイピングテスト（つづりをキーボードで入力する）
+   ------------------------------------------------------------
+   意味を見せて、英単語のつづりを入力してもらいます。
+   判定は「小文字にして前後の空白を取る」だけの素朴なルールです。
+   （大文字小文字やハイフンをどこまで許すかは運用で決める部分）
+   ============================================================ */
+const typing = {
+  items: [], idx: 0, correct: 0, wrong: [], label: '',
+  timer: null, left: 0, locked: false,
+};
+
+/** その問題群がタイピング向きか（つづりが半角英字のものだけ） */
+function isTypable(items) {
+  return items.length > 0 && items.every((it) => /^[A-Za-z][A-Za-z '-]*$/.test(it.front));
+}
+
+function startTyping(items, label) {
+  typing.items = shuffle(items);
+  typing.idx = 0;
+  typing.correct = 0;
+  typing.wrong = [];
+  typing.label = label;
+  show('type', label);
+  drawTyping();
+}
+
+function drawTyping() {
+  clearInterval(typing.timer);
+  typing.locked = false;
+  const item = typing.items[typing.idx];
+
+  $('typeFeedback').hidden = true;
+  $('typeCounter').textContent = `${typing.idx + 1} / ${typing.items.length}`;
+  $('typeProgress').style.width = `${(typing.idx / typing.items.length) * 100}%`;
+  $('typeMeaning').textContent = item.back;
+  $('typeHint').textContent =
+    `${item.front.length}文字 ・ 最初の文字は「${item.front[0]}」`;
+
+  const input = $('typeInput');
+  input.value = '';
+  input.disabled = false;
+  input.focus();
+  drawEcho('');
+
+  startTypeTimer(item);
+}
+
+/** 入力したつづりを1文字ずつ色分けして表示する */
+function drawEcho(value) {
+  const target = typing.items[typing.idx].front;
+  const echo = $('typeEcho');
+  echo.innerHTML = '';
+  for (let i = 0; i < target.length; i++) {
+    const span = document.createElement('span');
+    if (i < value.length) {
+      span.textContent = value[i];
+      span.className = value[i].toLowerCase() === target[i].toLowerCase() ? 'ok' : 'ng';
+    } else {
+      span.textContent = '_';
+      span.className = 'rest';
+    }
+    echo.appendChild(span);
+  }
+  // 目標より長く打った分もそのまま見せる
+  if (value.length > target.length) {
+    const over = document.createElement('span');
+    over.textContent = value.slice(target.length);
+    over.className = 'ng';
+    echo.appendChild(over);
+  }
+}
+
+function startTypeTimer(item) {
+  typing.left = TYPE_TIME_LIMIT;
+  const el = $('typeTimer');
+  el.textContent = TYPE_TIME_LIMIT;
+  el.classList.remove('is-hurry');
+  typing.timer = setInterval(() => {
+    typing.left -= 0.1;
+    const sec = Math.max(0, Math.ceil(typing.left));
+    el.textContent = sec;
+    if (sec <= 3) el.classList.add('is-hurry');
+    if (typing.left <= 0) {
+      clearInterval(typing.timer);
+      judgeTyping(true);
+    }
+  }, 100);
+}
+
+function judgeTyping(timeUp) {
+  if (typing.locked) return;
+  typing.locked = true;
+  clearInterval(typing.timer);
+
+  const item = typing.items[typing.idx];
+  const sub = current.subject || { lang: 'auto', speakField: 'front' };
+  const typed = $('typeInput').value.trim().toLowerCase();
+  const isCorrect = !timeUp && typed === item.front.trim().toLowerCase();
+
+  Store.record(item.id, isCorrect);
+  if (isCorrect) typing.correct++;
+  else typing.wrong.push(item);
+
+  $('typeInput').disabled = true;
+  drawEcho($('typeInput').value);
+
+  const mark = $('typeMark');
+  mark.textContent = isCorrect ? '◯ 正解！' : (timeUp ? '△ 時間ぎれ' : '✕ おしい');
+  mark.className = 'feedback__mark ' + (isCorrect ? 'ok' : 'ng');
+  $('typeAnswer').textContent = `${item.front} ： ${item.back}`;
+  $('typeExp').textContent = item.explanation || '';
+  $('typeSpeak').hidden = !Speech.supported;
+  $('typeSpeak').onclick = () => Speech.speak(sub, item);
+  $('typeFeedback').hidden = false;
+  $('typeNext').textContent =
+    (typing.idx === typing.items.length - 1) ? '結果を見る' : '次へ ›';
+  $('typeNext').focus();
+
+  Speech.speak(sub, item);
+}
+
+$('typeInput').oninput = (e) => { if (!typing.locked) drawEcho(e.target.value); };
+$('typeInput').onkeydown = (e) => { if (e.key === 'Enter') judgeTyping(false); };
+
+$('typeNext').onclick = () => {
+  if (typing.idx < typing.items.length - 1) {
+    typing.idx++;
+    drawTyping();
+  } else {
+    const label = typing.label;
+    const items = typing.items;
+    showResult({
+      mode: 'type',
+      total: typing.items.length,
+      correct: typing.correct,
+      wrong: typing.wrong,
+      isReview: false,
+      retryFn: (wrong) => startTyping(wrong, label),
+      againFn: () => startTyping(items, label),
+    });
+  }
+};
+
+/* ============================================================
+   9. 結果画面
    ============================================================ */
 function showResult(res) {
   const retry = $('resultRetryWrong');
@@ -488,6 +641,7 @@ function showResult(res) {
     again.textContent = 'もう一度カードを見る';
     again.onclick = () => startCard(cardSession.items, current.label);
   } else {
+    // 4択テスト・タイピングテスト共通
     const rate = res.correct / res.total;
     $('resultEmoji').textContent = rate === 1 ? '🎉' : rate >= 0.7 ? '👍' : '💪';
     $('resultCorrect').parentElement.hidden = false;
@@ -500,19 +654,15 @@ function showResult(res) {
         `間違えた${res.wrong.length}問は復習コーナーに入りました。（復習待ち 合計${left}問）`;
       retry.hidden = false;
       retry.textContent = '間違えた問題だけやり直す';
-      retry.onclick = () => startQuiz(res.wrong, quiz.label, {
-        review: quiz.review, subjectOf: quiz.subjectOf, pool: quiz.pool,
-      });
+      retry.onclick = () => res.retryFn(res.wrong);
     } else {
-      $('resultNote').textContent = quiz.review
+      $('resultNote').textContent = res.isReview
         ? '復習コーナーの問題をクリアしました！'
         : `全問正解！ 連続${MASTER_STREAK}回正解した問題は「習得」になります。`;
       retry.hidden = true;
     }
     again.textContent = 'もう一度';
-    again.onclick = () => startQuiz(quiz.items, quiz.label, {
-      review: quiz.review, subjectOf: quiz.subjectOf, pool: quiz.pool,
-    });
+    again.onclick = () => res.againFn();
   }
 
   show('result', '結果');
@@ -521,7 +671,7 @@ function showResult(res) {
 $('resultHome').onclick = () => goHome();
 
 /* ============================================================
-   9. マイページ
+   10. マイページ
    ============================================================ */
 function renderMypage() {
   $('nickInput').value = Store.data.nick || '';
@@ -555,7 +705,7 @@ $('resetBtn').onclick = () => {
 };
 
 /* ============================================================
-   10. CSV取り込み
+   11. CSV取り込み
    ============================================================ */
 $('csvImportBtn').onclick = () => {
   const raw = $('csvInput').value.trim();
@@ -593,16 +743,18 @@ $('csvImportBtn').onclick = () => {
 };
 
 /* ============================================================
-   11. 画面遷移のボタン
+   12. 画面遷移のボタン
    ============================================================ */
 function goHome() {
   clearInterval(quiz.timer);
+  clearInterval(typing.timer);
   renderHome();
   show('home', 'まなびカード');
 }
 
 $('backBtn').onclick = () => {
   clearInterval(quiz.timer);
+  clearInterval(typing.timer);
   navStack.pop();                 // 今の画面
   const prev = navStack.pop();    // ひとつ前
   if (!prev || prev === 'home') { goHome(); return; }
@@ -623,12 +775,13 @@ document.querySelectorAll('.mode-card').forEach((btn) => {
   btn.onclick = () => {
     const mode = btn.dataset.mode;
     if (mode === 'card') startCard(current.set, current.label);
+    else if (mode === 'type') startTyping(current.set, current.label);
     else startQuiz(current.set, current.label);
   };
 });
 
 /* ============================================================
-   12. 起動
+   13. 起動
    ============================================================ */
 Store.load();
 goHome();

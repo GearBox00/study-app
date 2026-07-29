@@ -74,6 +74,40 @@
         <span class="mode-card__title">4択テスト</span>
         <span class="mode-card__sub">制限時間つき。習得数が増えます</span>
       </button>
+      <button class="mode-card" data-mode="type" id="modeTyping">
+        <span class="mode-card__icon">⌨️</span>
+        <span class="mode-card__title">タイピングテスト</span>
+        <span class="mode-card__sub">つづりをキーボードで入力。パソコン向け</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ========== タイピングテスト ========== -->
+  <section class="screen screen--play" id="screen-type" hidden>
+    <div class="progress"><div class="progress__bar" id="typeProgress"></div></div>
+    <div class="quiz-head">
+      <p class="counter" id="typeCounter">1 / 10</p>
+      <p class="timer" id="typeTimer">15</p>
+    </div>
+
+    <div class="type-question">
+      <p class="type-question__meaning" id="typeMeaning"></p>
+      <p class="type-question__hint" id="typeHint"></p>
+    </div>
+
+    <div class="type-echo" id="typeEcho"></div>
+    <input class="type-input" id="typeInput" type="text"
+           autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+           placeholder="つづりを入力して Enter">
+
+    <div class="feedback" id="typeFeedback" hidden>
+      <p class="feedback__mark" id="typeMark"></p>
+      <p class="feedback__answer" id="typeAnswer"></p>
+      <p class="feedback__exp" id="typeExp"></p>
+      <div class="feedback__actions">
+        <button class="btn btn--ghost" id="typeSpeak">🔊 発音を聞く</button>
+        <button class="btn btn--primary" id="typeNext">次へ ›</button>
+      </div>
     </div>
   </section>
 

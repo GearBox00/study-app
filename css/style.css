@@ -395,6 +395,61 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 .choice.is-wrong { background: var(--red-pale); border-color: var(--red); color: #a52d2d; }
 .choice:disabled { cursor: default; }
 
+/* ---------- タイピング ---------- */
+.type-question {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 120px;
+  margin: 16px 0;
+  padding: 20px 16px;
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+.type-question__meaning {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.35;
+}
+.type-question__hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-sub);
+  letter-spacing: .12em;
+}
+
+.type-echo {
+  min-height: 40px;
+  margin-bottom: 10px;
+  padding: 6px 4px;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-align: center;
+  font-family: "SF Mono", "Consolas", monospace;
+}
+.type-echo .ok { color: var(--blue); }
+.type-echo .ng { color: var(--red); text-decoration: underline wavy var(--red); }
+.type-echo .rest { color: var(--line); }
+
+.type-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  font-size: 20px;
+  letter-spacing: .04em;
+  text-align: center;
+}
+.type-input:focus { outline: none; border-color: var(--blue); }
+.type-input:disabled { background: #f2f4f7; color: var(--ink-sub); }
+
 .feedback {
   margin-top: 16px;
   padding: 16px;
