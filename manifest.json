@@ -1,0 +1,20 @@
+{
+  "name": "まなびカード",
+  "short_name": "まなびカード",
+  "description": "フラッシュカードと4択テストで覚える学習アプリ",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f7fa",
+  "theme_color": "#2f6fd0",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

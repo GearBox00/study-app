@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#2f6fd0">
+<title>まなびカード ｜ 学習アプリ サンプル</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="appbar">
+  <button class="appbar__back" id="backBtn" hidden>‹</button>
+  <h1 class="appbar__title" id="appTitle">まなびカード</h1>
+  <button class="appbar__mypage" id="mypageBtn">マイページ</button>
+</header>
+
+<main id="main">
+
+  <!-- ========== ホーム ========== -->
+  <section class="screen" id="screen-home">
+    <div class="hero">
+      <p class="hero__hello" id="heroHello">こんにちは</p>
+      <div class="hero__stats">
+        <div class="stat">
+          <span class="stat__num" id="statMastered">0</span>
+          <span class="stat__label">習得した問題</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" id="statAnswered">0</span>
+          <span class="stat__label">のべ解答数</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" id="statReview">0</span>
+          <span class="stat__label">復習コーナー</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="review-cta" id="reviewCta">
+      <span class="review-cta__icon">🔁</span>
+      <span class="review-cta__body">
+        <span class="review-cta__title">復習コーナー</span>
+        <span class="review-cta__sub" id="reviewCtaSub">間違えた問題はここに自動でたまります</span>
+      </span>
+      <span class="review-cta__arrow">›</span>
+    </button>
+
+    <h2 class="section-title">科目をえらぶ</h2>
+    <div class="subject-list" id="subjectList"></div>
+
+    <button class="text-link" id="importLink">＋ CSVで問題を追加する（管理者向け）</button>
+  </section>
+
+  <!-- ========== レベル / セット選択 ========== -->
+  <section class="screen" id="screen-sets" hidden>
+    <h2 class="section-title" id="setsTitle">セットをえらぶ</h2>
+    <div id="levelList"></div>
+  </section>
+
+  <!-- ========== 学習モード選択 ========== -->
+  <section class="screen" id="screen-mode" hidden>
+    <h2 class="section-title" id="modeTitle">学習のしかた</h2>
+    <div class="mode-list">
+      <button class="mode-card" data-mode="card">
+        <span class="mode-card__icon">🗂️</span>
+        <span class="mode-card__title">フラッシュカード</span>
+        <span class="mode-card__sub">めくって覚える。時間制限なし</span>
+      </button>
+      <button class="mode-card" data-mode="quiz">
+        <span class="mode-card__icon">⏱️</span>
+        <span class="mode-card__title">4択テスト</span>
+        <span class="mode-card__sub">制限時間つき。習得数が増えます</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ========== フラッシュカード ========== -->
+  <section class="screen screen--play" id="screen-card" hidden>
+    <div class="progress"><div class="progress__bar" id="cardProgress"></div></div>
+    <p class="counter" id="cardCounter">1 / 10</p>
+
+    <div class="flashcard" id="flashcard">
+      <div class="flashcard__inner">
+        <div class="flashcard__face flashcard__face--front">
+          <p class="flashcard__text" id="cardFront"></p>
+          <p class="flashcard__hint">タップして答えを見る</p>
+        </div>
+        <div class="flashcard__face flashcard__face--back">
+          <p class="flashcard__text flashcard__text--back" id="cardBack"></p>
+          <p class="flashcard__note" id="cardExp"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="play-actions">
+      <button class="btn btn--ghost" id="cardSpeak">🔊 発音</button>
+      <button class="btn btn--primary" id="cardNext">次へ ›</button>
+    </div>
+  </section>
+
+  <!-- ========== 4択テスト ========== -->
+  <section class="screen screen--play" id="screen-quiz" hidden>
+    <div class="progress"><div class="progress__bar" id="quizProgress"></div></div>
+    <div class="quiz-head">
+      <p class="counter" id="quizCounter">1 / 10</p>
+      <p class="timer" id="quizTimer">10</p>
+    </div>
+
+    <div class="question">
+      <p class="question__text" id="quizFront"></p>
+      <button class="speak-btn" id="quizSpeak" title="発音を聞く">🔊</button>
+    </div>
+
+    <div class="choices" id="quizChoices"></div>
+
+    <div class="feedback" id="quizFeedback" hidden>
+      <p class="feedback__mark" id="fbMark"></p>
+      <p class="feedback__answer" id="fbAnswer"></p>
+      <p class="feedback__exp" id="fbExp"></p>
+      <div class="feedback__actions">
+        <button class="btn btn--ghost" id="fbSpeak">🔊 もう一度聞く</button>
+        <button class="btn btn--primary" id="fbNext">次へ ›</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 結果 ========== -->
+  <section class="screen" id="screen-result" hidden>
+    <div class="result">
+      <p class="result__emoji" id="resultEmoji">🎉</p>
+      <p class="result__score"><span id="resultCorrect">0</span> / <span id="resultTotal">0</span> 問正解</p>
+      <p class="result__note" id="resultNote"></p>
+      <div class="result__actions">
+        <button class="btn btn--primary" id="resultRetryWrong" hidden>間違えた問題だけやり直す</button>
+        <button class="btn btn--ghost" id="resultAgain">もう一度</button>
+        <button class="btn btn--ghost" id="resultHome">ホームへ戻る</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== マイページ ========== -->
+  <section class="screen" id="screen-mypage" hidden>
+    <h2 class="section-title">マイページ</h2>
+
+    <div class="card">
+      <label class="field">
+        <span class="field__label">ニックネーム</span>
+        <input type="text" id="nickInput" maxlength="12" placeholder="なまえを入れてね">
+      </label>
+      <p class="note">※このデモでは登録不要です。データはこの端末の中だけに保存されます。</p>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">学習の記録</h3>
+      <table class="mypage-table" id="mypageTable"></table>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">データ</h3>
+      <button class="btn btn--danger" id="resetBtn">学習データをリセット</button>
+    </div>
+  </section>
+
+  <!-- ========== CSV取り込み ========== -->
+  <section class="screen" id="screen-import" hidden>
+    <h2 class="section-title">CSVで問題を追加</h2>
+    <div class="card">
+      <p class="note">
+        1行につき「問題,答え,解説,読み(任意)」の順にカンマ区切りで入力します。<br>
+        AIで作った問題をそのまま貼り付けるだけで、4択もタイマーも自動で組み立てられます。
+      </p>
+      <textarea id="csvInput" rows="7" placeholder="curious,好奇心の強い,be curious about 〜 で「〜に興味がある」
+fluent,流ちょうな,speak fluent English のように使います"></textarea>
+      <label class="field">
+        <span class="field__label">セット名</span>
+        <input type="text" id="csvName" placeholder="例）今日のテスト範囲">
+      </label>
+      <button class="btn btn--primary" id="csvImportBtn">このデータでセットを作る</button>
+      <p class="note" id="csvMsg"></p>
+    </div>
+  </section>
+
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
