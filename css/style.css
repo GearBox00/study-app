@@ -4,20 +4,32 @@
    ========================================================== */
 
 :root {
-  --blue: #2f6fd0;
-  --blue-dark: #24559f;
-  --blue-pale: #eaf1fc;
-  --green: #17a673;
-  --green-pale: #e6f7f0;
-  --red: #e05252;
-  --red-pale: #fdeeee;
-  --ink: #22272f;
-  --ink-sub: #6b7686;
-  --line: #e2e6ec;
-  --bg: #f5f7fa;
+  /* ---- メインカラー：ミントグリーン ----
+     淡いミントは白文字が読めなくなるため、
+     面と文字には少し濃いミント、背景には淡いミントを使い分けます */
+  --mint: #0a8264;        /* 主役。上部バー・ボタン・進捗バー */
+  --mint-deep: #076b52;   /* 淡い面に乗せる文字色 */
+  --mint-soft: #2bb891;   /* グラデーションの相方 */
+  --mint-pale: #e4f6f0;   /* 背景の色づけ */
+
+  /* ---- 差し色 ---- */
+  --amber: #efa31d;       /* 達成・継続・バッジ（がんばりを示す色） */
+  --amber-deep: #8a5c05;
+  --amber-pale: #fff6e4;
+  --coral: #e2564d;       /* 不正解・注意・赤シート */
+  --coral-deep: #b23a33;  /* 淡い面に乗せる文字色 */
+  --coral-pale: #fdeceb;
+  --indigo: #4a63d0;      /* 例文などの参考情報 */
+  --indigo-pale: #eef1fd;
+
+  /* ---- 無彩色（わずかに緑を含ませて全体をなじませる） ---- */
+  --ink: #23302c;
+  --ink-sub: #5e6e68;
+  --line: #dfe8e4;
+  --bg: #f2f8f6;
   --card: #ffffff;
   --radius: 14px;
-  --shadow: 0 2px 10px rgba(30, 45, 70, .07);
+  --shadow: 0 2px 10px rgba(16, 90, 70, .08);
 }
 
 * { box-sizing: border-box; }
@@ -47,7 +59,7 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   gap: 6px;
   height: 54px;
   padding: 0 12px;
-  background: var(--blue);
+  background: var(--mint);
   color: #fff;
   box-shadow: 0 1px 6px rgba(0, 0, 0, .12);
 }
@@ -130,10 +142,10 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   transition: transform .06s, filter .15s;
 }
 .btn:active { transform: scale(.97); }
-.btn--primary { background: var(--blue); color: #fff; }
+.btn--primary { background: var(--mint); color: #fff; }
 .btn--primary:hover { filter: brightness(1.07); }
-.btn--ghost { background: #fff; color: var(--blue); border: 1.5px solid var(--line); }
-.btn--danger { background: var(--red-pale); color: var(--red); }
+.btn--ghost { background: #fff; color: var(--mint); border: 1.5px solid var(--line); }
+.btn--danger { background: var(--coral-pale); color: var(--coral-deep); }
 
 .text-link {
   display: block;
@@ -149,11 +161,13 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 }
 
 /* ---------- ホーム ---------- */
+/* ホームの見出し部分は「ミントらしさ」を出したいので淡いミントにし、
+   その代わり文字は濃い色にして読みやすさを確保します */
 .hero {
-  background: linear-gradient(135deg, var(--blue), #4b8ae6);
+  background: linear-gradient(135deg, #7fe0c2, #3fcba4);
   border-radius: 18px;
   padding: 18px;
-  color: #fff;
+  color: var(--ink);
   box-shadow: var(--shadow);
 }
 .hero__hello { margin: 0 0 14px; font-size: 15px; font-weight: 700; }
@@ -161,11 +175,11 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 .stat {
   flex: 1;
   text-align: center;
-  border-right: 1px solid rgba(255, 255, 255, .28);
+  border-right: 1px solid rgba(7, 107, 82, .22);
 }
 .stat:last-child { border-right: 0; }
 .stat__num { display: block; font-size: 26px; font-weight: 800; line-height: 1.1; }
-.stat__label { font-size: 11px; opacity: .9; }
+.stat__label { font-size: 11px; font-weight: 700; color: var(--ink); opacity: .78; }
 
 .review-cta {
   display: flex;
@@ -186,8 +200,8 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 .review-cta__title { display: block; font-size: 15px; font-weight: 700; }
 .review-cta__sub { display: block; margin-top: 2px; font-size: 12px; color: var(--ink-sub); }
 .review-cta__arrow { color: var(--ink-sub); font-size: 22px; }
-.review-cta.is-active { background: #fff6e8; }
-.review-cta.is-active .review-cta__sub { color: #c47b17; font-weight: 700; }
+.review-cta.is-active { background: var(--amber-pale); }
+.review-cta.is-active .review-cta__sub { color: var(--amber-deep); font-weight: 700; }
 
 .subject-list { display: grid; gap: 10px; }
 .subject-card {
@@ -208,7 +222,7 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   display: grid;
   place-items: center;
   border-radius: 12px;
-  background: var(--blue-pale);
+  background: var(--mint-pale);
   font-size: 22px;
 }
 .subject-card__body { flex: 1; }
@@ -246,7 +260,7 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 .set-card__bar > i {
   display: block;
   height: 100%;
-  background: var(--green);
+  background: var(--mint);
 }
 .set-card__done {
   position: absolute;
@@ -284,7 +298,7 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 .progress__bar {
   height: 100%;
   width: 0;
-  background: var(--blue);
+  background: var(--mint);
   transition: width .25s;
 }
 .counter { margin: 8px 0 0; font-size: 12px; color: var(--ink-sub); }
@@ -294,10 +308,10 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   margin: 8px 0 0;
   font-size: 20px;
   font-weight: 800;
-  color: var(--blue);
+  color: var(--mint);
   font-variant-numeric: tabular-nums;
 }
-.timer.is-hurry { color: var(--red); animation: pulse .6s infinite; }
+.timer.is-hurry { color: var(--coral); animation: pulse .6s infinite; }
 @keyframes pulse { 50% { opacity: .35; } }
 
 /* ---------- フラッシュカード ---------- */
@@ -329,9 +343,9 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
-.flashcard__face--back { transform: rotateY(180deg); background: var(--blue-pale); }
+.flashcard__face--back { transform: rotateY(180deg); background: var(--mint-pale); }
 .flashcard__text { margin: 0; font-size: 30px; font-weight: 800; text-align: center; line-height: 1.35; }
-.flashcard__text--back { font-size: 24px; color: var(--blue-dark); }
+.flashcard__text--back { font-size: 24px; color: var(--mint-deep); }
 .flashcard__hint { margin: 0; font-size: 12px; color: var(--ink-sub); }
 .flashcard__note {
   margin: 0;
@@ -371,7 +385,7 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   height: 42px;
   border: 0;
   border-radius: 50%;
-  background: var(--blue-pale);
+  background: var(--mint-pale);
   font-size: 19px;
   cursor: pointer;
 }
@@ -390,9 +404,9 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   cursor: pointer;
   transition: background .12s;
 }
-.choice:hover:not(:disabled) { background: var(--blue-pale); }
-.choice.is-correct { background: var(--green-pale); border-color: var(--green); color: #0d6b4a; }
-.choice.is-wrong { background: var(--red-pale); border-color: var(--red); color: #a52d2d; }
+.choice:hover:not(:disabled) { background: var(--mint-pale); }
+.choice.is-correct { background: var(--mint-pale); border-color: var(--mint); color: var(--mint-deep); }
+.choice.is-wrong { background: var(--coral-pale); border-color: var(--coral); color: #a52d2d; }
 .choice:disabled { cursor: default; }
 
 /* ---------- タイピング ---------- */
@@ -433,8 +447,8 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   text-align: center;
   font-family: "SF Mono", "Consolas", monospace;
 }
-.type-echo .ok { color: var(--blue); }
-.type-echo .ng { color: var(--red); text-decoration: underline wavy var(--red); }
+.type-echo .ok { color: var(--mint); }
+.type-echo .ng { color: var(--coral); text-decoration: underline wavy var(--coral); }
 .type-echo .rest { color: var(--line); }
 
 .type-input {
@@ -447,7 +461,7 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   letter-spacing: .04em;
   text-align: center;
 }
-.type-input:focus { outline: none; border-color: var(--blue); }
+.type-input:focus { outline: none; border-color: var(--mint); }
 .type-input:disabled { background: #f2f4f7; color: var(--ink-sub); }
 
 .feedback {
@@ -458,8 +472,8 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   box-shadow: var(--shadow);
 }
 .feedback__mark { margin: 0 0 6px; font-size: 17px; font-weight: 800; }
-.feedback__mark.ok { color: var(--green); }
-.feedback__mark.ng { color: var(--red); }
+.feedback__mark.ok { color: var(--mint); }
+.feedback__mark.ng { color: var(--coral); }
 .feedback__answer { margin: 0 0 8px; font-size: 17px; font-weight: 700; }
 .feedback__exp { margin: 0; font-size: 13px; line-height: 1.8; color: var(--ink-sub); }
 .feedback__actions { display: flex; gap: 10px; margin-top: 14px; }
@@ -490,7 +504,7 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   background: #fff;
 }
 #csvInput { line-height: 1.7; resize: vertical; }
-.field input:focus, #csvInput:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
+.field input:focus, #csvInput:focus { outline: 2px solid var(--mint); outline-offset: 1px; }
 
 .mypage-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .mypage-table th, .mypage-table td {
@@ -532,7 +546,8 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   margin: 0;
   padding: 5px 11px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, .22);
+  background: rgba(255, 255, 255, .65);
+  color: var(--mint-deep);
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
@@ -562,11 +577,12 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   height: 100%;
   width: 0;
   border-radius: 5px;
-  background: linear-gradient(90deg, var(--green), #4fd1a5);
+  /* 目標の達成度は「がんばり」の色（アンバー）で、進捗バーと区別します */
+  background: linear-gradient(90deg, var(--amber), #ffc555);
   transition: width .4s;
 }
 .goal__msg { margin: 0; font-size: 12px; color: var(--ink-sub); }
-.goal__msg.is-done { color: var(--green); font-weight: 700; }
+.goal__msg.is-done { color: var(--amber-deep); font-weight: 700; }
 
 /* ---------- ホーム下部のリンク ---------- */
 .quick-links { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
@@ -610,10 +626,10 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   cursor: pointer;
   white-space: nowrap;
 }
-.segmented__btns button.is-on { background: var(--blue); color: #fff; }
+.segmented__btns button.is-on { background: var(--mint); color: #fff; }
 
 .switch { display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; }
-.switch input { width: 20px; height: 20px; accent-color: var(--blue); }
+.switch input { width: 20px; height: 20px; accent-color: var(--mint); }
 
 /* ---------- 赤シート ---------- */
 .masked { position: relative; display: inline-block; }
@@ -623,7 +639,7 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   display: grid;
   place-items: center;
   border-radius: 8px;
-  background: #e8524f;
+  background: var(--coral);
   color: #fff;
   font-size: 12px;
   font-weight: 700;
@@ -635,9 +651,10 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 .example {
   margin: 10px 0 0;
   padding: 10px 12px;
-  border-left: 3px solid var(--blue);
+  /* 参考情報なので、ミントとは別系統の色でそっと差をつけます */
+  border-left: 3px solid var(--indigo);
   border-radius: 0 8px 8px 0;
-  background: var(--blue-pale);
+  background: var(--indigo-pale);
   font-size: 13px;
   line-height: 1.7;
   color: var(--ink);
@@ -647,8 +664,8 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 /* ---------- カードの仕分け ---------- */
 .swipe-actions { display: flex; gap: 10px; margin-top: 10px; }
 .swipe-actions .btn { flex: 1; }
-.btn--know-yes { background: var(--green-pale); color: #0d6b4a; }
-.btn--know-no { background: var(--red-pale); color: #a52d2d; }
+.btn--know-yes { background: var(--mint-pale); color: var(--mint-deep); }
+.btn--know-no { background: var(--coral-pale); color: var(--coral-deep); }
 .swipe-hint { margin: 10px 0 0; font-size: 11px; text-align: center; color: var(--ink-sub); }
 .flashcard.is-dragging .flashcard__inner { transition: none; }
 
@@ -671,10 +688,10 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   margin: 0 0 18px;
   padding: 12px;
   border-radius: var(--radius);
-  background: #fff8e6;
+  background: var(--amber-pale);
   font-size: 13px;
   font-weight: 700;
-  color: #b0790d;
+  color: var(--amber-deep);
 }
 
 /* ---------- 学習グラフ ---------- */
@@ -690,10 +707,10 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   width: 100%;
   min-height: 3px;
   border-radius: 3px 3px 0 0;
-  background: var(--blue);
+  background: var(--mint);
 }
 .graph__bar.is-zero { background: var(--line); }
-.graph__bar.is-goal { background: var(--green); }
+.graph__bar.is-goal { background: var(--amber); }
 .graph__day { font-size: 9px; color: var(--ink-sub); }
 .graph__val { font-size: 9px; color: var(--ink-sub); }
 
@@ -705,7 +722,7 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   background: var(--bg);
   text-align: center;
 }
-.badge.is-got { background: #fff8e6; }
+.badge.is-got { background: var(--amber-pale); }
 .badge__icon { display: block; font-size: 24px; filter: grayscale(1); opacity: .35; }
 .badge.is-got .badge__icon { filter: none; opacity: 1; }
 .badge__name { display: block; margin-top: 4px; font-size: 10px; font-weight: 700; line-height: 1.4; }
@@ -723,7 +740,7 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 .item-row__body { flex: 1; min-width: 0; }
 .item-row__front { display: block; font-size: 15px; font-weight: 700; }
 .item-row__back { display: block; font-size: 12px; color: var(--ink-sub); }
-.item-row__meta { display: block; margin-top: 2px; font-size: 11px; color: var(--red); font-weight: 700; }
+.item-row__meta { display: block; margin-top: 2px; font-size: 11px; color: var(--coral); font-weight: 700; }
 .item-row__ex { display: block; margin-top: 4px; font-size: 11px; color: var(--ink-sub); }
 .item-row .speak-btn { width: 36px; height: 36px; font-size: 16px; }
 #weakStart { width: 100%; margin-top: 14px; }
@@ -736,7 +753,7 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   background: #fff;
   font-size: 15px;
 }
-.search-input:focus { outline: none; border-color: var(--blue); }
+.search-input:focus { outline: none; border-color: var(--mint); }
 
 /* ---------- パソコン向け ---------- */
 @media (min-width: 700px) {
