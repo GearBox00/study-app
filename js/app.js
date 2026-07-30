@@ -67,7 +67,16 @@ const Store = {
       daily: {},          // 日別の学習量 { '2026-07-29': {n, ok} }
       streak: { current: 0, best: 0, last: '' },
       goal: 30,
-      settings: { direction: 'front', speed: 1, mask: false },
+      settings: {
+        direction: 'front',
+        speed: 1,
+        mask: false,
+        timeLimit: null,   // 生徒が指定する制限時間（秒）。null=おまかせ、0=制限なし
+        mode: 'practice',  // practice=生徒の設定を優先 / test=作問者の設定で固定
+      },
+      // 出席スタンプ（QR読み取り）
+      attendance: { cards: 0, stamps: 0, totalDays: 0, totalMinutes: 0, logs: {} },
+      venue: 'main',       // 拠点の合言葉
       badges: [],
       flags: { perfect: false, clean: false },
     };
@@ -83,9 +92,10 @@ const Store = {
     // 足りない項目は初期値で補う（古い保存データがあっても壊れないように）
     this.data = Object.assign(this.blank(), saved || {});
     const b = this.blank();
-    ['streak', 'settings', 'flags'].forEach((k) => {
+    ['streak', 'settings', 'flags', 'attendance'].forEach((k) => {
       this.data[k] = Object.assign(b[k], this.data[k] || {});
     });
+    if (!this.data.attendance.logs) this.data.attendance.logs = {};
     ['items', 'daily'].forEach((k) => { if (!this.data[k]) this.data[k] = {}; });
     ['customSets', 'myWords', 'badges'].forEach((k) => { if (!this.data[k]) this.data[k] = []; });
     return this.data;
@@ -213,6 +223,20 @@ function shuffle(arr) {
   return a;
 }
 
+/**
+ * この問題に使う制限時間（秒）を決める。0 なら制限なし。
+ *  - テストモード … 作問者の指定（item.time）を必ず使う
+ *  - 練習モード   … 生徒の設定があればそれを優先する
+ */
+function limitFor(item, base) {
+  const s = Store.data.settings;
+  const authored = Number(item && item.time) || 0;
+  if (s.mode === 'test') return authored || base;
+  if (s.timeLimit === 0) return 0;              // 生徒が「制限なし」を選んだ
+  if (s.timeLimit) return s.timeLimit;          // 生徒が秒数を指定した
+  return authored || base;
+}
+
 /* ---------- 出題の向き（問題→答え / 答え→問題） ---------- */
 function qOf(item, dir) { return dir === 'back' ? item.back : item.front; }
 function aOf(item, dir) { return dir === 'back' ? item.front : item.back; }
@@ -256,7 +280,8 @@ const Speech = {
 /* ============================================================
    4. 画面の切り替え
    ============================================================ */
-const SCREENS = ['home', 'sets', 'mode', 'card', 'quiz', 'type', 'result', 'mypage', 'search', 'add'];
+const SCREENS = ['home', 'sets', 'mode', 'card', 'quiz', 'type', 'result', 'mypage',
+  'search', 'add', 'stamp', 'venue', 'print', 'manage'];
 const $ = (id) => document.getElementById(id);
 let navStack = [];
 
@@ -326,6 +351,9 @@ function renderHome() {
   $('reviewCtaSub').textContent = due > 0
     ? `${due}問が復習の時期です。タップではじめる`
     : (later > 0 ? `いま復習する問題はありません（予定 ${later}問）` : '間違えた問題はここに自動でたまります');
+
+  // 出席スタンプ（js/stamp.js が読み込まれていれば表示を更新）
+  if (typeof renderStampSummary === 'function') renderStampSummary();
 
   // 科目一覧
   const list = $('subjectList');
@@ -611,9 +639,15 @@ function drawQuiz() {
 }
 
 function startTimer(item) {
-  quiz.left = TIME_LIMIT;
+  const limit = limitFor(item, TIME_LIMIT);
   const el = $('quizTimer');
-  el.textContent = TIME_LIMIT;
+  if (!limit) {                      // 制限なし
+    el.textContent = '∞';
+    el.classList.remove('is-hurry');
+    return;
+  }
+  quiz.left = limit;
+  el.textContent = limit;
   el.classList.remove('is-hurry');
   quiz.timer = setInterval(() => {
     quiz.left -= 0.1;
@@ -784,9 +818,15 @@ function drawEcho(value) {
 }
 
 function startTypeTimer() {
-  typing.left = TYPE_TIME_LIMIT;
+  const limit = limitFor(typing.items[typing.idx], TYPE_TIME_LIMIT);
   const el = $('typeTimer');
-  el.textContent = TYPE_TIME_LIMIT;
+  if (!limit) {
+    el.textContent = '∞';
+    el.classList.remove('is-hurry');
+    return;
+  }
+  typing.left = limit;
+  el.textContent = limit;
   el.classList.remove('is-hurry');
   typing.timer = setInterval(() => {
     typing.left -= 0.1;
@@ -992,6 +1032,7 @@ function renderMypage() {
   $('maskToggle').checked = !!d.settings.mask;
   syncDirButtons();
   syncSpeedButtons();
+  syncLimitButtons();
 
   // 科目別の記録
   let html = '<tr><th>科目</th><th>習得</th><th>復習待ち</th></tr>';
@@ -1109,6 +1150,33 @@ function syncSpeedButtons() {
     b.classList.toggle('is-on', Number(b.dataset.speed) === Store.data.settings.speed);
   });
 }
+function syncLimitButtons() {
+  const cur = Store.data.settings.timeLimit;
+  document.querySelectorAll('[data-limit]').forEach((b) => {
+    const v = b.dataset.limit === '' ? null : Number(b.dataset.limit);
+    b.classList.toggle('is-on', v === cur);
+  });
+  document.querySelectorAll('[data-mode]').forEach((b) => {
+    b.classList.toggle('is-on', b.dataset.mode === Store.data.settings.mode);
+  });
+  $('modeNote').textContent = Store.data.settings.mode === 'test'
+    ? 'テスト中は、作問者が決めた制限時間で固定されます。'
+    : '練習中は、上で選んだ制限時間が使われます。';
+}
+document.querySelectorAll('[data-limit]').forEach((b) => {
+  b.onclick = () => {
+    Store.data.settings.timeLimit = b.dataset.limit === '' ? null : Number(b.dataset.limit);
+    Store.save();
+    syncLimitButtons();
+  };
+});
+document.querySelectorAll('[data-mode]').forEach((b) => {
+  b.onclick = () => {
+    Store.data.settings.mode = b.dataset.mode;
+    Store.save();
+    syncLimitButtons();
+  };
+});
 document.querySelectorAll('[data-dir]').forEach((b) => {
   b.onclick = () => { Store.data.settings.direction = b.dataset.dir; Store.save(); syncDirButtons(); };
 });
@@ -1174,40 +1242,7 @@ $('myAddBtn').onclick = () => {
   toast('マイ単語帳に追加しました');
 };
 
-$('csvImportBtn').onclick = () => {
-  const raw = $('csvInput').value.trim();
-  if (!raw) { $('csvMsg').textContent = 'データが入力されていません。'; return; }
-
-  const items = [];
-  raw.split(/\r?\n/).forEach((line, i) => {
-    if (!line.trim()) return;
-    const cols = line.split(',').map((c) => c.trim());
-    if (cols.length < 2 || !cols[0] || !cols[1]) return;
-    items.push({
-      id: `cs-${Date.now()}-${i}`,
-      front: cols[0],
-      back: cols[1],
-      explanation: cols[2] || '',
-      example: cols[3] || '',
-    });
-  });
-
-  if (items.length < 4) {
-    $('csvMsg').textContent = '4択にするため、4行以上のデータを入れてください。';
-    return;
-  }
-
-  Store.data.customSets.push({
-    id: 'cs-' + Date.now(),
-    name: $('csvName').value.trim() || `取り込み ${Store.data.customSets.length + 1}`,
-    items,
-  });
-  Store.save();
-  $('csvInput').value = '';
-  $('csvName').value = '';
-  $('csvMsg').textContent = `${items.length}問を追加しました。ホームの「取り込んだ問題」から使えます。`;
-  toast(`${items.length}問を追加しました`);
-};
+/* CSVの取り込みは js/tools.js で扱います */
 
 /* ============================================================
    15. 画面遷移のボタン
@@ -1250,14 +1285,4 @@ document.querySelectorAll('.mode-card').forEach((btn) => {
   };
 });
 
-/* ============================================================
-   16. 起動
-   ============================================================ */
-Store.load();
-goHome();
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => { /* デモでは失敗しても無視 */ });
-  });
-}
+/* 起動処理は js/boot.js にあります（他のファイルの読み込みを待つため） */

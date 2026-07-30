@@ -1,0 +1,15 @@
+{
+  "_comment": "ここに科目とCSVファイルを書くと、起動時に読み込まれます。列は 問題,答え,解説,例文,制限時間(秒),読み の順です。",
+  "subjects": [
+    {
+      "id": "science",
+      "name": "理科",
+      "icon": "🔬",
+      "lang": "ja-JP",
+      "speakField": "reading",
+      "levels": [
+        { "id": "sc-1", "name": "レベル1 中学理科", "file": "science-1.csv" }
+      ]
+    }
+  ]
+}

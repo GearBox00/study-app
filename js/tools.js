@@ -1,0 +1,396 @@
+/* ============================================================
+   運用まわりの機能
+   ------------------------------------------------------------
+   ・記録の書き出し／読み込み（USBメモリでの持ち運びに使います）
+   ・紙のテストの印刷
+   ・登録した問題の編集・削除
+   ・CSV／Excel貼り付けからの取り込み
+   ・問題データを外部のCSVファイルから読み込む仕組み
+   ============================================================ */
+
+'use strict';
+
+/* ============================================================
+   1. 表データの解析（CSV・Excelからの貼り付けの両方に対応）
+   ------------------------------------------------------------
+   ・区切りはカンマとタブを自動判別
+   ・"..." で囲めば、中にカンマや改行があっても1つの項目として扱う
+   ============================================================ */
+function parseTable(text) {
+  const src = text.replace(/\r\n?/g, '\n').trim();
+  if (!src) return [];
+
+  // 1行目にタブが多ければタブ区切りとみなす（Excelからの貼り付け）
+  const head = src.split('\n')[0];
+  const delim = (head.split('\t').length > head.split(',').length) ? '\t' : ',';
+
+  const rows = [];
+  let row = [], field = '', quoted = false;
+
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (quoted) {
+      if (c === '"') {
+        if (src[i + 1] === '"') { field += '"'; i++; }   // "" は文字としての "
+        else quoted = false;
+      } else field += c;
+    } else if (c === '"') {
+      quoted = true;
+    } else if (c === delim) {
+      row.push(field); field = '';
+    } else if (c === '\n') {
+      row.push(field); rows.push(row); row = []; field = '';
+    } else {
+      field += c;
+    }
+  }
+  row.push(field);
+  rows.push(row);
+
+  return rows
+    .map((r) => r.map((c) => c.trim()))
+    .filter((r) => r.length >= 2 && r[0] && r[1]);
+}
+
+/** 表の1行を問題データに変換する（問題,答え,解説,例文,制限時間,読み） */
+function rowToItem(cols, idPrefix, i) {
+  return {
+    id: `${idPrefix}-${i}`,
+    front: cols[0],
+    back: cols[1],
+    explanation: cols[2] || '',
+    example: cols[3] || '',
+    time: Number(cols[4]) || 0,
+    reading: cols[5] || '',
+  };
+}
+
+/* ============================================================
+   2. CSVでまとめて追加
+   ============================================================ */
+$('csvImportBtn').onclick = () => {
+  const raw = $('csvInput').value;
+  const rows = parseTable(raw);
+  if (!rows.length) { $('csvMsg').textContent = 'データが読み取れませんでした。'; return; }
+  if (rows.length < 4) {
+    $('csvMsg').textContent = '4択にするため、4行以上のデータを入れてください。';
+    return;
+  }
+
+  const stamp = Date.now();
+  const items = rows.map((cols, i) => rowToItem(cols, `cs-${stamp}`, i));
+  Store.data.customSets.push({
+    id: 'cs-' + stamp,
+    name: $('csvName').value.trim() || `取り込み ${Store.data.customSets.length + 1}`,
+    items,
+  });
+  Store.save();
+  $('csvInput').value = '';
+  $('csvName').value = '';
+  $('csvMsg').textContent = `${items.length}問を追加しました。ホームの「取り込んだ問題」から使えます。`;
+  toast(`${items.length}問を追加しました`);
+};
+
+/* ============================================================
+   3. 記録の書き出し／読み込み（USBメモリでの持ち運び）
+   ============================================================ */
+function exportData() {
+  const payload = {
+    app: 'manabi-card',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    data: Store.data,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const name = (Store.data.nick || 'ゲスト').replace(/[\\/:*?"<>|]/g, '');
+  downloadBlob(blob, `まなびカード_${name}_${today()}.json`);
+  toast('記録を書き出しました');
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function importData(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    let payload;
+    try {
+      payload = JSON.parse(reader.result);
+    } catch (e) {
+      $('ioMsg').textContent = 'ファイルを読み取れませんでした。';
+      return;
+    }
+    if (!payload || payload.app !== 'manabi-card' || !payload.data) {
+      $('ioMsg').textContent = 'このアプリの記録ファイルではないようです。';
+      return;
+    }
+    const nick = payload.data.nick || 'ゲスト';
+    if (!confirm(`「${nick}」さんの記録を読み込みます。\nいまこの端末にある記録は置きかえられます。よろしいですか？`)) return;
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload.data));
+    Store.load();
+    $('ioMsg').textContent = `「${nick}」さんの記録を読み込みました。`;
+    renderMypage();
+    toast('記録を読み込みました');
+  };
+  reader.readAsText(file);
+}
+
+$('exportBtn').onclick = exportData;
+$('importInput').onchange = (e) => {
+  if (e.target.files && e.target.files[0]) importData(e.target.files[0]);
+  e.target.value = '';
+};
+
+/* ============================================================
+   4. 紙のテストを印刷する
+   ============================================================ */
+function renderPrintForm() {
+  const sel = $('printRange');
+  sel.innerHTML = '';
+  const add = (value, label) => {
+    const o = document.createElement('option');
+    o.value = value; o.textContent = label;
+    sel.appendChild(o);
+  };
+  add('weak', '苦手な問題');
+  add('review', '復習の時期がきた問題');
+  allSubjects().forEach((sub) => {
+    sub.levels.forEach((lv) => add(`lv:${sub.id}:${lv.id}`, `${sub.name} ${lv.name}`));
+  });
+}
+
+/** 選ばれた範囲の問題を集める */
+function printPool() {
+  const v = $('printRange').value;
+  if (v === 'weak') {
+    return everyItem()
+      .filter(({ item }) => { const r = Store.data.items[item.id]; return r && r.wrong > 0; })
+      .sort((a, b) => Store.data.items[b.item.id].wrong - Store.data.items[a.item.id].wrong)
+      .map((p) => p.item);
+  }
+  if (v === 'review') return reviewItems().map((p) => p.item);
+  const [, subId, lvId] = v.split(':');
+  const sub = findSubject(subId);
+  if (!sub) return [];
+  const lv = sub.levels.find((l) => l.id === lvId);
+  return lv ? lv.items.slice() : [];
+}
+
+function buildPrint() {
+  const pool = printPool();
+  if (pool.length < 4) {
+    $('printMsg').textContent = 'この範囲には問題が足りません（4問以上必要です）。';
+    return;
+  }
+  const count = Math.min(Number($('printCount').value) || 20, pool.length);
+  const style = $('printStyle').value;          // choice = 4択 / write = 記述
+  const dir = $('printDir').value;              // front / back
+  const withAnswer = $('printAnswer').checked;
+  const items = shuffle(pool).slice(0, count);
+
+  const title = $('printTitle').value.trim() || 'テスト';
+  const head = `
+    <div class="sheet__head">
+      <h1>${escapeHtml(title)}</h1>
+      <p>名前：<span class="sheet__blank"></span>　　点数：<span class="sheet__blank sheet__blank--s"></span></p>
+    </div>`;
+
+  let body = '<ol class="sheet__list">';
+  items.forEach((item) => {
+    const q = escapeHtml(qOf(item, dir));
+    if (style === 'choice') {
+      const choices = makeChoices(item, pool, dir);
+      body += `<li><p class="sheet__q">${q}</p><ol class="sheet__choices">` +
+        choices.map((c) => `<li>${escapeHtml(c)}</li>`).join('') + '</ol></li>';
+    } else {
+      body += `<li><p class="sheet__q">${q}</p><p class="sheet__line"></p></li>`;
+    }
+  });
+  body += '</ol>';
+
+  let answers = '';
+  if (withAnswer) {
+    answers = '<div class="sheet__answers"><h2>解答</h2><ol>' +
+      items.map((item) => `<li>${escapeHtml(aOf(item, dir))}</li>`).join('') +
+      '</ol></div>';
+  }
+
+  $('printSheet').innerHTML = head + body + answers;
+  $('printMsg').textContent = `${items.length}問のテストを作りました。下の「印刷する」を押してください。`;
+  $('printActions').hidden = false;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+$('printBuild').onclick = buildPrint;
+$('printGo').onclick = () => window.print();
+
+/* ============================================================
+   5. 登録した問題の編集・削除
+   ============================================================ */
+function renderManage() {
+  const box = $('manageList');
+  box.innerHTML = '';
+
+  const groups = [];
+  if (Store.data.myWords.length) {
+    groups.push({ name: '📕 マイ単語帳', items: Store.data.myWords, kind: 'my' });
+  }
+  Store.data.customSets.forEach((s) => {
+    groups.push({ name: '📥 ' + s.name, items: s.items, kind: 'set', set: s });
+  });
+
+  if (!groups.length) {
+    box.innerHTML = '<p class="note">まだ自分で追加した問題はありません。</p>';
+    return;
+  }
+
+  groups.forEach((g) => {
+    const block = document.createElement('div');
+    block.className = 'card';
+    const title = document.createElement('div');
+    title.className = 'manage-head';
+    title.innerHTML = `<h3 class="card__title">${escapeHtml(g.name)}（${g.items.length}問）</h3>`;
+    if (g.kind === 'set') {
+      const del = document.createElement('button');
+      del.className = 'mini-btn mini-btn--danger';
+      del.textContent = 'セットごと削除';
+      del.onclick = () => {
+        if (!confirm(`「${g.set.name}」を削除します。よろしいですか？`)) return;
+        Store.data.customSets = Store.data.customSets.filter((s) => s.id !== g.set.id);
+        Store.save();
+        renderManage();
+        toast('削除しました');
+      };
+      title.appendChild(del);
+    }
+    block.appendChild(title);
+
+    g.items.forEach((item) => block.appendChild(manageRow(item, g)));
+    box.appendChild(block);
+  });
+}
+
+function manageRow(item, group) {
+  const row = document.createElement('div');
+  row.className = 'item-row';
+  const body = document.createElement('div');
+  body.className = 'item-row__body';
+  body.innerHTML = `
+    <span class="item-row__front">${escapeHtml(item.front)}</span>
+    <span class="item-row__back">${escapeHtml(item.back)}</span>`;
+  row.appendChild(body);
+
+  const edit = document.createElement('button');
+  edit.className = 'mini-btn';
+  edit.textContent = '編集';
+  edit.onclick = () => startEdit(item, group);
+  row.appendChild(edit);
+
+  const del = document.createElement('button');
+  del.className = 'mini-btn mini-btn--danger';
+  del.textContent = '削除';
+  del.onclick = () => {
+    if (!confirm(`「${item.front}」を削除します。よろしいですか？`)) return;
+    if (group.kind === 'my') {
+      Store.data.myWords = Store.data.myWords.filter((x) => x.id !== item.id);
+    } else {
+      group.set.items = group.set.items.filter((x) => x.id !== item.id);
+      if (!group.set.items.length) {
+        Store.data.customSets = Store.data.customSets.filter((s) => s.id !== group.set.id);
+      }
+    }
+    delete Store.data.items[item.id];
+    Store.save();
+    renderManage();
+    toast('削除しました');
+  };
+  row.appendChild(del);
+  return row;
+}
+
+function startEdit(item, group) {
+  const front = prompt('問題（単語・用語）', item.front);
+  if (front === null) return;
+  const back = prompt('答え（意味）', item.back);
+  if (back === null) return;
+  const exp = prompt('解説（空欄でも可）', item.explanation || '');
+  if (exp === null) return;
+  const ex = prompt('例文（空欄でも可）', item.example || '');
+  if (ex === null) return;
+
+  if (!front.trim() || !back.trim()) { toast('問題と答えは必須です'); return; }
+  item.front = front.trim();
+  item.back = back.trim();
+  item.explanation = exp.trim();
+  item.example = ex.trim();
+  Store.save();
+  renderManage();
+  toast('保存しました');
+}
+
+/* ============================================================
+   6. 問題データを外部のCSVファイルから読み込む
+   ------------------------------------------------------------
+   questions/index.json に科目とファイルを書いておくと、
+   起動時に読み込んで科目一覧に加えます。
+   （数千問を扱うときは、この方式に移していきます）
+   ============================================================ */
+async function loadExternalQuestions() {
+  let index;
+  try {
+    const res = await fetch('questions/index.json', { cache: 'no-cache' });
+    if (!res.ok) return;
+    index = await res.json();
+  } catch (e) {
+    return;   // ファイルが無い場合は何もしない（内蔵データだけで動きます）
+  }
+  if (!index || !Array.isArray(index.subjects)) return;
+
+  for (const sub of index.subjects) {
+    const levels = [];
+    for (const lv of (sub.levels || [])) {
+      try {
+        const res = await fetch('questions/' + lv.file, { cache: 'no-cache' });
+        if (!res.ok) continue;
+        const rows = parseTable(await res.text());
+        const items = rows.map((cols, i) => rowToItem(cols, `${sub.id}-${lv.id}`, i));
+        if (items.length) levels.push({ id: lv.id, name: lv.name, items });
+      } catch (e) { /* 読めないファイルは飛ばす */ }
+    }
+    if (!levels.length) continue;
+
+    const existing = SUBJECTS.find((s) => s.id === sub.id);
+    if (existing) existing.levels = levels;
+    else SUBJECTS.push({
+      id: sub.id,
+      name: sub.name,
+      icon: sub.icon || '📗',
+      lang: sub.lang || 'auto',
+      speakField: sub.speakField || 'front',
+      levels,
+    });
+  }
+}
+
+/* ---------- 画面のボタン ---------- */
+$('printLink').onclick = () => {
+  renderPrintForm();
+  $('printSheet').innerHTML = '';
+  $('printActions').hidden = true;
+  $('printMsg').textContent = '';
+  show('print', '紙のテストを作る');
+};
+$('manageLink').onclick = () => { renderManage(); show('manage', '問題の管理'); };
