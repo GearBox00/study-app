@@ -8,7 +8,7 @@
      第2段階として別に設計が必要です）
    ============================================================ */
 
-const CACHE = "manabi-card-v12";
+const CACHE = "manabi-card-v13";
 const ASSETS = [
   './',
   './index.html',
@@ -29,8 +29,21 @@ const ASSETS = [
   './icon.svg',
 ];
 
+/*
+ * 保存するときは、必ずサーバーから取り直します。
+ * ふつうの取得だと、配信側に残っている古いファイルが
+ * 新しい版として保存されてしまい、利用者の画面が古いままになるためです。
+ */
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
+  e.waitUntil(
+    caches.open(CACHE).then((c) => Promise.all(
+      ASSETS.map((url) =>
+        fetch(new Request(url, { cache: 'reload' }))
+          .then((res) => (res.ok ? c.put(url, res) : null))
+          .catch(() => null)
+      )
+    ))
+  );
   self.skipWaiting();
 });
 
