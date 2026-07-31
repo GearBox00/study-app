@@ -165,6 +165,7 @@ const Store = {
     this.data.goal = goal;
     this.data.settings = settings;
     this.save();
+    invalidateSearchIndex();   // 消した問題が検索に残らないようにする
   },
 };
 
@@ -258,8 +259,12 @@ function answerMatches(input, correct) {
   const want = answerParts(correct).map(normalizeAnswer).filter(Boolean);
   if (want.length <= 1) return normalizeAnswer(input) === (want[0] || '');
 
+  // 「look after」のように答えの中に空白がある場合、空白で区切ってしまうと
+  // 正しい解答が不正解になるため、そのときは区切り記号だけで分けます。
+  const hasSpace = want.some((w) => w.indexOf(' ') !== -1);
+  const sep = hasSpace ? /[\/／,、]+/ : /[\/／,、\s]+/;
   const got = String(input == null ? '' : input)
-    .split(/[\/／,、\s]+/)
+    .split(sep)
     .map(normalizeAnswer)
     .filter(Boolean);
   if (got.length !== want.length) return false;
@@ -713,7 +718,8 @@ function drawQuiz() {
   makeChoices(item, quiz.pool, quiz.dir).forEach((text) => {
     const b = document.createElement('button');
     b.className = 'choice';
-    b.textContent = text;
+    b.textContent = displayAnswer(text);   // 複数解答は「give / gave / given」と読みやすく出す
+    b.dataset.raw = text;                  // 判定にはもとの値を使う
     b.onclick = () => answerQuiz(text === aOf(item, quiz.dir), b, item);
     box.appendChild(b);
   });
@@ -762,7 +768,7 @@ function answerQuiz(isCorrect, btn, item, timeUp) {
   const answer = aOf(item, quiz.dir);
   Array.from($('quizChoices').children).forEach((b) => {
     b.disabled = true;
-    if (b.textContent === answer) b.classList.add('is-correct');
+    if (b.dataset.raw === answer) b.classList.add('is-correct');
   });
   if (btn && !isCorrect) btn.classList.add('is-wrong');
 
@@ -925,6 +931,23 @@ function drawEcho(value) {
   const target = typing.items[typing.idx].front;
   const echo = $('typeEcho');
   echo.innerHTML = '';
+
+  // 複数解答は順番を問わないため、1文字ずつの色分けをすると
+  // 正しく打っていても赤く見えてしまいます。ここでは入力した数だけを示します。
+  const parts = answerParts(target);
+  if (parts.length > 1) {
+    const given = String(value).split(/[\/／,、]+/).map((s) => s.trim()).filter(Boolean);
+    const span = document.createElement('span');
+    span.className = 'ok';
+    span.textContent = value || '_';
+    echo.appendChild(span);
+    const count = document.createElement('span');
+    count.className = 'rest';
+    count.textContent = `　（${given.length} / ${parts.length}語）`;
+    echo.appendChild(count);
+    return;
+  }
+
   for (let i = 0; i < target.length; i++) {
     const span = document.createElement('span');
     if (i < value.length) {
