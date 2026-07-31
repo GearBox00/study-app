@@ -951,6 +951,61 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 }
 .mini-btn--danger { color: var(--coral-deep); border-color: var(--coral-pale); background: var(--coral-pale); }
 
+/* ---------- 選択肢の番号（キーボード操作用） ---------- */
+.choice__no {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 10px;
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--ink-sub);
+  font-size: 12px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+.choice.is-correct .choice__no { background: var(--mint); color: #fff; }
+.choice.is-wrong .choice__no { background: var(--coral); color: #fff; }
+
+.io-actions--col { flex-direction: column; }
+.quick-link--wide { grid-column: 1 / -1; flex-direction: row; gap: 10px; }
+
+/* ---------- 今日のまとめ ---------- */
+.sum { padding: 22px 18px; }
+.sum__title { margin: 0 0 4px; font-size: 22px; }
+.sum__meta { margin: 0 0 18px; font-size: 13px; color: var(--ink-sub); }
+.sum__h {
+  margin: 20px 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--mint-pale);
+  font-size: 14px;
+  color: var(--mint-deep);
+}
+.sum__big { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.8; }
+.sum__sub { margin: 8px 0 0; font-size: 13px; color: var(--ink-sub); }
+.sum__sub b { color: var(--ink); font-size: 15px; }
+.sum__none { margin: 0; font-size: 13px; color: var(--ink-sub); }
+.sum__warn { color: var(--coral-deep); }
+.sum__grid { display: flex; gap: 10px; text-align: center; }
+.sum__grid > div {
+  flex: 1;
+  padding: 12px 6px;
+  border-radius: 12px;
+  background: var(--mint-pale);
+}
+.sum__num { display: block; font-size: 24px; font-weight: 800; color: var(--mint-deep); }
+.sum__label { font-size: 11px; color: var(--ink-sub); }
+.sum__list { margin: 0; padding-left: 22px; font-size: 14px; line-height: 2; }
+.sum__muted { color: var(--ink-sub); font-size: 12px; }
+.sum__foot {
+  margin: 22px 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  font-size: 11px;
+  color: var(--ink-sub);
+}
+
 /* ---------- 紙のテスト ---------- */
 select {
   width: 100%;

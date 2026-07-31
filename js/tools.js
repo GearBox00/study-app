@@ -217,6 +217,124 @@ $('csvFileInput').onchange = (e) => {
 };
 
 /* ============================================================
+   3-3. 学習記録のCSV書き出し（先生の集計用）
+   ============================================================ */
+function toCsvRows(rows) {
+  return rows.map((r) => r.map(csvCell).join(',')).join('\r\n');
+}
+
+function saveCsv(rows, name) {
+  const blob = new Blob(['﻿' + toCsvRows(rows)], { type: 'text/csv;charset=utf-8' });
+  const nick = (Store.data.nick || 'ゲスト').replace(/[\\/:*?"<>|]/g, '');
+  downloadBlob(blob, `${name}_${nick}_${today()}.csv`);
+  toast('CSVで書き出しました');
+}
+
+/** 問題ごとの記録 */
+$('exportItemsCsv').onclick = () => {
+  const now = Date.now();
+  const rows = [['科目', 'レベル', '問題', '答え', '解答回数', '間違い回数', '連続正解', '習得', '平均秒', '次に復習する日']];
+  allSubjects().forEach((sub) => {
+    sub.levels.forEach((lv) => lv.items.forEach((it) => {
+      const r = Store.data.items[it.id];
+      if (!r || !r.count) return;                 // 一度も解いていない問題は出しません
+      rows.push([
+        sub.name, lv.name, stripBlanks(it.front), it.back,
+        r.count, r.wrong, r.streak, r.mastered ? '習得' : '',
+        r.ms && r.count ? (r.ms / r.count / 1000).toFixed(1) : '',
+        r.due ? new Date(r.due).toLocaleDateString('ja-JP') : '',
+      ]);
+    }));
+  });
+  if (rows.length === 1) { toast('まだ記録がありません'); return; }
+  saveCsv(rows, '学習記録_問題ごと');
+};
+
+/** 日ごとの記録（学習量と出席） */
+$('exportDailyCsv').onclick = () => {
+  const d = Store.data;
+  const keys = Object.keys(d.daily).concat(Object.keys(d.attendance.logs));
+  const days = Array.from(new Set(keys)).sort();
+  if (!days.length) { toast('まだ記録がありません'); return; }
+
+  const rows = [['日付', '解答数', '正解数', '正答率', '出席', '入室', '退室', '勉強時間（分）']];
+  days.forEach((day) => {
+    const s = d.daily[day] || { n: 0, ok: 0 };
+    const a = d.attendance.logs[day];
+    const first = a && a.sessions.length ? a.sessions[0] : null;
+    const last = a && a.sessions.length ? a.sessions[a.sessions.length - 1] : null;
+    const hm = (t) => (t ? new Date(t).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : '');
+    rows.push([
+      day, s.n, s.ok, s.n ? Math.round((s.ok / s.n) * 100) + '%' : '',
+      a ? '○' : '', hm(first && first.in),
+      (last && last.noExit) ? '記録なし' : hm(last && last.out),
+      a ? a.minutes : '',
+    ]);
+  });
+  saveCsv(rows, '学習記録_日ごと');
+};
+
+/* ============================================================
+   3-4. 今日のまとめ（おうちの人へ渡す1枚）
+   ============================================================ */
+function renderSummary() {
+  const d = Store.data;
+  const day = today();
+  const s = d.daily[day] || { n: 0, ok: 0 };
+  const a = d.attendance.logs[day];
+  const hm = (t) => new Date(t).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+
+  let attend = '<p class="sum__none">今日の出入りの記録はありません。</p>';
+  if (a && a.sessions.length) {
+    const lines = a.sessions.map((x) => {
+      if (x.noExit) return `${hm(x.in)} 〜 <span class="sum__warn">退室の記録なし</span>`;
+      return x.out ? `${hm(x.in)} 〜 ${hm(x.out)}` : `${hm(x.in)} 〜 （まだ勉強中）`;
+    });
+    attend = `<p class="sum__big">${lines.join('<br>')}</p>
+      <p class="sum__sub">今日の勉強時間　<b>${formatMinutes(a.minutes)}</b></p>`;
+  }
+
+  // 今日間違えて、まだ復習が終わっていない問題
+  const now = Date.now();
+  const weak = everyItem()
+    .filter(({ item }) => {
+      const r = d.items[item.id];
+      return r && r.wrong > 0 && r.due !== null && r.due <= now;
+    })
+    .slice(0, 8)
+    .map(({ item }) => `<li>${escapeHtml(stripBlanks(item.front))}　<span class="sum__muted">${escapeHtml(item.back)}</span></li>`)
+    .join('');
+
+  $('summarySheet').innerHTML = `
+    <div class="sum">
+      <h1 class="sum__title">今日のまとめ</h1>
+      <p class="sum__meta">${escapeHtml(d.nick || 'ゲスト')} さん　／　${day.replace(/-/g, '年').replace(/年(\d+)$/, '月$1日')}</p>
+
+      <h2 class="sum__h">教場への出入り</h2>
+      ${attend}
+
+      <h2 class="sum__h">今日の学習</h2>
+      <div class="sum__grid">
+        <div><span class="sum__num">${s.n}</span><span class="sum__label">解いた問題</span></div>
+        <div><span class="sum__num">${s.ok}</span><span class="sum__label">正解</span></div>
+        <div><span class="sum__num">${s.n ? Math.round((s.ok / s.n) * 100) : 0}%</span><span class="sum__label">正答率</span></div>
+      </div>
+      <p class="sum__sub">
+        スタンプ　<b>${d.attendance.stamps} / ${STAMP_MAX}</b>（${d.attendance.cards + 1}枚目）　／
+        連続　<b>${d.streak.current}日</b>　／　これまでに習得　<b>${countMastered(d)}問</b>
+      </p>
+
+      <h2 class="sum__h">これから復習する問題</h2>
+      ${weak ? `<ol class="sum__list">${weak}</ol>` : '<p class="sum__none">いまのところ、復習が必要な問題はありません。</p>'}
+
+      <p class="sum__foot">この記録は、お子さまの端末の中だけに保存されています。</p>
+    </div>`;
+}
+
+$('summaryLink').onclick = () => { renderSummary(); show('summary', '今日のまとめ'); };
+$('summaryPrint').onclick = () => window.print();
+
+/* ============================================================
    4. 紙のテストを印刷する
    ============================================================ */
 function renderPrintForm() {

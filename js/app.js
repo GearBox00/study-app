@@ -74,6 +74,7 @@ const Store = {
         timeLimit: null,   // 生徒が指定する制限時間（秒）。null=おまかせ、0=制限なし
         mode: 'practice',  // practice=生徒の設定を優先 / test=作問者の設定で固定
         auto: false,       // 自動送りモード
+        autoSpeed: 'normal', // 自動送りの速さ（fast / normal / slow）
       },
       // 出席スタンプ（QR読み取り）
       attendance: { cards: 0, stamps: 0, totalDays: 0, totalMinutes: 0, logs: {} },
@@ -405,7 +406,7 @@ const Speech = {
    4. 画面の切り替え
    ============================================================ */
 const SCREENS = ['home', 'sets', 'mode', 'card', 'quiz', 'type', 'dict', 'result', 'mypage',
-  'search', 'add', 'stamp', 'venue', 'print', 'manage'];
+  'search', 'add', 'stamp', 'venue', 'print', 'manage', 'summary'];
 const $ = (id) => document.getElementById(id);
 let navStack = [];
 
@@ -761,11 +762,16 @@ function drawQuiz() {
 
   const box = $('quizChoices');
   box.innerHTML = '';
-  makeChoices(item, quiz.pool, quiz.dir).forEach((text) => {
+  makeChoices(item, quiz.pool, quiz.dir).forEach((text, i) => {
     const b = document.createElement('button');
     b.className = 'choice';
-    b.textContent = displayText(text);   // 複数解答は「give / gave / given」と読みやすく出す
     b.dataset.raw = text;                  // 判定にはもとの値を使う
+    // パソコンでは 1〜4 のキーでも選べます
+    const no = document.createElement('span');
+    no.className = 'choice__no';
+    no.textContent = String(i + 1);
+    b.appendChild(no);
+    b.appendChild(document.createTextNode(displayText(text)));
     b.onclick = () => answerQuiz(text === aOf(item, quiz.dir), b, item);
     box.appendChild(b);
   });
@@ -878,6 +884,25 @@ function finishQuiz() {
   });
 }
 
+/* パソコン向けのキーボード操作。
+   1〜4 で選択肢を選び、Enter または スペース で次へ進みます。
+   （文字を入力する欄にいるときは、じゃまをしないよう何もしません） */
+document.addEventListener('keydown', (e) => {
+  if (current.screen !== 'quiz') return;
+  const tag = (e.target && e.target.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || e.ctrlKey || e.metaKey || e.altKey) return;
+
+  if (!quiz.locked && e.key >= '1' && e.key <= '4') {
+    const btn = $('quizChoices').children[Number(e.key) - 1];
+    if (btn) { e.preventDefault(); btn.click(); }
+    return;
+  }
+  if (quiz.locked && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault();
+    $('fbNext').click();
+  }
+});
+
 $('quizSkip').onclick = skipQuiz;
 $('quizSpeak').onclick = () => {
   const item = quiz.items[quiz.idx];
@@ -967,8 +992,12 @@ function resumeSession() {
    ・正解は短く、間違いは解説を読める長さだけ待ちます
    ・「一時停止」を押すと、その場で手動に切り替わります
    ============================================================ */
-const AUTO_WAIT_OK = 900;    // 正解のときの待ち時間（ミリ秒）
-const AUTO_WAIT_NG = 3500;   // 間違い・時間切れのときの待ち時間
+/* 自動送りの待ち時間（ミリ秒）。正解は短く、間違いは解説を読める長さにします */
+const AUTO_WAITS = {
+  fast:   { ok: 600,  ng: 2500 },
+  normal: { ok: 900,  ng: 3500 },
+  slow:   { ok: 1500, ng: 5000 },
+};
 let autoTimer = null;
 
 function cancelAuto() {
@@ -979,7 +1008,8 @@ function cancelAuto() {
 
 function autoAdvance(isCorrect, nextFn) {
   if (!Store.data.settings.auto) return;
-  const wait = isCorrect ? AUTO_WAIT_OK : AUTO_WAIT_NG;
+  const w = AUTO_WAITS[Store.data.settings.autoSpeed] || AUTO_WAITS.normal;
+  const wait = isCorrect ? w.ok : w.ng;
 
   // 一時停止ボタンを出す（押すとこの問題から手動に戻ります）
   const btn = document.querySelector('.screen:not([hidden]) .auto-pause');
@@ -1453,6 +1483,9 @@ function syncLimitButtons() {
   document.querySelectorAll('[data-mode]').forEach((b) => {
     b.classList.toggle('is-on', b.dataset.mode === Store.data.settings.mode);
   });
+  document.querySelectorAll('[data-autospeed]').forEach((b) => {
+    b.classList.toggle('is-on', b.dataset.autospeed === (Store.data.settings.autoSpeed || 'normal'));
+  });
   $('modeNote').textContent = Store.data.settings.mode === 'test'
     ? 'テスト中は、作問者が決めた制限時間で固定されます。'
     : '練習中は、上で選んだ制限時間が使われます。';
@@ -1467,6 +1500,13 @@ document.querySelectorAll('[data-limit]').forEach((b) => {
 document.querySelectorAll('[data-mode]').forEach((b) => {
   b.onclick = () => {
     Store.data.settings.mode = b.dataset.mode;
+    Store.save();
+    syncLimitButtons();
+  };
+});
+document.querySelectorAll('[data-autospeed]').forEach((b) => {
+  b.onclick = () => {
+    Store.data.settings.autoSpeed = b.dataset.autospeed;
     Store.save();
     syncLimitButtons();
   };

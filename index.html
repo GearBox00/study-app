@@ -87,6 +87,7 @@
       <button class="quick-link" id="addLink">📕<span>問題を追加する</span></button>
       <button class="quick-link" id="printLink">🖨️<span>紙のテストを作る</span></button>
       <button class="quick-link" id="manageLink">✏️<span>問題の管理</span></button>
+      <button class="quick-link quick-link--wide" id="summaryLink">📄<span>今日のまとめ（おうちの人へ）</span></button>
     </div>
   </section>
 
@@ -334,6 +335,15 @@
         <input type="checkbox" id="autoToggle">
         <span>自動送り（解答すると自動で次の問題へ進む）</span>
       </label>
+      <div class="field">
+        <span class="field__label">自動送りの速さ</span>
+        <div class="segmented__btns" id="autoSpeedToggle">
+          <button data-autospeed="fast">はやい</button>
+          <button data-autospeed="normal">ふつう</button>
+          <button data-autospeed="slow">ゆっくり</button>
+        </div>
+        <p class="note">間違えたときは、解説を読めるように長めに待ちます。</p>
+      </div>
       <label class="switch">
         <input type="checkbox" id="maskToggle">
         <span>赤シートを使う（カードの答えを隠す）</span>
@@ -360,6 +370,18 @@
         </label>
       </div>
       <p class="note" id="ioMsg"></p>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">先生・保護者向けの書き出し</h3>
+      <p class="note">
+        表計算ソフト（Excelなど）で開ける形で書き出します。<br>
+        集計や、実験結果のとりまとめにお使いください。
+      </p>
+      <div class="io-actions io-actions--col">
+        <button class="btn btn--ghost" id="exportItemsCsv">問題ごとの記録（CSV）</button>
+        <button class="btn btn--ghost" id="exportDailyCsv">日ごとの記録（CSV）</button>
+      </div>
     </div>
 
     <div class="card">
@@ -558,6 +580,19 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
       <button class="btn btn--primary" id="printGo">🖨️ 印刷する</button>
       <p class="note">印刷画面で「PDFに保存」を選ぶと、ファイルとして保存できます。</p>
     </div>
+  </section>
+
+  <!-- ========== 今日のまとめ（保護者向け） ========== -->
+  <section class="screen" id="screen-summary" hidden>
+    <div class="card no-print">
+      <h3 class="card__title">今日のまとめ</h3>
+      <p class="note">
+        今日の学習と、教場への出入りの記録を1枚にまとめます。<br>
+        印刷して持ち帰る、PDFに保存して送る、といった使い方ができます。
+      </p>
+      <button class="btn btn--primary" id="summaryPrint">🖨️ 印刷する</button>
+    </div>
+    <div class="sheet" id="summarySheet"></div>
   </section>
 
   <!-- ========== 問題の管理（編集・削除） ========== -->
