@@ -75,7 +75,9 @@ const Store = {
         mode: 'practice',  // practice=生徒の設定を優先 / test=作問者の設定で固定
         auto: false,       // 自動送りモード
         autoSpeed: 'normal', // 自動送りの速さ（fast / normal / slow）
+        choicePool: 'level', // 4択の誤答をどこから作るか（set=セット内 / level=レベル全体）
       },
+      loadedSubjects: [],  // 一度開いた科目（次回から起動時に読み込みます）
       // 出席スタンプ（QR読み取り）
       attendance: { cards: 0, stamps: 0, totalDays: 0, totalMinutes: 0, logs: {} },
       venue: 'main',       // 拠点の合言葉
@@ -100,7 +102,9 @@ const Store = {
     });
     if (!this.data.attendance.logs) this.data.attendance.logs = {};
     ['items', 'daily'].forEach((k) => { if (!this.data[k]) this.data[k] = {}; });
-    ['customSets', 'myWords', 'badges'].forEach((k) => { if (!this.data[k]) this.data[k] = []; });
+    ['customSets', 'myWords', 'badges', 'loadedSubjects'].forEach((k) => {
+      if (!Array.isArray(this.data[k])) this.data[k] = [];
+    });
     return this.data;
   },
 
@@ -433,7 +437,7 @@ function toast(msg) {
   el._t = setTimeout(() => el.classList.remove('is-show'), 1800);
 }
 
-const current = { screen: 'home', subject: null, set: null, label: '' };
+const current = { screen: 'home', subject: null, set: null, label: '', levelItems: null };
 
 /* ============================================================
    5. ホーム
@@ -494,7 +498,8 @@ function renderHome() {
   const list = $('subjectList');
   list.innerHTML = '';
   allSubjects().forEach((sub) => {
-    const total = sub.levels.reduce((n, lv) => n + lv.items.length, 0);
+    const pending = sub.levels.some((lv) => lv.file && !lv.loaded);
+    const total = sub.levels.reduce((n, lv) => n + (lv.loaded || !lv.file ? lv.items.length : (lv.count || 0)), 0);
     let doneN = 0;
     sub.levels.forEach((lv) => lv.items.forEach((it) => {
       if (d.items[it.id] && d.items[it.id].mastered) doneN++;
@@ -505,7 +510,11 @@ function renderHome() {
       <span class="subject-card__icon">${sub.icon}</span>
       <span class="subject-card__body">
         <span class="subject-card__name">${sub.name}</span>
-        <span class="subject-card__meta">全${total}問 ・ 習得 ${doneN}問</span>
+        <span class="subject-card__meta">${
+          pending
+            ? (total ? `全${total}問 ・ タップで読み込みます` : 'タップで読み込みます')
+            : `全${total}問 ・ 習得 ${doneN}問`
+        }</span>
       </span>
       <span class="subject-card__arrow">›</span>`;
     btn.onclick = () => openSubject(sub.id);
@@ -514,7 +523,10 @@ function renderHome() {
 }
 
 /* ---------- セット一覧 ---------- */
-function openSubject(id) {
+async function openSubject(id) {
+  // 外部ファイルの科目は、開いたときに読み込みます
+  if (typeof ensureSubjectLoaded === 'function') await ensureSubjectLoaded(id);
+
   const sub = findSubject(id);
   current.subject = sub;
   const wrap = $('levelList');
@@ -540,7 +552,7 @@ function openSubject(id) {
         <span class="set-card__name">セット${set.no}</span>
         <span class="set-card__meta">${set.items.length}問 ・ 習得${done}</span>
         <span class="set-card__bar"><i style="width:${pct}%"></i></span>`;
-      btn.onclick = () => openModes(set.items, `${sub.name} ${lv.name} セット${set.no}`);
+      btn.onclick = () => openModes(set.items, `${sub.name} ${lv.name} セット${set.no}`, lv.items);
       grid.appendChild(btn);
     });
     block.appendChild(grid);
@@ -556,9 +568,10 @@ function isTypable(items) {
   return items.length > 0 && items.every((it) => /^[A-Za-z][A-Za-z '-]*$/.test(it.front));
 }
 
-function openModes(items, label) {
+function openModes(items, label, levelItems) {
   current.set = items;
   current.label = label;
+  current.levelItems = levelItems || null;   // 誤答をレベル全体から作るときに使います
   $('modeTitle').textContent = label;
   $('modeTyping').hidden = !isTypable(items);
   $('modeListen').hidden = !Speech.supported;
@@ -733,7 +746,10 @@ function startQuiz(items, label, opts) {
   quiz.label = label;
   quiz.listen = !!opts.listen;
   quiz.review = !!opts.review;
-  quiz.pool = opts.pool || items;
+  // 誤答をどこから作るか。「レベル全体」を選ぶと、同じセットを繰り返しても
+  // 選択肢の顔ぶれが変わるため、消去法で当てにくくなります。
+  const wide = (Store.data.settings.choicePool === 'level') && current.levelItems;
+  quiz.pool = opts.pool || (wide && wide.length > items.length ? wide : items);
   quiz.skipped = {};
   quiz.ms = 0;
   // リスニングは「音を聴いて意味を答える」ので向きは固定
@@ -1486,6 +1502,9 @@ function syncLimitButtons() {
   document.querySelectorAll('[data-autospeed]').forEach((b) => {
     b.classList.toggle('is-on', b.dataset.autospeed === (Store.data.settings.autoSpeed || 'normal'));
   });
+  document.querySelectorAll('[data-pool]').forEach((b) => {
+    b.classList.toggle('is-on', b.dataset.pool === (Store.data.settings.choicePool || 'level'));
+  });
   $('modeNote').textContent = Store.data.settings.mode === 'test'
     ? 'テスト中は、作問者が決めた制限時間で固定されます。'
     : '練習中は、上で選んだ制限時間が使われます。';
@@ -1507,6 +1526,13 @@ document.querySelectorAll('[data-mode]').forEach((b) => {
 document.querySelectorAll('[data-autospeed]').forEach((b) => {
   b.onclick = () => {
     Store.data.settings.autoSpeed = b.dataset.autospeed;
+    Store.save();
+    syncLimitButtons();
+  };
+});
+document.querySelectorAll('[data-pool]').forEach((b) => {
+  b.onclick = () => {
+    Store.data.settings.choicePool = b.dataset.pool;
     Store.save();
     syncLimitButtons();
   };
@@ -1652,7 +1678,15 @@ $('resumeDrop').onclick = () => {
   goHome();
   toast('前回の続きを消しました');
 };
-$('searchLink').onclick = () => { $('searchInput').value = ''; renderSearch(''); show('search', '単語をさがす'); };
+$('searchLink').onclick = () => {
+  $('searchInput').value = '';
+  // まだ読み込んでいない科目があるときは、読み込む案内を出します
+  const pending = (typeof unloadedSubjects === 'function') ? unloadedSubjects().length : 0;
+  $('searchLoadAll').hidden = !pending;
+  $('searchLoadAll').textContent = `まだ読み込んでいない科目（${pending}件）も検索できるようにする`;
+  renderSearch('');
+  show('search', '単語をさがす');
+};
 $('addLink').onclick = () => show('add', '問題を追加');
 
 document.querySelectorAll('.mode-card').forEach((btn) => {

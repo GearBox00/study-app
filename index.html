@@ -324,6 +324,14 @@
         </div>
       </div>
       <div class="field">
+        <span class="field__label">4択の誤答をどこから作るか</span>
+        <div class="segmented__btns" id="poolToggle">
+          <button data-pool="set">セット内</button>
+          <button data-pool="level">レベル全体</button>
+        </div>
+        <p class="note">レベル全体にすると、同じセットを繰り返しても選択肢の顔ぶれが変わります。</p>
+      </div>
+      <div class="field">
         <span class="field__label">モード</span>
         <div class="segmented__btns" id="modeToggle">
           <button data-mode="practice">練習</button>
@@ -416,6 +424,7 @@
   <section class="screen" id="screen-search" hidden>
     <h2 class="section-title">単語をさがす</h2>
     <input type="search" class="search-input" id="searchInput" placeholder="日本語でも英語でも検索できます">
+    <button class="text-link text-link--slim" id="searchLoadAll" hidden>まだ読み込んでいない科目も検索できるようにする</button>
     <p class="note" id="searchCount"></p>
     <div id="searchResults"></div>
   </section>

@@ -1,5 +1,5 @@
 {
-  "_comment": "ここに科目とCSVファイルを書くと、起動時に読み込まれます。列は 問題,答え,解説,例文,制限時間(秒),読み の順です。問題文の [ ] は書き取りの空欄になります。",
+  "_comment": "ここに科目とCSVファイルを書くと、起動時に目次だけ読み込まれ、科目を開いたときに中身を読み込みます。列は 問題,答え,解説,例文,制限時間(秒),読み の順です。問題文の [ ] は書き取りの空欄になります。count は一覧に出す件数の目安です。",
   "subjects": [
     {
       "id": "science",
@@ -8,7 +8,12 @@
       "lang": "ja-JP",
       "speakField": "reading",
       "levels": [
-        { "id": "sc-1", "name": "レベル1 中学理科", "file": "science-1.csv" }
+        {
+          "id": "sc-1",
+          "name": "レベル1 中学理科",
+          "file": "science-1.csv",
+          "count": 10
+        }
       ]
     },
     {
@@ -18,7 +23,12 @@
       "lang": "en-US",
       "speakField": "front",
       "levels": [
-        { "id": "ed-1", "name": "中学初級レベル（英語検定4級クラス）", "file": "english-dictation.csv" }
+        {
+          "id": "ed-1",
+          "name": "中学初級レベル（英語検定4級クラス）",
+          "file": "english-dictation.csv",
+          "count": 10
+        }
       ]
     },
     {
@@ -28,7 +38,12 @@
       "lang": "ja-JP",
       "speakField": "front",
       "levels": [
-        { "id": "jd-1", "name": "中学レベル", "file": "japanese-dictation.csv" }
+        {
+          "id": "jd-1",
+          "name": "中学レベル",
+          "file": "japanese-dictation.csv",
+          "count": 10
+        }
       ]
     }
   ]

@@ -554,18 +554,13 @@ async function loadExternalQuestions() {
   }
   if (!index || !Array.isArray(index.subjects)) return;
 
-  for (const sub of index.subjects) {
-    const levels = [];
-    for (const lv of (sub.levels || [])) {
-      try {
-        const res = await fetch('questions/' + lv.file, { cache: 'no-cache' });
-        if (!res.ok) continue;
-        const rows = parseTable(await res.text());
-        const items = rows.map((cols, i) => rowToItem(cols, `${sub.id}-${lv.id}`, i));
-        if (items.length) levels.push({ id: lv.id, name: lv.name, items });
-      } catch (e) { /* 読めないファイルは飛ばす */ }
-    }
-    if (!levels.length) continue;
+  // まずは目次だけを登録します（中身は開いたときに読み込みます）
+  index.subjects.forEach((sub) => {
+    const levels = (sub.levels || []).map((lv) => ({
+      id: lv.id, name: lv.name, items: [],
+      file: lv.file, count: lv.count || 0, loaded: false,
+    }));
+    if (!levels.length) return;
 
     const existing = SUBJECTS.find((s) => s.id === sub.id);
     if (existing) existing.levels = levels;
@@ -577,11 +572,63 @@ async function loadExternalQuestions() {
       speakField: sub.speakField || 'front',
       levels,
     });
+  });
+
+  // 一度でも開いたことのある科目は、起動時にそろえておきます
+  for (const id of Store.data.loadedSubjects.slice()) {
+    await ensureSubjectLoaded(id);
   }
 }
 
+/** その科目の問題ファイルを読み込む（読み込み済みなら何もしません） */
+async function ensureSubjectLoaded(subId) {
+  const sub = SUBJECTS.find((s) => s.id === subId);
+  if (!sub) return;
+
+  let changed = false;
+  for (const lv of sub.levels) {
+    if (lv.loaded || !lv.file) continue;
+    try {
+      const res = await fetch('questions/' + lv.file, { cache: 'no-cache' });
+      if (!res.ok) continue;
+      const rows = parseTable(await res.text());
+      lv.items = rows.map((cols, i) => rowToItem(cols, `${sub.id}-${lv.id}`, i));
+      lv.loaded = true;
+      changed = true;
+    } catch (e) { /* 読めないファイルは飛ばす */ }
+  }
+
+  if (changed) {
+    if (Store.data.loadedSubjects.indexOf(subId) === -1) {
+      Store.data.loadedSubjects.push(subId);
+      Store.save();
+    }
+    invalidateSearchIndex();
+  }
+}
+
+/** まだ読み込んでいない科目 */
+function unloadedSubjects() {
+  return SUBJECTS.filter((s) => s.levels.some((lv) => lv.file && !lv.loaded));
+}
+
+/** すべての科目をそろえる（検索や紙のテストで、範囲をまたぐときに使います） */
+async function loadAllSubjects() {
+  for (const s of unloadedSubjects()) await ensureSubjectLoaded(s.id);
+}
+
 /* ---------- 画面のボタン ---------- */
-$('printLink').onclick = () => {
+$('searchLoadAll').onclick = async () => {
+  const btn = $('searchLoadAll');
+  btn.textContent = '読み込んでいます…';
+  await loadAllSubjects();
+  btn.hidden = true;
+  renderSearch($('searchInput').value);
+  toast('すべての科目を読み込みました');
+};
+
+$('printLink').onclick = async () => {
+  await loadAllSubjects();     // 範囲をまたいで出題するため、全科目をそろえます
   renderPrintForm();
   $('printSheet').innerHTML = '';
   $('printActions').hidden = true;
