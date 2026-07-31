@@ -15,6 +15,9 @@
     if (typeof invalidateSearchIndex === 'function') invalidateSearchIndex();
   }
 
+  // 退室のスキャンを忘れたままの記録を締めておく
+  if (typeof closeStaleSessions === 'function') closeStaleSessions();
+
   goHome();
 })();
 

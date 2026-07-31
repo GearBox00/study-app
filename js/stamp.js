@@ -21,6 +21,25 @@ function todayLog() {
   return a.logs[today()];
 }
 
+/**
+ * 退室のスキャンを忘れたまま残っている記録を締めます。
+ * ・前の日の入りっぱなし
+ * ・今日でも12時間以上経っている入りっぱなし
+ * 勉強時間は分からないため0分のまま、「退室の記録なし」として残します。
+ */
+function closeStaleSessions() {
+  const a = Store.data.attendance;
+  let changed = false;
+  Object.keys(a.logs).forEach((d) => {
+    (a.logs[d].sessions || []).forEach((s) => {
+      if (s.out) return;
+      const tooOld = (d !== today()) || (Date.now() - s.in > 12 * 60 * 60 * 1000);
+      if (tooOld) { s.out = s.in; s.noExit = true; changed = true; }
+    });
+  });
+  if (changed) Store.save();
+}
+
 /** いまの状態： 'none'（未読み取り） / 'in'（入室中） / 'done'（退室済み） */
 function stampState() {
   const log = Store.data.attendance.logs[today()];
@@ -38,6 +57,7 @@ function minutesBetween(a, b) {
  * 戻り値は画面に出すメッセージ。
  */
 function handleScan(text) {
+  closeStaleSessions();
   if (!text || text.indexOf(QR_PREFIX) !== 0) {
     return { ok: false, title: 'このQRコードは使えません', body: '学習拠点に掲示されているQRコードを読み取ってください。' };
   }
@@ -179,6 +199,7 @@ function renderStampHistory() {
     row.className = 'item-row';
     const times = l.sessions.map((s) => {
       const f = (t) => `${new Date(t).getHours()}:${String(new Date(t).getMinutes()).padStart(2, '0')}`;
+      if (s.noExit) return `${f(s.in)}〜（退室の記録なし）`;
       return s.out ? `${f(s.in)}〜${f(s.out)}` : `${f(s.in)}〜`;
     }).join('、');
     row.innerHTML = `

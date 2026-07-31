@@ -51,6 +51,16 @@
       <p class="goal__msg" id="goalMsg">今日はまだ学習していません</p>
     </div>
 
+    <button class="review-cta resume-cta" id="resumeCta" hidden>
+      <span class="review-cta__icon">▶️</span>
+      <span class="review-cta__body">
+        <span class="review-cta__title">前回の続きから</span>
+        <span class="review-cta__sub" id="resumeSub"></span>
+      </span>
+      <span class="review-cta__arrow">›</span>
+    </button>
+    <button class="text-link text-link--slim" id="resumeDrop" hidden>前回の続きを捨てて、最初からにする</button>
+
     <button class="review-cta stamp-cta" id="stampCta">
       <span class="review-cta__icon">💮</span>
       <span class="review-cta__body">
@@ -290,6 +300,11 @@
         <input type="checkbox" id="maskToggle">
         <span>赤シートを使う（カードの答えを隠す）</span>
       </label>
+      <div class="field">
+        <span class="field__label">音声の確認</span>
+        <button class="btn btn--ghost" id="soundTestBtn">🔊 音声を鳴らしてみる</button>
+        <p class="note" id="soundTestMsg">iPhoneで発音が鳴らないときは、ここを押してお確かめください。</p>
+      </div>
       <p class="note">※このデモでは登録不要です。データはこの端末の中だけに保存されます。</p>
     </div>
 
@@ -385,6 +400,15 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
       </label>
       <button class="btn btn--primary" id="csvImportBtn">このデータでセットを作る</button>
       <p class="note" id="csvMsg"></p>
+
+      <div class="field" style="margin-top:14px">
+        <span class="field__label">CSVファイルから取り込む</span>
+        <label class="btn btn--ghost">
+          📂 ファイルを選ぶ
+          <input type="file" id="csvFileInput" accept=".csv,.txt,text/csv,text/plain" hidden>
+        </label>
+        <p class="note">書き出したファイルや、先生から配られたファイルをそのまま読み込めます。</p>
+      </div>
     </div>
   </section>
 
@@ -501,6 +525,14 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
   <!-- ========== 問題の管理（編集・削除） ========== -->
   <section class="screen" id="screen-manage" hidden>
     <h2 class="section-title">自分で追加した問題</h2>
+    <div class="card" id="manageExportCard" hidden>
+      <h3 class="card__title">問題を配る</h3>
+      <p class="note">
+        登録した問題をCSVファイルに書き出せます。<br>
+        そのファイルを渡せば、ほかの人が「問題を追加」から読み込んで使えます。
+      </p>
+      <button class="btn btn--primary" id="exportAllQuestions">すべての問題を書き出す</button>
+    </div>
     <div id="manageList"></div>
   </section>
 

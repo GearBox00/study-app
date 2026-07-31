@@ -153,6 +153,70 @@ $('importInput').onchange = (e) => {
 };
 
 /* ============================================================
+   3-2. 問題データの書き出し／ファイル取り込み
+   ------------------------------------------------------------
+   作った問題をCSVファイルにして配れるようにします。
+   受け取った側は「問題を追加 → ファイルを選ぶ」で読み込めます。
+   ============================================================ */
+function csvCell(v) {
+  const s = String(v == null ? '' : v);
+  return /[",\n\t]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+/** 問題の配列を、取り込みと同じ列順のCSVにする */
+function itemsToCsv(items) {
+  return items.map((it) => [
+    it.front, it.back, it.explanation || '', it.example || '',
+    it.time || '', it.reading || '',
+  ].map(csvCell).join(',')).join('\r\n');
+}
+
+function exportQuestions(items, name) {
+  if (!items.length) { toast('書き出す問題がありません'); return; }
+  // Excelで開いても文字化けしないよう、先頭に印を付けます
+  const blob = new Blob(['﻿' + itemsToCsv(items)], { type: 'text/csv;charset=utf-8' });
+  const safe = String(name || '問題').replace(/[\\/:*?"<>|]/g, '');
+  downloadBlob(blob, `${safe}_${today()}.csv`);
+  toast(`${items.length}問を書き出しました`);
+}
+
+function allMyQuestions() {
+  const out = Store.data.myWords.slice();
+  Store.data.customSets.forEach((s) => { out.push.apply(out, s.items); });
+  return out;
+}
+
+$('exportAllQuestions').onclick = () => exportQuestions(allMyQuestions(), 'まなびカード_問題');
+
+/** CSVファイルを選んで取り込む */
+$('csvFileInput').onchange = (e) => {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const rows = parseTable(String(reader.result).replace(/^﻿/, ''));
+    if (rows.length < 4) {
+      $('csvMsg').textContent = '4択にするため、4行以上のデータが入ったファイルを選んでください。';
+      return;
+    }
+    const stamp = Date.now();
+    const items = rows.map((cols, i) => rowToItem(cols, `cs-${stamp}`, i));
+    Store.data.customSets.push({
+      id: 'cs-' + stamp,
+      name: file.name.replace(/\.(csv|txt)$/i, '').replace(/_\d{4}-\d{2}-\d{2}$/, ''),
+      items,
+    });
+    Store.save();
+    invalidateSearchIndex();
+    $('csvMsg').textContent = `ファイルから${items.length}問を追加しました。`;
+    toast(`${items.length}問を追加しました`);
+  };
+  reader.readAsText(file);
+};
+
+/* ============================================================
    4. 紙のテストを印刷する
    ============================================================ */
 function renderPrintForm() {
@@ -254,6 +318,7 @@ function renderManage() {
     groups.push({ name: '📥 ' + s.name, items: s.items, kind: 'set', set: s });
   });
 
+  $('manageExportCard').hidden = !groups.length;
   if (!groups.length) {
     box.innerHTML = '<p class="note">まだ自分で追加した問題はありません。</p>';
     return;
@@ -265,6 +330,13 @@ function renderManage() {
     const title = document.createElement('div');
     title.className = 'manage-head';
     title.innerHTML = `<h3 class="card__title">${escapeHtml(g.name)}（${g.items.length}問）</h3>`;
+
+    const out = document.createElement('button');
+    out.className = 'mini-btn';
+    out.textContent = '書き出す';
+    out.onclick = () => exportQuestions(g.items, g.name.replace(/^[^\s]+\s*/, ''));
+    title.appendChild(out);
+
     if (g.kind === 'set') {
       const del = document.createElement('button');
       del.className = 'mini-btn mini-btn--danger';

@@ -78,6 +78,7 @@ const Store = {
       // 出席スタンプ（QR読み取り）
       attendance: { cards: 0, stamps: 0, totalDays: 0, totalMinutes: 0, logs: {} },
       venue: 'main',       // 拠点の合言葉
+      session: null,       // 学習の途中経過（中断したときの続きに使います）
       badges: [],
       flags: { perfect: false, clean: false },
     };
@@ -468,6 +469,16 @@ function renderHome() {
     ? `${due}問が復習の時期です。タップではじめる`
     : (later > 0 ? `いま復習する問題はありません（予定 ${later}問）` : '間違えた問題はここに自動でたまります');
 
+  // 中断した学習があれば、続きから再開できるようにする
+  const ses = d.session;
+  const canResume = !!(ses && ses.ids && ses.ids.length > 1 && ses.idx > 0);
+  $('resumeCta').hidden = !canResume;
+  $('resumeDrop').hidden = !canResume;
+  if (canResume) {
+    const kind = ses.kind === 'type' ? 'タイピング' : '4択';
+    $('resumeSub').textContent = `${ses.label}（${kind}） ${ses.idx + 1}問目から`;
+  }
+
   // 出席スタンプ（js/stamp.js が読み込まれていれば表示を更新）
   if (typeof renderStampSummary === 'function') renderStampSummary();
 
@@ -752,6 +763,7 @@ function drawQuiz() {
 
   if (quiz.listen || (sub && sub.id === 'english')) Speech.speak(sub, item);
   quiz.startAt = Date.now();
+  rememberSession('quiz');
   startTimer(item);
 }
 
@@ -835,6 +847,7 @@ function skipQuiz() {
 }
 
 function finishQuiz() {
+  clearSession();
   const opts = { review: quiz.review, pool: quiz.pool, listen: quiz.listen };
   const label = quiz.label;
   const items = quiz.items;
@@ -870,6 +883,72 @@ $('fbNext').onclick = () => {
     finishQuiz();
   }
 };
+
+/* ============================================================
+   学習の中断と再開
+   ------------------------------------------------------------
+   問題を表示するたびに途中経過を保存しておき、
+   ブラウザを閉じても続きから再開できるようにします。
+   ============================================================ */
+function rememberSession(kind) {
+  const s = (kind === 'quiz')
+    ? {
+      kind: 'quiz', label: quiz.label, idx: quiz.idx, correct: quiz.correct, ms: quiz.ms,
+      listen: quiz.listen, review: quiz.review,
+      ids: quiz.items.map((i) => i.id), wrong: quiz.wrong.map((i) => i.id),
+    }
+    : {
+      kind: 'type', label: typing.label, idx: typing.idx, correct: typing.correct, ms: typing.ms,
+      ids: typing.items.map((i) => i.id), wrong: typing.wrong.map((i) => i.id),
+    };
+  Store.data.session = s;
+  Store.save();
+}
+
+function clearSession() {
+  if (Store.data.session) {
+    Store.data.session = null;
+    Store.save();
+  }
+}
+
+/** 保存してある途中経過を、実際の問題に戻す */
+function sessionItems(s) {
+  const map = {};
+  everyItem().forEach(({ item }) => { map[item.id] = item; });
+  return {
+    items: s.ids.map((id) => map[id]).filter(Boolean),
+    wrong: (s.wrong || []).map((id) => map[id]).filter(Boolean),
+  };
+}
+
+function resumeSession() {
+  const s = Store.data.session;
+  if (!s) return;
+  const { items, wrong } = sessionItems(s);
+  if (items.length < 2) { clearSession(); goHome(); return; }
+
+  current.subject = null;
+  const idx = Math.min(s.idx || 0, items.length - 1);
+
+  if (s.kind === 'type') {
+    startTyping(items, s.label);
+    typing.items = items;          // 並びを保つため、シャッフル結果を上書きします
+    typing.idx = idx;
+    typing.correct = s.correct || 0;
+    typing.wrong = wrong;
+    typing.ms = s.ms || 0;
+    drawTyping();
+  } else {
+    startQuiz(items, s.label, { listen: s.listen, review: s.review, pool: items });
+    quiz.items = items;
+    quiz.idx = idx;
+    quiz.correct = s.correct || 0;
+    quiz.wrong = wrong;
+    quiz.ms = s.ms || 0;
+    drawQuiz();
+  }
+}
 
 /* ============================================================
    自動送りモード
@@ -950,6 +1029,7 @@ function drawTyping() {
   drawEcho('');
 
   typing.startAt = Date.now();
+  rememberSession('type');
   startTypeTimer();
 }
 
@@ -1072,6 +1152,7 @@ function skipTyping() {
 }
 
 function finishTyping() {
+  clearSession();
   const label = typing.label;
   const items = typing.items;
   const answered = typing.correct + typing.wrong.length;
@@ -1318,6 +1399,26 @@ $('goalInput').onchange = (e) => {
   toast(`1日の目標を${v}問にしました`);
 };
 $('maskToggle').onchange = (e) => { Store.data.settings.mask = e.target.checked; Store.save(); };
+/* 音声が鳴るかどうかを、その場で試せるようにします（特にiPhone向け） */
+$('soundTestBtn').onclick = () => {
+  const msg = $('soundTestMsg');
+  if (!Speech.supported) {
+    msg.textContent = 'この端末のブラウザは音声読み上げに対応していません。';
+    return;
+  }
+  Speech.unlock();
+  msg.textContent = '再生しています…';
+  Speech.speak({ speakField: 'front' }, { id: 'sound-test', front: 'Hello' });
+
+  // 少し待ってから、実際に再生が始まったかを確かめます
+  setTimeout(() => {
+    const active = window.speechSynthesis.speaking || window.speechSynthesis.pending;
+    msg.textContent = active
+      ? '音声を再生できました。聞こえないときは、端末の音量とマナーモード（消音）をご確認ください。'
+      : '音声を再生できませんでした。画面をどこか一度タップしてから、もう一度お試しください。それでも鳴らない場合は、発音ボタンを押して学習してください。';
+  }, 500);
+};
+
 $('autoToggle').onchange = (e) => {
   Store.data.settings.auto = e.target.checked;
   Store.save();
@@ -1496,6 +1597,12 @@ $('backBtn').onclick = () => {
 
 $('mypageBtn').onclick = () => { renderMypage(); show('mypage', 'マイページ'); };
 $('reviewCta').onclick = () => startReview();
+$('resumeCta').onclick = () => resumeSession();
+$('resumeDrop').onclick = () => {
+  clearSession();
+  goHome();
+  toast('前回の続きを消しました');
+};
 $('searchLink').onclick = () => { $('searchInput').value = ''; renderSearch(''); show('search', '単語をさがす'); };
 $('addLink').onclick = () => show('add', '問題を追加');
 
