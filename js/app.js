@@ -297,12 +297,38 @@ function limitFor(item, base) {
 function qOf(item, dir) { return dir === 'back' ? item.back : item.front; }
 function aOf(item, dir) { return dir === 'back' ? item.front : item.back; }
 
-/** 4択の選択肢を自動生成する（同じ範囲の他の答えを誤答に使う） */
+/** その問題が属する科目の全問題（誤答の補充に使います） */
+function siblingItems(item) {
+  const sub = subjectOfItem(item);
+  if (!sub || !sub.levels) return [];
+  const out = [];
+  sub.levels.forEach((lv) => lv.items.forEach((it) => out.push(it)));
+  return out;
+}
+
+/**
+ * 4択の選択肢を自動生成する。
+ * まず出題範囲の中から誤答を選び、足りなければ同じ科目 → 全科目の順に補います。
+ * （復習コーナーが1問だけのときでも、きちんと4択になるようにするため）
+ */
 function makeChoices(item, pool, dir) {
   const answer = aOf(item, dir);
-  const wrongs = shuffle(pool.filter((p) => p.id !== item.id && aOf(p, dir) !== answer))
-    .slice(0, 3)
-    .map((p) => aOf(p, dir));
+  const wrongs = [];
+
+  const addFrom = (list) => {
+    if (!list || wrongs.length >= 3) return;
+    shuffle(list).forEach((p) => {
+      if (wrongs.length >= 3) return;
+      const a = aOf(p, dir);
+      if (!a || p.id === item.id || a === answer || wrongs.indexOf(a) !== -1) return;
+      wrongs.push(a);
+    });
+  };
+
+  addFrom(pool);
+  if (wrongs.length < 3) addFrom(siblingItems(item));
+  if (wrongs.length < 3) addFrom(everyItem().map((p) => p.item));
+
   return shuffle([answer, ...wrongs]);
 }
 
