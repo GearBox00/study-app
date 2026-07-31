@@ -85,6 +85,7 @@ $('csvImportBtn').onclick = () => {
     items,
   });
   Store.save();
+  invalidateSearchIndex();
   $('csvInput').value = '';
   $('csvName').value = '';
   $('csvMsg').textContent = `${items.length}問を追加しました。ホームの「取り込んだ問題」から使えます。`;
@@ -137,6 +138,7 @@ function importData(file) {
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload.data));
     Store.load();
+    invalidateSearchIndex();
     $('ioMsg').textContent = `「${nick}」さんの記録を読み込みました。`;
     renderMypage();
     toast('記録を読み込みました');
@@ -271,6 +273,7 @@ function renderManage() {
         if (!confirm(`「${g.set.name}」を削除します。よろしいですか？`)) return;
         Store.data.customSets = Store.data.customSets.filter((s) => s.id !== g.set.id);
         Store.save();
+        invalidateSearchIndex();
         renderManage();
         toast('削除しました');
       };
@@ -314,6 +317,7 @@ function manageRow(item, group) {
     }
     delete Store.data.items[item.id];
     Store.save();
+    invalidateSearchIndex();
     renderManage();
     toast('削除しました');
   };
@@ -337,6 +341,7 @@ function startEdit(item, group) {
   item.explanation = exp.trim();
   item.example = ex.trim();
   Store.save();
+  invalidateSearchIndex();
   renderManage();
   toast('保存しました');
 }

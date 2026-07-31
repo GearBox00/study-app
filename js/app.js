@@ -73,6 +73,7 @@ const Store = {
         mask: false,
         timeLimit: null,   // 生徒が指定する制限時間（秒）。null=おまかせ、0=制限なし
         mode: 'practice',  // practice=生徒の設定を優先 / test=作問者の設定で固定
+        auto: false,       // 自動送りモード
       },
       // 出席スタンプ（QR読み取り）
       attendance: { cards: 0, stamps: 0, totalDays: 0, totalMinutes: 0, logs: {} },
@@ -223,6 +224,56 @@ function shuffle(arr) {
   return a;
 }
 
+/* ============================================================
+   解答の判定
+   ------------------------------------------------------------
+   打ち間違いではない差（大文字小文字・全角半角・余分な空白など）で
+   不正解にならないよう、両方を同じ形に整えてから比べます。
+   ============================================================ */
+function normalizeAnswer(s) {
+  return String(s == null ? '' : s)
+    .normalize('NFKC')                 // 全角の英数字・記号を半角にそろえる
+    .replace(/[’‘`´]/g, "'")           // アポストロフィの種類をそろえる
+    .replace(/[“”]/g, '"')
+    .replace(/[−–—]/g, '-')
+    .replace(/\s+/g, ' ')              // 連続した空白を1つに
+    .trim()
+    .toLowerCase()
+    .replace(/[.,!?;:。、！？]+$/, ''); // 末尾の句読点は無視する
+}
+
+/** 解答が複数あるか（give / gave / given のようにスラッシュで区切られているか） */
+function answerParts(correct) {
+  return String(correct == null ? '' : correct)
+    .split(/[\/／]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/**
+ * 入力が正解かどうか。
+ * 複数解答は「順番は問わないが、すべてそろっていること」を条件とします。
+ */
+function answerMatches(input, correct) {
+  const want = answerParts(correct).map(normalizeAnswer).filter(Boolean);
+  if (want.length <= 1) return normalizeAnswer(input) === (want[0] || '');
+
+  const got = String(input == null ? '' : input)
+    .split(/[\/／,、\s]+/)
+    .map(normalizeAnswer)
+    .filter(Boolean);
+  if (got.length !== want.length) return false;
+  const a = got.slice().sort();
+  const b = want.slice().sort();
+  return a.every((v, i) => v === b[i]);
+}
+
+/** 画面に出すときの表示（スラッシュの前後に空白を入れて読みやすくする） */
+function displayAnswer(s) {
+  const parts = answerParts(s);
+  return parts.length > 1 ? parts.join(' / ') : String(s == null ? '' : s);
+}
+
 /**
  * この問題に使う制限時間（秒）を決める。0 なら制限なし。
  *  - テストモード … 作問者の指定（item.time）を必ず使う
@@ -253,29 +304,63 @@ function makeChoices(item, pool, dir) {
 /* ============================================================
    3. 発音（ブラウザ標準の音声合成を使うので追加費用ゼロ）
    ============================================================ */
+/** 穴埋めの記号 [ ] を外して、読み上げ用の文にする */
+function stripBlanks(s) {
+  return String(s || '').replace(/\[([^\]]*)\]/g, '$1');
+}
+
 const Speech = {
   supported: 'speechSynthesis' in window,
+  unlocked: false,
 
-  langOf(subject, text) {
-    if (subject.lang && subject.lang !== 'auto') return subject.lang;
+  /**
+   * iPhoneは「利用者が操作していない音声」を止める仕様のため、
+   * 最初のタップのときに無音を1回鳴らして、以降の自動再生を許可させます。
+   */
+  unlock() {
+    if (!this.supported || this.unlocked) return;
+    try {
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0;
+      window.speechSynthesis.speak(u);
+      this.unlocked = true;
+    } catch (e) { /* 失敗しても、発音ボタンからは鳴らせます */ }
+  },
+
+  /** 読み上げの言語は、問題ごとに中身を見て決めます（英語と日本語の混在に対応） */
+  langOf(item, text) {
+    if (item && item.lang) return item.lang;
     return /^[\x20-\x7E]+$/.test(text) ? 'en-US' : 'ja-JP';
   },
 
   textOf(subject, item) {
-    if (subject.speakField === 'reading') return item.reading || item.front;
-    return item.front;
+    if (item.speak) return item.speak;                                   // 読み上げ文の指定があれば優先
+    if (subject && subject.speakField === 'reading' && item.reading) return item.reading;
+    return stripBlanks(item.front).replace(/\s*[\/／]\s*/g, '、');        // 複数解答は区切って読む
   },
 
-  speak(subject, item) {
-    if (!this.supported) return;
+  /** onend … 読み終わったときに呼ばれます（自動送りで使います） */
+  speak(subject, item, onend) {
+    if (!this.supported) { if (onend) setTimeout(onend, 0); return; }
     const text = this.textOf(subject, item);
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = this.langOf(subject, text);
+    u.lang = this.langOf(item, text);
     u.rate = (u.lang === 'en-US' ? 0.9 : 1.0) * (Store.data.settings.speed || 1);
+    let done = false;
+    const finish = () => { if (done) return; done = true; if (onend) onend(); };
+    u.onend = finish;
+    u.onerror = finish;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(u);
+    // 音声が鳴らない端末でも先へ進めるよう、保険の時間切れを設けます
+    setTimeout(finish, Math.min(8000, 1200 + text.length * 90));
   },
 };
+
+// 最初のタップで音声を解錠する（iPhone対策）
+['pointerdown', 'keydown'].forEach((ev) => {
+  window.addEventListener(ev, () => Speech.unlock(), { once: true });
+});
 
 /* ============================================================
    4. 画面の切り替え
@@ -684,15 +769,16 @@ function answerQuiz(isCorrect, btn, item, timeUp) {
   const mark = $('fbMark');
   mark.textContent = isCorrect ? '◯ 正解！' : (timeUp ? '△ 時間ぎれ' : '✕ ざんねん');
   mark.className = 'feedback__mark ' + (isCorrect ? 'ok' : 'ng');
-  $('fbAnswer').textContent = `${item.front} ： ${item.back}`;
+  $('fbAnswer').textContent = `${displayAnswer(item.front)} ： ${item.back}`;
   $('fbExp').textContent = item.explanation || '';
   setExample($('fbExample'), item);
   $('fbSpeak').hidden = !Speech.supported;
   $('fbSpeak').onclick = () => Speech.speak(sub, item);
   $('quizFeedback').hidden = false;
-
-  if (!isCorrect) Speech.speak(sub, item);
   $('fbNext').textContent = (quiz.idx === quiz.items.length - 1) ? '結果を見る' : '次へ ›';
+
+  // 正解・不正解・時間切れのいずれでも読み上げます
+  Speech.speak(sub, item, () => autoAdvance(isCorrect, () => $('fbNext').click()));
 }
 
 /** スキップ … 記録せずに、その問題を後ろへ回す */
@@ -744,6 +830,7 @@ $('quizSpeak').onclick = () => {
   Speech.speak(current.subject || subjectOfItem(item), item);
 };
 $('fbNext').onclick = () => {
+  cancelAuto();
   if (quiz.idx < quiz.items.length - 1) {
     quiz.idx++;
     drawQuiz();
@@ -751,6 +838,43 @@ $('fbNext').onclick = () => {
     finishQuiz();
   }
 };
+
+/* ============================================================
+   自動送りモード
+   ------------------------------------------------------------
+   解答したあと、ボタンを押さなくても次の問題へ進みます。
+   ・読み上げが終わるのを待ってから数えはじめます
+   ・正解は短く、間違いは解説を読める長さだけ待ちます
+   ・「一時停止」を押すと、その場で手動に切り替わります
+   ============================================================ */
+const AUTO_WAIT_OK = 900;    // 正解のときの待ち時間（ミリ秒）
+const AUTO_WAIT_NG = 3500;   // 間違い・時間切れのときの待ち時間
+let autoTimer = null;
+
+function cancelAuto() {
+  clearTimeout(autoTimer);
+  autoTimer = null;
+  document.querySelectorAll('.auto-pause').forEach((b) => { b.hidden = true; });
+}
+
+function autoAdvance(isCorrect, nextFn) {
+  if (!Store.data.settings.auto) return;
+  const wait = isCorrect ? AUTO_WAIT_OK : AUTO_WAIT_NG;
+
+  // 一時停止ボタンを出す（押すとこの問題から手動に戻ります）
+  const btn = document.querySelector('.screen:not([hidden]) .auto-pause');
+  if (btn) {
+    btn.hidden = false;
+    btn.onclick = () => { cancelAuto(); toast('自動送りを止めました'); };
+  }
+
+  clearTimeout(autoTimer);
+  autoTimer = setTimeout(() => {
+    autoTimer = null;
+    if (btn) btn.hidden = true;
+    nextFn();
+  }, wait);
+}
 
 /* ============================================================
    9. タイピングテスト
@@ -782,7 +906,10 @@ function drawTyping() {
   $('typeCounter').textContent = `${typing.idx + 1} / ${typing.items.length}`;
   $('typeProgress').style.width = `${(typing.idx / typing.items.length) * 100}%`;
   $('typeMeaning').textContent = item.back;
-  $('typeHint').textContent = `${item.front.length}文字 ・ 最初の文字は「${item.front[0]}」`;
+  const parts = answerParts(item.front);
+  $('typeHint').textContent = parts.length > 1
+    ? `${parts.length}つの語を「/」で区切って入力（順番は自由）`
+    : `${item.front.length}文字 ・ 最初の文字は「${item.front[0]}」`;
 
   const input = $('typeInput');
   input.value = '';
@@ -848,8 +975,8 @@ function judgeTyping(timeUp) {
 
   const item = typing.items[typing.idx];
   const sub = current.subject || subjectOfItem(item);
-  const typed = $('typeInput').value.trim().toLowerCase();
-  const isCorrect = !timeUp && typed === item.front.trim().toLowerCase();
+  const typed = $('typeInput').value;
+  const isCorrect = !timeUp && answerMatches(typed, item.front);
 
   const ms = Date.now() - typing.startAt;
   typing.ms += ms;
@@ -863,7 +990,7 @@ function judgeTyping(timeUp) {
   const mark = $('typeMark');
   mark.textContent = isCorrect ? '◯ 正解！' : (timeUp ? '△ 時間ぎれ' : '✕ おしい');
   mark.className = 'feedback__mark ' + (isCorrect ? 'ok' : 'ng');
-  $('typeAnswer').textContent = `${item.front} ： ${item.back}`;
+  $('typeAnswer').textContent = `${displayAnswer(item.front)} ： ${item.back}`;
   $('typeExp').textContent = item.explanation || '';
   setExample($('typeExample'), item);
   $('typeSpeak').hidden = !Speech.supported;
@@ -872,7 +999,8 @@ function judgeTyping(timeUp) {
   $('typeNext').textContent = (typing.idx === typing.items.length - 1) ? '結果を見る' : '次へ ›';
   $('typeNext').focus();
 
-  Speech.speak(sub, item);
+  // 正解・不正解・時間切れのいずれでも読み上げます
+  Speech.speak(sub, item, () => autoAdvance(isCorrect, () => $('typeNext').click()));
 }
 
 function skipTyping() {
@@ -918,6 +1046,7 @@ $('typeSkip').onclick = skipTyping;
 $('typeInput').oninput = (e) => { if (!typing.locked) drawEcho(e.target.value); };
 $('typeInput').onkeydown = (e) => { if (e.key === 'Enter') judgeTyping(false); };
 $('typeNext').onclick = () => {
+  cancelAuto();
   if (typing.idx < typing.items.length - 1) {
     typing.idx++;
     drawTyping();
@@ -1030,6 +1159,7 @@ function renderMypage() {
   $('nickInput').value = d.nick || '';
   $('goalInput').value = d.goal;
   $('maskToggle').checked = !!d.settings.mask;
+  $('autoToggle').checked = !!d.settings.auto;
   syncDirButtons();
   syncSpeedButtons();
   syncLimitButtons();
@@ -1139,6 +1269,11 @@ $('goalInput').onchange = (e) => {
   toast(`1日の目標を${v}問にしました`);
 };
 $('maskToggle').onchange = (e) => { Store.data.settings.mask = e.target.checked; Store.save(); };
+$('autoToggle').onchange = (e) => {
+  Store.data.settings.auto = e.target.checked;
+  Store.save();
+  toast(e.target.checked ? '自動送りをオンにしました' : '自動送りをオフにしました');
+};
 
 function syncDirButtons() {
   document.querySelectorAll('[data-dir]').forEach((b) => {
@@ -1201,25 +1336,63 @@ $('resetBtn').onclick = () => {
 /* ============================================================
    13. 単語をさがす
    ============================================================ */
+/* 検索用の索引。
+   毎回すべての問題を調べ直すと、1万件を超えたときに反応が遅くなるため、
+   検索対象の文字列をあらかじめ1本にまとめて持っておきます。
+   問題を追加・削除したときは invalidateSearchIndex() で作り直します。 */
+const SearchIndex = {
+  rows: null,
+
+  build() {
+    this.rows = everyItem().map(({ item, subject }) => ({
+      item,
+      subject,
+      key: [item.front, item.back, item.reading, item.example, item.explanation]
+        .filter(Boolean).join('\n').toLowerCase(),
+    }));
+    return this.rows;
+  },
+
+  all() {
+    return this.rows || this.build();
+  },
+
+  find(q, limit) {
+    const rows = this.all();
+    const out = [];
+    for (let i = 0; i < rows.length && out.length < limit; i++) {
+      if (rows[i].key.indexOf(q) !== -1) out.push(rows[i]);
+    }
+    return out;
+  },
+};
+
+function invalidateSearchIndex() { SearchIndex.rows = null; }
+
+const SEARCH_LIMIT = 50;
+let searchTimer = null;
+
 function renderSearch(word) {
   const q = (word || '').trim().toLowerCase();
   const box = $('searchResults');
   box.innerHTML = '';
   if (!q) {
-    $('searchCount').textContent = `全${everyItem().length}問から検索できます`;
+    $('searchCount').textContent = `全${SearchIndex.all().length}問から検索できます`;
     return;
   }
-  const hits = everyItem().filter(({ item }) =>
-    [item.front, item.back, item.reading, item.example, item.explanation]
-      .filter(Boolean)
-      .some((t) => String(t).toLowerCase().includes(q))
-  ).slice(0, 50);
-
-  $('searchCount').textContent = hits.length ? `${hits.length}件みつかりました` : '見つかりませんでした';
+  const hits = SearchIndex.find(q, SEARCH_LIMIT);
+  $('searchCount').textContent = hits.length
+    ? (hits.length >= SEARCH_LIMIT ? `${SEARCH_LIMIT}件以上みつかりました（先頭の${SEARCH_LIMIT}件）` : `${hits.length}件みつかりました`)
+    : '見つかりませんでした';
   hits.forEach(({ item, subject }) => box.appendChild(itemRow(item, subject, '')));
 }
 
-$('searchInput').oninput = (e) => renderSearch(e.target.value);
+// 打っている途中で毎回検索すると重くなるため、少し待ってからまとめて検索します
+$('searchInput').oninput = (e) => {
+  const v = e.target.value;
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => renderSearch(v), 150);
+};
 
 /* ============================================================
    14. 問題を追加（マイ単語帳 / CSV）
@@ -1237,6 +1410,7 @@ $('myAddBtn').onclick = () => {
     example: $('myExample').value.trim(),
   });
   Store.save();
+  invalidateSearchIndex();
   ['myFront', 'myBack', 'myExp', 'myExample'].forEach((id) => { $(id).value = ''; });
   $('myMsg').textContent = `「${front}」を追加しました。合計${Store.data.myWords.length}問。`;
   toast('マイ単語帳に追加しました');
@@ -1250,6 +1424,7 @@ $('myAddBtn').onclick = () => {
 function stopTimers() {
   clearInterval(quiz.timer);
   clearInterval(typing.timer);
+  cancelAuto();
   if (Speech.supported) window.speechSynthesis.cancel();
 }
 

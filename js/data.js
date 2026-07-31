@@ -23,7 +23,7 @@ const SUBJECTS = [
     levels: [
       {
         id: 'en-1',
-        name: 'レベル1 中学基礎',
+        name: '中学初級レベル（英語検定4級クラス）',
         items: [
           { id: 'en1-01', front: 'ability', back: '能力', explanation: 'able（〜できる）の名詞形。「〜する能力」は ability to do の形で使います。', example: 'She has the ability to solve hard problems.' },
           { id: 'en1-02', front: 'borrow', back: '借りる', explanation: '無料で借りるときは borrow、貸す側は lend。お金を払って借りる場合は rent。', example: 'May I borrow your pen?' },
@@ -49,7 +49,7 @@ const SUBJECTS = [
       },
       {
         id: 'en-2',
-        name: 'レベル2 高校標準',
+        name: '高校標準レベル（英語検定2級クラス）',
         items: [
           { id: 'en2-01', front: 'abandon', back: '見捨てる', explanation: '「放棄する」の意味でも頻出。abandon the plan で「計画を断念する」。', example: 'They had to abandon the old plan.' },
           { id: 'en2-02', front: 'benefit', back: '利益', explanation: '動詞では「利益を得る」。benefit from 〜 の形が頻出です。', example: 'Many students benefit from this program.' },

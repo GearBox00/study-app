@@ -177,6 +177,7 @@
       <p class="feedback__answer" id="fbAnswer"></p>
       <p class="feedback__exp" id="fbExp"></p>
       <p class="example" id="fbExample"></p>
+      <button class="auto-pause" hidden>⏸ 自動送りを止める</button>
       <div class="feedback__actions">
         <button class="btn btn--ghost" id="fbSpeak">🔊 もう一度聞く</button>
         <button class="btn btn--primary" id="fbNext">次へ ›</button>
@@ -210,6 +211,7 @@
       <p class="feedback__answer" id="typeAnswer"></p>
       <p class="feedback__exp" id="typeExp"></p>
       <p class="example" id="typeExample"></p>
+      <button class="auto-pause" hidden>⏸ 自動送りを止める</button>
       <div class="feedback__actions">
         <button class="btn btn--ghost" id="typeSpeak">🔊 発音を聞く</button>
         <button class="btn btn--primary" id="typeNext">次へ ›</button>
@@ -280,6 +282,10 @@
         </div>
         <p class="note" id="modeNote"></p>
       </div>
+      <label class="switch">
+        <input type="checkbox" id="autoToggle">
+        <span>自動送り（解答すると自動で次の問題へ進む）</span>
+      </label>
       <label class="switch">
         <input type="checkbox" id="maskToggle">
         <span>赤シートを使う（カードの答えを隠す）</span>

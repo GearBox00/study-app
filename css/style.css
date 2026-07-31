@@ -476,6 +476,21 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 .feedback__mark.ng { color: var(--coral); }
 .feedback__answer { margin: 0 0 8px; font-size: 17px; font-weight: 700; }
 .feedback__exp { margin: 0; font-size: 13px; line-height: 1.8; color: var(--ink-sub); }
+.auto-pause {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  border: 1.5px solid var(--amber);
+  border-radius: 999px;
+  background: var(--amber-pale);
+  color: var(--amber-deep);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.auto-pause[hidden] { display: none !important; }
+
 .feedback__actions { display: flex; gap: 10px; margin-top: 14px; }
 .feedback__actions .btn { flex: 1; }
 

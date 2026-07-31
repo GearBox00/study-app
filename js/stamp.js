@@ -9,9 +9,9 @@
 
 'use strict';
 
-const STAMP_ROWS = 5;
 const STAMP_COLS = 5;
-const STAMP_MAX = STAMP_ROWS * STAMP_COLS;   // 25マス
+const STAMP_ROWS = 10;
+const STAMP_MAX = STAMP_ROWS * STAMP_COLS;   // 50マス（5列×10行）
 const QR_PREFIX = 'manabi-card:v1:';         // このアプリのQRだと判別するための印
 
 /* ---------- 記録の読み書き ---------- */

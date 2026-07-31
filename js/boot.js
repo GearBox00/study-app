@@ -12,6 +12,7 @@
   // 外部のCSVファイルに問題があれば読み込む（無ければ内蔵データだけで動きます）
   if (typeof loadExternalQuestions === 'function') {
     try { await loadExternalQuestions(); } catch (e) { /* 失敗しても起動は続ける */ }
+    if (typeof invalidateSearchIndex === 'function') invalidateSearchIndex();
   }
 
   goHome();
