@@ -124,6 +124,11 @@
         <span class="mode-card__title">リスニング</span>
         <span class="mode-card__sub">発音だけを聴いて意味を答える</span>
       </button>
+      <button class="mode-card" data-mode="dict" id="modeDict">
+        <span class="mode-card__icon">✍️</span>
+        <span class="mode-card__title">ディクテーション</span>
+        <span class="mode-card__sub">音声を聞いて、空いているところを書き取る</span>
+      </button>
       <button class="mode-card" data-mode="type" id="modeTyping">
         <span class="mode-card__icon">⌨️</span>
         <span class="mode-card__title">タイピングテスト</span>
@@ -225,6 +230,39 @@
       <div class="feedback__actions">
         <button class="btn btn--ghost" id="typeSpeak">🔊 発音を聞く</button>
         <button class="btn btn--primary" id="typeNext">次へ ›</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== ディクテーション（書き取り） ========== -->
+  <section class="screen screen--play" id="screen-dict" hidden>
+    <div class="progress"><div class="progress__bar" id="dictProgress"></div></div>
+    <div class="quiz-head">
+      <p class="counter" id="dictCounter">1 / 10</p>
+      <div class="quiz-head__right">
+        <button class="skip-btn" id="dictSkip">スキップ ↷</button>
+        <p class="timer" id="dictTimer">40</p>
+      </div>
+    </div>
+
+    <div class="dict-play">
+      <button class="dict-play__btn" id="dictPlay" title="音声を聞く">🔊</button>
+      <p class="dict-play__note">押すと何度でも聞けます</p>
+    </div>
+
+    <div class="dict-sentence" id="dictSentence"></div>
+    <p class="dict-hint" id="dictHint"></p>
+    <button class="btn btn--primary" id="dictCheck">答え合わせ</button>
+
+    <div class="feedback" id="dictFeedback" hidden>
+      <p class="feedback__mark" id="dictMark"></p>
+      <p class="feedback__answer" id="dictAnswer"></p>
+      <p class="feedback__exp" id="dictExp"></p>
+      <p class="example" id="dictExample"></p>
+      <button class="auto-pause" hidden>⏸ 自動送りを止める</button>
+      <div class="feedback__actions">
+        <button class="btn btn--ghost" id="dictSpeak">🔊 もう一度聞く</button>
+        <button class="btn btn--primary" id="dictNext">次へ ›</button>
       </div>
     </div>
   </section>
@@ -543,6 +581,7 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script src="js/stamp.js"></script>
+<script src="js/dictation.js"></script>
 <script src="js/tools.js"></script>
 <script src="js/boot.js"></script>
 </body>

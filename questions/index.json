@@ -1,5 +1,5 @@
 {
-  "_comment": "ここに科目とCSVファイルを書くと、起動時に読み込まれます。列は 問題,答え,解説,例文,制限時間(秒),読み の順です。",
+  "_comment": "ここに科目とCSVファイルを書くと、起動時に読み込まれます。列は 問題,答え,解説,例文,制限時間(秒),読み の順です。問題文の [ ] は書き取りの空欄になります。",
   "subjects": [
     {
       "id": "science",
@@ -9,6 +9,26 @@
       "speakField": "reading",
       "levels": [
         { "id": "sc-1", "name": "レベル1 中学理科", "file": "science-1.csv" }
+      ]
+    },
+    {
+      "id": "endict",
+      "name": "英語の書き取り",
+      "icon": "✍️",
+      "lang": "en-US",
+      "speakField": "front",
+      "levels": [
+        { "id": "ed-1", "name": "中学初級レベル（英語検定4級クラス）", "file": "english-dictation.csv" }
+      ]
+    },
+    {
+      "id": "jadict",
+      "name": "漢字の書き取り",
+      "icon": "🖌️",
+      "lang": "ja-JP",
+      "speakField": "front",
+      "levels": [
+        { "id": "jd-1", "name": "中学レベル", "file": "japanese-dictation.csv" }
       ]
     }
   ]

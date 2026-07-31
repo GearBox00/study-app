@@ -272,11 +272,11 @@ function buildPrint() {
 
   let body = '<ol class="sheet__list">';
   items.forEach((item) => {
-    const q = escapeHtml(qOf(item, dir));
+    const q = escapeHtml(displayText(qOf(item, dir)));
     if (style === 'choice') {
       const choices = makeChoices(item, pool, dir);
       body += `<li><p class="sheet__q">${q}</p><ol class="sheet__choices">` +
-        choices.map((c) => `<li>${escapeHtml(c)}</li>`).join('') + '</ol></li>';
+        choices.map((c) => `<li>${escapeHtml(displayText(c))}</li>`).join('') + '</ol></li>';
     } else {
       body += `<li><p class="sheet__q">${q}</p><p class="sheet__line"></p></li>`;
     }
@@ -286,7 +286,7 @@ function buildPrint() {
   let answers = '';
   if (withAnswer) {
     answers = '<div class="sheet__answers"><h2>解答</h2><ol>' +
-      items.map((item) => `<li>${escapeHtml(aOf(item, dir))}</li>`).join('') +
+      items.map((item) => `<li>${escapeHtml(displayText(aOf(item, dir)))}</li>`).join('') +
       '</ol></div>';
   }
 

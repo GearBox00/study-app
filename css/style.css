@@ -413,6 +413,70 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 .choice.is-wrong { background: var(--coral-pale); border-color: var(--coral); color: #a52d2d; }
 .choice:disabled { cursor: default; }
 
+/* ---------- ディクテーション（書き取り） ---------- */
+.dict-play {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 16px 0 14px;
+}
+.dict-play__btn {
+  width: 76px;
+  height: 76px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--mint);
+  color: #fff;
+  font-size: 32px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.dict-play__btn:active { transform: scale(.94); }
+.dict-play__note { margin: 0; font-size: 12px; color: var(--ink-sub); }
+
+.dict-sentence {
+  padding: 18px 16px;
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  font-size: 18px;
+  line-height: 2.4;
+  word-break: break-word;
+}
+.dict-sentence--whole { line-height: 1.8; }
+.dict-text { white-space: pre-wrap; }
+
+.dict-blank {
+  min-width: 5ch;
+  padding: 4px 8px;
+  border: 0;
+  border-bottom: 2px solid var(--mint);
+  border-radius: 6px 6px 0 0;
+  background: var(--mint-pale);
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+}
+.dict-blank:focus { outline: 2px solid var(--mint); outline-offset: 1px; }
+.dict-blank--wide { width: 100%; text-align: left; }
+.dict-blank.is-ok { background: var(--mint-pale); border-bottom-color: var(--mint); color: var(--mint-deep); }
+.dict-blank.is-ng { background: var(--coral-pale); border-bottom-color: var(--coral); color: var(--coral-deep); }
+.dict-blank:disabled { opacity: 1; }
+
+.dict-correct {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--mint);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+.dict-hint { margin: 10px 0 12px; font-size: 12px; color: var(--ink-sub); text-align: center; }
+#dictCheck { width: 100%; }
+
 /* ---------- タイピング ---------- */
 .type-question {
   display: flex;

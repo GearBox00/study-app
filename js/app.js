@@ -280,6 +280,11 @@ function displayAnswer(s) {
   return parts.length > 1 ? parts.join(' / ') : String(s == null ? '' : s);
 }
 
+/** 書き取り用の角かっこを外し、読みやすい形にして表示する */
+function displayText(s) {
+  return displayAnswer(stripBlanks(s));
+}
+
 /**
  * この問題に使う制限時間（秒）を決める。0 なら制限なし。
  *  - テストモード … 作問者の指定（item.time）を必ず使う
@@ -384,8 +389,10 @@ const Speech = {
     u.onerror = finish;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(u);
-    // 音声が鳴らない端末でも先へ進めるよう、保険の時間切れを設けます
-    setTimeout(finish, Math.min(8000, 1200 + text.length * 90));
+    // 音声が鳴らない端末でも先へ進めるよう、保険の時間切れを設けます。
+    // 長い文（ディクテーション）でも読み終わる前に進まないよう、文字数に応じて長めに取ります。
+    const rate = u.rate || 1;
+    setTimeout(finish, Math.min(25000, (2000 + text.length * 180) / rate));
   },
 };
 
@@ -397,7 +404,7 @@ const Speech = {
 /* ============================================================
    4. 画面の切り替え
    ============================================================ */
-const SCREENS = ['home', 'sets', 'mode', 'card', 'quiz', 'type', 'result', 'mypage',
+const SCREENS = ['home', 'sets', 'mode', 'card', 'quiz', 'type', 'dict', 'result', 'mypage',
   'search', 'add', 'stamp', 'venue', 'print', 'manage'];
 const $ = (id) => document.getElementById(id);
 let navStack = [];
@@ -554,6 +561,8 @@ function openModes(items, label) {
   $('modeTitle').textContent = label;
   $('modeTyping').hidden = !isTypable(items);
   $('modeListen').hidden = !Speech.supported;
+  // 空欄（角かっこ）がある問題のときだけ、書き取りモードを出します
+  $('modeDict').hidden = !(typeof isDictationSet === 'function' && isDictationSet(items));
   syncDirButtons();
   show('mode', label);
 }
@@ -615,8 +624,8 @@ function drawCard() {
   card.style.transform = '';
   card.style.opacity = '';
 
-  $('cardFront').textContent = qOf(item, s.dir);
-  $('cardBack').textContent = aOf(item, s.dir);
+  $('cardFront').textContent = displayText(qOf(item, s.dir));
+  $('cardBack').textContent = displayText(aOf(item, s.dir));
   $('cardExp').textContent = item.explanation || '';
   setExample($('cardExample'), item);
   $('cardMask').hidden = !Store.data.settings.mask;
@@ -746,7 +755,7 @@ function drawQuiz() {
   if (quiz.listen) {
     $('quizFront').textContent = '🔊 聴いて答えましょう';
   } else {
-    $('quizFront').textContent = qOf(item, quiz.dir);
+    $('quizFront').textContent = displayText(qOf(item, quiz.dir));
   }
   $('quizSpeak').hidden = !Speech.supported;
 
@@ -755,7 +764,7 @@ function drawQuiz() {
   makeChoices(item, quiz.pool, quiz.dir).forEach((text) => {
     const b = document.createElement('button');
     b.className = 'choice';
-    b.textContent = displayAnswer(text);   // 複数解答は「give / gave / given」と読みやすく出す
+    b.textContent = displayText(text);   // 複数解答は「give / gave / given」と読みやすく出す
     b.dataset.raw = text;                  // 判定にはもとの値を使う
     b.onclick = () => answerQuiz(text === aOf(item, quiz.dir), b, item);
     box.appendChild(b);
@@ -813,7 +822,7 @@ function answerQuiz(isCorrect, btn, item, timeUp) {
   const mark = $('fbMark');
   mark.textContent = isCorrect ? '◯ 正解！' : (timeUp ? '△ 時間ぎれ' : '✕ ざんねん');
   mark.className = 'feedback__mark ' + (isCorrect ? 'ok' : 'ng');
-  $('fbAnswer').textContent = `${displayAnswer(item.front)} ： ${item.back}`;
+  $('fbAnswer').textContent = `${displayText(item.front)} ： ${item.back}`;
   $('fbExp').textContent = item.explanation || '';
   setExample($('fbExample'), item);
   $('fbSpeak').hidden = !Speech.supported;
@@ -1119,7 +1128,7 @@ function judgeTyping(timeUp) {
   const mark = $('typeMark');
   mark.textContent = isCorrect ? '◯ 正解！' : (timeUp ? '△ 時間ぎれ' : '✕ おしい');
   mark.className = 'feedback__mark ' + (isCorrect ? 'ok' : 'ng');
-  $('typeAnswer').textContent = `${displayAnswer(item.front)} ： ${item.back}`;
+  $('typeAnswer').textContent = `${displayText(item.front)} ： ${item.back}`;
   $('typeExp').textContent = item.explanation || '';
   setExample($('typeExample'), item);
   $('typeSpeak').hidden = !Speech.supported;
@@ -1610,6 +1619,7 @@ document.querySelectorAll('.mode-card').forEach((btn) => {
   btn.onclick = () => {
     const mode = btn.dataset.mode;
     if (mode === 'card') startCard(current.set, current.label);
+    else if (mode === 'dict') startDictation(current.set, current.label);
     else if (mode === 'type') startTyping(current.set, current.label);
     else if (mode === 'listen') startQuiz(current.set, current.label, { listen: true });
     else startQuiz(current.set, current.label);
