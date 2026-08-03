@@ -256,6 +256,8 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 .set-card__name { display: block; font-size: 15px; font-weight: 700; }
 .set-card__meta { display: block; margin: 4px 0 8px; font-size: 11px; color: var(--ink-sub); }
 .set-card__bar {
+  /* span のままだと高さが効かず、大きな四角になってしまうため block にします */
+  display: block;
   height: 6px;
   border-radius: 3px;
   background: var(--line);
