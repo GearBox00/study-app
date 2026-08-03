@@ -1,0 +1,872 @@
+{
+  "app": "manabi-card",
+  "version": 1,
+  "exportedAt": "2026-08-03T09:00:00.000Z",
+  "data": {
+    "nick": "まなび たろう",
+    "answered": 259,
+    "totalMs": 953800,
+    "timedCount": 259,
+    "items": {
+      "en1-01": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en1-02": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en1-03": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en1-04": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en1-05": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en1-06": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en1-07": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en1-08": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en1-09": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en1-10": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en1-11": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en1-12": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en1-13": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en1-14": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en1-15": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en1-16": {
+        "streak": 3,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 10400,
+        "due": 1786309200000
+      },
+      "en2-01": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 1,
+        "count": 5,
+        "ms": 17000,
+        "due": 1785963600000
+      },
+      "en2-02": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 1,
+        "count": 5,
+        "ms": 17000,
+        "due": 1785963600000
+      },
+      "en2-03": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 1,
+        "count": 5,
+        "ms": 17000,
+        "due": 1785963600000
+      },
+      "en2-04": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 1,
+        "count": 5,
+        "ms": 17000,
+        "due": 1785963600000
+      },
+      "en2-05": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 1,
+        "count": 5,
+        "ms": 17000,
+        "due": 1785963600000
+      },
+      "en2-06": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 1,
+        "count": 5,
+        "ms": 17000,
+        "due": 1785963600000
+      },
+      "en2-07": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 1,
+        "count": 5,
+        "ms": 17000,
+        "due": 1785963600000
+      },
+      "en2-08": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 1,
+        "count": 5,
+        "ms": 17000,
+        "due": 1785963600000
+      },
+      "en2-09": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 1,
+        "count": 5,
+        "ms": 17000,
+        "due": 1785963600000
+      },
+      "en2-10": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 1,
+        "count": 5,
+        "ms": 17000,
+        "due": 1785963600000
+      },
+      "kj1-01": {
+        "streak": 4,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 12000,
+        "due": 1786914000000
+      },
+      "kj1-02": {
+        "streak": 4,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 12000,
+        "due": 1786914000000
+      },
+      "kj1-03": {
+        "streak": 4,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 12000,
+        "due": 1786914000000
+      },
+      "kj1-04": {
+        "streak": 4,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 12000,
+        "due": 1786914000000
+      },
+      "kj1-05": {
+        "streak": 4,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 12000,
+        "due": 1786914000000
+      },
+      "kj1-06": {
+        "streak": 4,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 12000,
+        "due": 1786914000000
+      },
+      "kj1-07": {
+        "streak": 4,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 12000,
+        "due": 1786914000000
+      },
+      "kj1-08": {
+        "streak": 4,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 12000,
+        "due": 1786914000000
+      },
+      "kj1-09": {
+        "streak": 4,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 12000,
+        "due": 1786914000000
+      },
+      "kj1-10": {
+        "streak": 4,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 12000,
+        "due": 1786914000000
+      },
+      "kj1-11": {
+        "streak": 4,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 12000,
+        "due": 1786914000000
+      },
+      "kj1-12": {
+        "streak": 4,
+        "mastered": true,
+        "wrong": 0,
+        "count": 4,
+        "ms": 12000,
+        "due": 1786914000000
+      },
+      "hs1-01": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 3,
+        "ms": 11400,
+        "due": 1785963600000
+      },
+      "hs1-02": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 3,
+        "ms": 11400,
+        "due": 1785963600000
+      },
+      "hs1-03": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 3,
+        "ms": 11400,
+        "due": 1785963600000
+      },
+      "hs1-04": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 3,
+        "ms": 11400,
+        "due": 1785963600000
+      },
+      "hs1-05": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 3,
+        "ms": 11400,
+        "due": 1785963600000
+      },
+      "hs1-06": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 3,
+        "ms": 11400,
+        "due": 1785963600000
+      },
+      "hs1-07": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 3,
+        "ms": 11400,
+        "due": 1785963600000
+      },
+      "hs1-08": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 3,
+        "ms": 11400,
+        "due": 1785963600000
+      },
+      "science-sc-1-0": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 3,
+        "ms": 10500,
+        "due": 1785963600000
+      },
+      "science-sc-1-1": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 3,
+        "ms": 10500,
+        "due": 1785963600000
+      },
+      "science-sc-1-2": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 3,
+        "ms": 10500,
+        "due": 1785963600000
+      },
+      "science-sc-1-3": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 3,
+        "ms": 10500,
+        "due": 1785963600000
+      },
+      "science-sc-1-4": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 3,
+        "ms": 10500,
+        "due": 1785963600000
+      },
+      "science-sc-1-5": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 3,
+        "ms": 10500,
+        "due": 1785963600000
+      },
+      "endict-ed-1-0": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 2,
+        "ms": 19000,
+        "due": 1785963600000
+      },
+      "endict-ed-1-1": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 2,
+        "ms": 19000,
+        "due": 1785963600000
+      },
+      "endict-ed-1-2": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 2,
+        "ms": 19000,
+        "due": 1785963600000
+      },
+      "endict-ed-1-3": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 2,
+        "ms": 19000,
+        "due": 1785963600000
+      },
+      "jadict-jd-1-0": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 2,
+        "ms": 22000,
+        "due": 1785963600000
+      },
+      "jadict-jd-1-1": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 2,
+        "ms": 22000,
+        "due": 1785963600000
+      },
+      "jadict-jd-1-2": {
+        "streak": 2,
+        "mastered": true,
+        "wrong": 0,
+        "count": 2,
+        "ms": 22000,
+        "due": 1785963600000
+      },
+      "en1-17": {
+        "streak": 0,
+        "mastered": false,
+        "wrong": 3,
+        "count": 5,
+        "ms": 22000,
+        "due": 1785668400000
+      },
+      "en1-18": {
+        "streak": 0,
+        "mastered": false,
+        "wrong": 2,
+        "count": 4,
+        "ms": 17600,
+        "due": 1785668400000
+      },
+      "en1-19": {
+        "streak": 0,
+        "mastered": false,
+        "wrong": 2,
+        "count": 4,
+        "ms": 17600,
+        "due": 1785668400000
+      },
+      "en1-20": {
+        "streak": 0,
+        "mastered": false,
+        "wrong": 1,
+        "count": 3,
+        "ms": 13200,
+        "due": 1785668400000
+      },
+      "en2-11": {
+        "streak": 0,
+        "mastered": false,
+        "wrong": 4,
+        "count": 6,
+        "ms": 28800,
+        "due": 1785668400000
+      },
+      "en2-12": {
+        "streak": 0,
+        "mastered": false,
+        "wrong": 2,
+        "count": 4,
+        "ms": 19200,
+        "due": 1785668400000
+      },
+      "en2-13": {
+        "streak": 0,
+        "mastered": false,
+        "wrong": 1,
+        "count": 3,
+        "ms": 14400,
+        "due": 1785668400000
+      },
+      "kj1-13": {
+        "streak": 1,
+        "mastered": false,
+        "wrong": 0,
+        "count": 1,
+        "ms": 3100,
+        "due": 1785790800000
+      },
+      "kj1-14": {
+        "streak": 1,
+        "mastered": false,
+        "wrong": 0,
+        "count": 1,
+        "ms": 3100,
+        "due": 1785790800000
+      },
+      "kj1-15": {
+        "streak": 1,
+        "mastered": false,
+        "wrong": 0,
+        "count": 1,
+        "ms": 3100,
+        "due": 1785790800000
+      },
+      "kj1-16": {
+        "streak": 1,
+        "mastered": false,
+        "wrong": 0,
+        "count": 1,
+        "ms": 3100,
+        "due": 1785790800000
+      },
+      "hs1-09": {
+        "streak": 1,
+        "mastered": false,
+        "wrong": 1,
+        "count": 2,
+        "ms": 8000,
+        "due": 1785790800000
+      },
+      "hs1-10": {
+        "streak": 1,
+        "mastered": false,
+        "wrong": 1,
+        "count": 2,
+        "ms": 8000,
+        "due": 1785790800000
+      },
+      "hs1-11": {
+        "streak": 1,
+        "mastered": false,
+        "wrong": 1,
+        "count": 2,
+        "ms": 8000,
+        "due": 1785790800000
+      },
+      "hs1-12": {
+        "streak": 1,
+        "mastered": false,
+        "wrong": 1,
+        "count": 2,
+        "ms": 8000,
+        "due": 1785790800000
+      }
+    },
+    "customSets": [],
+    "myWords": [
+      {
+        "id": "mw-demo-1",
+        "front": "curious",
+        "back": "好奇心の強い",
+        "explanation": "be curious about 〜 で「〜に興味がある」",
+        "example": "He is curious about science."
+      },
+      {
+        "id": "mw-demo-2",
+        "front": "generous",
+        "back": "気前のよい",
+        "explanation": "人に対して寛大なようす。",
+        "example": "She is generous with her time."
+      }
+    ],
+    "daily": {
+      "2026-07-21": {
+        "n": 24,
+        "ok": 21
+      },
+      "2026-07-22": {
+        "n": 32,
+        "ok": 24
+      },
+      "2026-07-23": {
+        "n": 18,
+        "ok": 15
+      },
+      "2026-07-25": {
+        "n": 41,
+        "ok": 30
+      },
+      "2026-07-26": {
+        "n": 30,
+        "ok": 23
+      },
+      "2026-07-27": {
+        "n": 27,
+        "ok": 22
+      },
+      "2026-07-28": {
+        "n": 35,
+        "ok": 29
+      },
+      "2026-07-29": {
+        "n": 12,
+        "ok": 10
+      },
+      "2026-07-30": {
+        "n": 38,
+        "ok": 33
+      },
+      "2026-07-31": {
+        "n": 22,
+        "ok": 19
+      },
+      "2026-08-01": {
+        "n": 45,
+        "ok": 34
+      },
+      "2026-08-02": {
+        "n": 29,
+        "ok": 21
+      },
+      "2026-08-03": {
+        "n": 33,
+        "ok": 29
+      }
+    },
+    "streak": {
+      "current": 6,
+      "best": 11,
+      "last": "2026-08-03"
+    },
+    "goal": 30,
+    "settings": {
+      "direction": "front",
+      "speed": 1,
+      "mask": false,
+      "timeLimit": null,
+      "mode": "practice",
+      "auto": false,
+      "autoSpeed": "normal",
+      "choicePool": "level"
+    },
+    "attendance": {
+      "cards": 0,
+      "stamps": 23,
+      "totalDays": 23,
+      "totalMinutes": 815,
+      "logs": {
+        "2026-07-21": {
+          "sessions": [
+            {
+              "in": 1784617200000,
+              "out": 1784622600000,
+              "venue": "main"
+            }
+          ],
+          "minutes": 90
+        },
+        "2026-07-22": {
+          "sessions": [
+            {
+              "in": 1784701800000,
+              "out": 1784706300000,
+              "venue": "main"
+            }
+          ],
+          "minutes": 75
+        },
+        "2026-07-23": {
+          "sessions": [
+            {
+              "in": 1784790000000,
+              "out": 1784792700000,
+              "venue": "main"
+            }
+          ],
+          "minutes": 45
+        },
+        "2026-07-25": {
+          "sessions": [
+            {
+              "in": 1784959200000,
+              "out": 1784963700000,
+              "venue": "main"
+            }
+          ],
+          "minutes": 75
+        },
+        "2026-07-26": {
+          "sessions": [
+            {
+              "in": 1785054600000,
+              "out": 1785058200000,
+              "venue": "main"
+            }
+          ],
+          "minutes": 60
+        },
+        "2026-07-27": {
+          "sessions": [
+            {
+              "in": 1785132600000,
+              "out": 1785135300000,
+              "venue": "main"
+            }
+          ],
+          "minutes": 45
+        },
+        "2026-07-28": {
+          "sessions": [
+            {
+              "in": 1785222000000,
+              "out": 1785224700000,
+              "venue": "main"
+            }
+          ],
+          "minutes": 45
+        },
+        "2026-07-29": {
+          "sessions": [
+            {
+              "in": 1785310200000,
+              "out": 1785312900000,
+              "venue": "main"
+            }
+          ],
+          "minutes": 45
+        },
+        "2026-07-30": {
+          "sessions": [
+            {
+              "in": 1785400200000,
+              "out": 1785404700000,
+              "venue": "main"
+            }
+          ],
+          "minutes": 75
+        },
+        "2026-07-31": {
+          "sessions": [
+            {
+              "in": 1785478800000,
+              "out": 1785483300000,
+              "venue": "main"
+            }
+          ],
+          "minutes": 75
+        },
+        "2026-08-01": {
+          "sessions": [
+            {
+              "in": 1785571200000,
+              "out": 1785574800000,
+              "venue": "main"
+            }
+          ],
+          "minutes": 60
+        },
+        "2026-08-02": {
+          "sessions": [
+            {
+              "in": 1785652200000,
+              "out": 1785655800000,
+              "venue": "main"
+            }
+          ],
+          "minutes": 60
+        },
+        "2026-08-03": {
+          "sessions": [
+            {
+              "in": 1785741600000,
+              "out": 1785745500000,
+              "venue": "main"
+            }
+          ],
+          "minutes": 65
+        }
+      }
+    },
+    "venue": "main",
+    "session": {
+      "kind": "quiz",
+      "label": "英単語 高校標準レベル（英語検定2級クラス） セット2",
+      "idx": 4,
+      "correct": 3,
+      "ms": 12800,
+      "listen": false,
+      "review": false,
+      "ids": [
+        "en2-11",
+        "en2-12",
+        "en2-13",
+        "en2-14",
+        "en2-15",
+        "en2-16",
+        "en2-17",
+        "en2-18",
+        "en2-19",
+        "en2-20"
+      ],
+      "wrong": [
+        "en2-11"
+      ]
+    },
+    "loadedSubjects": [
+      "science",
+      "endict",
+      "jadict"
+    ],
+    "badges": [
+      "first",
+      "a100",
+      "m10",
+      "s3",
+      "goal",
+      "perfect"
+    ],
+    "flags": {
+      "perfect": true,
+      "clean": false
+    }
+  }
+}
