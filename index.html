@@ -177,6 +177,7 @@
       <p class="counter" id="quizCounter">1 / 10</p>
       <div class="quiz-head__right">
         <button class="skip-btn" id="quizSkip">スキップ ↷</button>
+        <button class="pause-btn" id="quizPause">⏸ 一時停止</button>
         <p class="timer" id="quizTimer">10</p>
       </div>
     </div>
@@ -210,6 +211,7 @@
       <p class="counter" id="typeCounter">1 / 10</p>
       <div class="quiz-head__right">
         <button class="skip-btn" id="typeSkip">スキップ ↷</button>
+        <button class="pause-btn" id="typePause">⏸ 一時停止</button>
         <p class="timer" id="typeTimer">15</p>
       </div>
     </div>
@@ -246,6 +248,7 @@
       <p class="counter" id="dictCounter">1 / 10</p>
       <div class="quiz-head__right">
         <button class="skip-btn" id="dictSkip">スキップ ↷</button>
+        <button class="pause-btn" id="dictPause">⏸ 一時停止</button>
         <p class="timer" id="dictTimer">40</p>
       </div>
     </div>
@@ -273,6 +276,15 @@
       </div>
     </div>
   </section>
+
+  <!-- ========== 一時停止中の覆い ========== -->
+  <div class="pause-veil" id="pauseVeil" hidden>
+    <div class="pause-veil__box">
+      <p class="pause-veil__title">一時停止中</p>
+      <p class="pause-veil__note">時間は止まっています。問題は見えなくなります。</p>
+      <button class="btn btn--primary" id="pauseResume">▶ 再生</button>
+    </div>
+  </div>
 
   <!-- ========== 前の問題の見返し（記録は変わりません） ========== -->
   <div class="review-pane" id="reviewPane" hidden>
@@ -499,7 +511,7 @@
       <p class="note" id="myMsg"></p>
     </div>
 
-    <div class="card">
+    <div class="card" id="csvCard" hidden>
       <h3 class="card__title">📥 CSVでまとめて追加</h3>
       <p class="note">
         1行につき「問題,答え,解説,例文」の順にカンマ区切りで入力します。<br>
@@ -523,6 +535,21 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
         <p class="note">書き出したファイルや、先生から配られたファイルをそのまま読み込めます。</p>
       </div>
     </div>
+
+    <div class="card" id="teacherCard" hidden>
+      <h3 class="card__title">🔑 先生用の設定</h3>
+      <label class="field">
+        <span class="field__label">先生用の合言葉（変更できます）</span>
+        <input type="text" id="teacherCodeInput" maxlength="20">
+      </label>
+      <button class="btn btn--ghost" id="teacherLock">先生用の機能を隠す</button>
+      <p class="note">
+        この端末では、次に開いたときも先生用の機能が出たままになります。<br>
+        生徒さんの端末で「隠す」を押すと、CSVでまとめて追加が見えなくなります。
+      </p>
+    </div>
+
+    <button class="text-link text-link--slim" id="teacherUnlock">先生用の機能を表示する</button>
   </section>
 
   <!-- ========== 出席スタンプカード ========== -->

@@ -98,6 +98,7 @@ function drawDictation() {
   $('dictFeedback').hidden = true;
   $('dictSkip').hidden = false;
   $('dictDontKnow').hidden = false;
+  Pause.begin(dict, 'dictPause');
   $('dictCheck').hidden = false;
   $('dictCounter').textContent = `${dict.idx + 1} / ${dict.items.length}`;
   $('dictProgress').style.width = `${(dict.idx / dict.items.length) * 100}%`;
@@ -168,13 +169,13 @@ function renderSentence() {
 }
 
 function startDictTimer(item) {
-  const limit = limitFor(item, DICT_TIME_LIMIT);
+  const limit = limitFor(item, DICT_TIME_LIMIT, 'dict');
   const el = $('dictTimer');
   if (!limit) { el.textContent = '∞'; el.classList.remove('is-hurry'); return; }
   dict.left = limit;
   el.textContent = limit;
   el.classList.remove('is-hurry');
-  dict.timer = setInterval(() => {
+  const tick = () => {
     dict.left -= 0.1;
     const sec = Math.max(0, Math.ceil(dict.left));
     el.textContent = sec;
@@ -183,7 +184,9 @@ function startDictTimer(item) {
       clearInterval(dict.timer);
       judgeDictation(true);
     }
-  }, 100);
+  };
+  dict.resumeTimer = () => { dict.timer = setInterval(tick, 100); };
+  dict.resumeTimer();
 }
 
 /* ---------- 採点 ---------- */
@@ -194,6 +197,7 @@ function judgeDictation(timeUp, unknown) {
   $('dictSkip').hidden = true;
   $('dictCheck').hidden = true;
   $('dictDontKnow').hidden = true;
+  Pause.end();
 
   const item = dict.items[dict.idx];
   const sub = current.subject || subjectOfItem(item);

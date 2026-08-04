@@ -756,6 +756,52 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 
 /* ---------- スキップ ---------- */
 .quiz-head__right { display: flex; align-items: center; gap: 12px; }
+/* 出題範囲を「第○問〜第○問」で指定する行 */
+.range-row {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+.range-row__label { display: block; font-size: 12px; color: var(--ink-sub); }
+.range-row__line {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  margin: 8px 0 10px; font-size: 14px;
+}
+.range-row__num {
+  width: 5em; padding: 6px 8px;
+  border: 1.5px solid var(--line); border-radius: 8px;
+  font-size: 15px; text-align: right;
+}
+.range-row__go { width: 100%; min-height: 42px; font-size: 14px; }
+
+/* 一時停止ボタンと、止めている間の覆い */
+.pause-btn {
+  margin-top: 8px; margin-left: 8px;
+  padding: 6px 12px;
+  border: 1.5px solid var(--line); border-radius: 999px;
+  background: #fff; color: var(--ink-sub);
+  font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.pause-btn:hover { border-color: var(--mint); color: var(--mint); }
+.pause-veil {
+  position: fixed; inset: 0; z-index: 70;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  /* 止めている間に問題を読み進められないよう、透けないようにします */
+  background: var(--mint);
+}
+.pause-veil__box { text-align: center; color: #fff; }
+.pause-veil__title { margin: 0 0 6px; font-size: 26px; font-weight: 700; color: #fff; }
+.pause-veil__note { margin: 0 0 18px; font-size: 14px; color: #fff; opacity: .9; }
+.pause-veil .btn--primary {
+  min-width: 200px;
+  background: #fff;
+  color: var(--mint);
+  border-color: #fff;
+}
+
 /* 前の問題の見返し（記録は変わりません） */
 .review-pane {
   position: fixed; inset: 0; z-index: 60;
@@ -775,7 +821,7 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   font-size: 16px; color: var(--ink-sub); cursor: pointer;
 }
 .review-pane__mark { margin: 0 0 8px; font-size: 17px; font-weight: 700; }
-.review-pane__mark.ok { color: var(--brand); }
+.review-pane__mark.ok { color: var(--mint); }
 .review-pane__mark.ng { color: var(--coral-deep); }
 .review-pane .btn:disabled { opacity: .4; cursor: default; }
 .review-pane #reviewBack { width: 100%; margin-top: 12px; }
@@ -807,7 +853,7 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   font-weight: 700;
   cursor: pointer;
 }
-.dontknow:hover { border-color: var(--brand); color: var(--brand); }
+.dontknow:hover { border-color: var(--mint); color: var(--mint); }
 
 .skip-btn {
   margin-top: 8px;

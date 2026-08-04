@@ -304,13 +304,24 @@ function displayText(s) {
  *  - テストモード … 作問者の指定（item.time）を必ず使う
  *  - 練習モード   … 生徒の設定があればそれを優先する
  */
-function limitFor(item, base) {
+function limitFor(item, base, modeKey) {
   const s = Store.data.settings;
+  // 作問者の指定は「問題ごと」が最優先。無ければ「教材ごと・出題形式ごと」を見ます
   const authored = Number(item && item.time) || 0;
-  if (s.mode === 'test') return authored || base;
+  const teacher = authored || levelLimitFor(modeKey);
+  if (s.mode === 'test') return teacher || base;
   if (s.timeLimit === 0) return 0;              // 生徒が「制限なし」を選んだ
   if (s.timeLimit) return s.timeLimit;          // 生徒が秒数を指定した
-  return authored || base;
+  return teacher || base;
+}
+
+/** 教材（タイトル）と出題形式の組み合わせに対して、先生が決めた秒数 */
+function levelKeyOf(sub, lv) { return `${sub.id}:${lv.id}`; }
+function levelLimitFor(modeKey) {
+  if (!modeKey || !current.levelKey) return 0;
+  const m = (Store.data.levelLimits || {})[current.levelKey];
+  const v = m ? Number(m[modeKey]) : 0;
+  return isFinite(v) && v > 0 ? v : 0;
 }
 
 /* ---------- 出題の向き（問題→答え / 答え→問題） ---------- */
@@ -561,10 +572,12 @@ async function openSubject(id) {
         <span class="set-card__name">セット${set.no}</span>
         <span class="set-card__meta">${set.items.length}問 ・ 習得${done}</span>
         <span class="set-card__bar"><i style="width:${pct}%"></i></span>`;
-      btn.onclick = () => openModes(set.items, `${sub.name} ${lv.name} セット${set.no}`, lv.items);
+      btn.onclick = () => openModes(set.items, `${sub.name} ${lv.name} セット${set.no}`, lv.items, levelKeyOf(sub, lv));
       grid.appendChild(btn);
     });
     block.appendChild(grid);
+    block.appendChild(buildRangeRow(sub, lv));
+    block.appendChild(buildLevelLimitRow(sub, lv));
     wrap.appendChild(block);
   });
 
@@ -572,15 +585,124 @@ async function openSubject(id) {
   show('sets', sub.name);
 }
 
+/**
+ * 「第○問 〜 第○問」で出題範囲を決める行を作ります。
+ * 10問ずつのセットに区切られていない範囲でも学習できるようにするためのものです。
+ */
+function buildRangeRow(sub, lv) {
+  const max = lv.items.length;
+  const row = document.createElement('div');
+  row.className = 'range-row';
+
+  const label = document.createElement('span');
+  label.className = 'range-row__label';
+  label.textContent = `範囲を指定して学習（全${max}問）`;
+  row.appendChild(label);
+
+  const line = document.createElement('div');
+  line.className = 'range-row__line';
+  const mkNum = (value) => {
+    const el = document.createElement('input');
+    el.type = 'number';
+    el.min = '1';
+    el.max = String(max);
+    el.value = String(value);
+    el.className = 'range-row__num';
+    return el;
+  };
+  const from = mkNum(1);
+  const to = mkNum(Math.min(max, 100));
+  const t = (s) => { const e = document.createElement('span'); e.textContent = s; return e; };
+  line.append(t('第'), from, t('問 〜 第'), to, t('問'));
+  row.appendChild(line);
+
+  const go = document.createElement('button');
+  go.className = 'btn btn--ghost range-row__go';
+  go.textContent = 'この範囲で学習する';
+  go.onclick = () => {
+    let a = Math.round(Number(from.value));
+    let b = Math.round(Number(to.value));
+    if (!isFinite(a) || a < 1) a = 1;
+    if (!isFinite(b) || b > max) b = max;
+    if (a > b) { const w = a; a = b; b = w; }   // 逆に入れても直します
+    from.value = String(a);
+    to.value = String(b);
+    const items = lv.items.slice(a - 1, b);
+    if (!items.length) { toast('その範囲に問題がありません'); return; }
+    openModes(items, `${sub.name} ${lv.name} 第${a}問〜第${b}問`, lv.items, levelKeyOf(sub, lv));
+  };
+  row.appendChild(go);
+  return row;
+}
+
+/**
+ * 教材（タイトル）ごと・出題形式ごとに制限時間を決める行を作ります。
+ * 先生用の合言葉を入れた端末にだけ表示します。
+ * 空欄や0は「決めない」で、そのときは今までどおりの秒数が使われます。
+ */
+// base は「決めなかったときに使われる秒数」。書き取りは dictation.js 側の
+// 値ですが、このファイルより後に読み込まれるため直接は参照しません。
+const LIMIT_MODES = [
+  { key: 'quiz', name: '4択・リスニング', base: 10 },
+  { key: 'dict', name: '書き取り', base: 40 },
+  { key: 'type', name: 'タイピング', base: 15 },
+];
+
+function buildLevelLimitRow(sub, lv) {
+  const row = document.createElement('div');
+  row.className = 'range-row range-row--teacher';
+  row.hidden = !Store.data.flags.teacher;
+
+  const label = document.createElement('span');
+  label.className = 'range-row__label';
+  label.textContent = '🔑 先生用：この教材の制限時間（秒）';
+  row.appendChild(label);
+
+  const key = levelKeyOf(sub, lv);
+  if (!Store.data.levelLimits) Store.data.levelLimits = {};
+  const store = Store.data.levelLimits[key] || (Store.data.levelLimits[key] = {});
+
+  LIMIT_MODES.forEach((m) => {
+    const line = document.createElement('label');
+    line.className = 'waits__item';
+    line.append(m.name);
+    const el = document.createElement('input');
+    el.type = 'number';
+    el.min = '0';
+    el.max = '600';
+    el.placeholder = String(m.base);
+    el.value = store[m.key] ? String(store[m.key]) : '';
+    el.onchange = () => {
+      const v = Math.round(Number(el.value));
+      if (el.value === '' || !isFinite(v) || v <= 0) { delete store[m.key]; el.value = ''; }
+      else { store[m.key] = Math.min(600, v); el.value = String(store[m.key]); }
+      Store.save();
+    };
+    line.appendChild(el);
+    const unit = document.createElement('span');
+    unit.textContent = '秒';
+    line.appendChild(unit);
+    row.appendChild(line);
+  });
+
+  const note = document.createElement('p');
+  note.className = 'note';
+  note.textContent = '空欄のままだと、うすい数字の秒数が使われます。'
+    + '問題ごとに秒数が指定されている場合は、そちらが優先されます。';
+  row.appendChild(note);
+  return row;
+}
+
 /** つづりを入力できる問題か（英単語など） */
 function isTypable(items) {
   return items.length > 0 && items.every((it) => /^[A-Za-z][A-Za-z '-]*$/.test(it.front));
 }
 
-function openModes(items, label, levelItems) {
+function openModes(items, label, levelItems, levelKey) {
   current.set = items;
   current.label = label;
   current.levelItems = levelItems || null;   // 誤答をレベル全体から作るときに使います
+  current.levelKey = levelKey || null;       // 教材ごとの制限時間を引くための目印
   $('modeTitle').textContent = label;
   $('modeTyping').hidden = !isTypable(items);
   $('modeListen').hidden = !Speech.supported;
@@ -779,6 +901,7 @@ function drawQuiz() {
   $('quizFeedback').hidden = true;
   $('quizSkip').hidden = false;
   $('quizDontKnow').hidden = false;
+  Pause.begin(quiz, 'quizPause');
   $('quizCounter').textContent = `${quiz.idx + 1} / ${quiz.items.length}`;
   $('quizProgress').style.width = `${(quiz.idx / quiz.items.length) * 100}%`;
 
@@ -812,7 +935,7 @@ function drawQuiz() {
 }
 
 function startTimer(item) {
-  const limit = limitFor(item, TIME_LIMIT);
+  const limit = limitFor(item, TIME_LIMIT, 'quiz');
   const el = $('quizTimer');
   if (!limit) {                      // 制限なし
     el.textContent = '∞';
@@ -822,7 +945,7 @@ function startTimer(item) {
   quiz.left = limit;
   el.textContent = limit;
   el.classList.remove('is-hurry');
-  quiz.timer = setInterval(() => {
+  const tick = () => {
     quiz.left -= 0.1;
     const sec = Math.max(0, Math.ceil(quiz.left));
     el.textContent = sec;
@@ -831,7 +954,10 @@ function startTimer(item) {
       clearInterval(quiz.timer);
       answerQuiz(false, null, item, true);
     }
-  }, 100);
+  };
+  // 一時停止から戻ったとき、残り時間の続きから数えなおすために覚えておきます
+  quiz.resumeTimer = () => { quiz.timer = setInterval(tick, 100); };
+  quiz.resumeTimer();
 }
 
 function answerQuiz(isCorrect, btn, item, timeUp, unknown) {
@@ -840,6 +966,7 @@ function answerQuiz(isCorrect, btn, item, timeUp, unknown) {
   clearInterval(quiz.timer);
   $('quizSkip').hidden = true;
   $('quizDontKnow').hidden = true;
+  Pause.end();
 
   const sub = current.subject || subjectOfItem(item);
   const ms = Date.now() - quiz.startAt;
@@ -1041,6 +1168,70 @@ const WAIT_KEYS = ['ok', 'ng', 'timeup', 'unknown'];
 let autoTimer = null;
 
 /* ============================================================
+   一時停止 ／ 再生
+   ------------------------------------------------------------
+   解答中に時間を止めます。止めている間は問題を覆いで隠すので、
+   止めたまま読み進めることはできません。
+   制限時間が「なし」のときも、手を止める用途で使えます。
+   ============================================================ */
+const Pause = {
+  cur: null,   // { state, btn }
+
+  /** 出題を始めるときに呼びます */
+  begin(state, btnId) {
+    this.cur = { state, btn: $(btnId) };
+    state.paused = false;
+    state.pausedAt = 0;
+    this.cur.btn.hidden = false;
+    this.paint();
+  },
+
+  /** 解答が終わったら、止められないようにします */
+  end() {
+    if (this.cur) {
+      this.resume();
+      this.cur.btn.hidden = true;
+    }
+    this.cur = null;
+    $('pauseVeil').hidden = true;
+  },
+
+  stop() {
+    const c = this.cur;
+    if (!c || c.state.paused) return;
+    clearInterval(c.state.timer);
+    c.state.timer = null;
+    c.state.pausedAt = Date.now();
+    c.state.paused = true;
+    this.paint();
+  },
+
+  resume() {
+    const c = this.cur;
+    if (!c || !c.state.paused) return;
+    // 止まっていた分は、解答にかかった時間から差し引きます
+    if (c.state.pausedAt) c.state.startAt += (Date.now() - c.state.pausedAt);
+    c.state.pausedAt = 0;
+    c.state.paused = false;
+    if (c.state.resumeTimer && c.state.left > 0) c.state.resumeTimer();
+    this.paint();
+  },
+
+  toggle() { if (this.cur && this.cur.state.paused) this.resume(); else this.stop(); },
+
+  paint() {
+    const p = !!(this.cur && this.cur.state.paused);
+    if (this.cur) this.cur.btn.textContent = p ? '▶ 再生' : '⏸ 一時停止';
+    $('pauseVeil').hidden = !p;
+  },
+};
+
+$('quizPause').onclick = () => Pause.toggle();
+$('typePause').onclick = () => Pause.toggle();
+$('dictPause').onclick = () => Pause.toggle();
+$('pauseResume').onclick = () => Pause.resume();
+
+/* ============================================================
    前の問題の見返し
    ------------------------------------------------------------
    答えた問題を、あとから見返すためのものです。
@@ -1155,6 +1346,7 @@ function drawTyping() {
   $('typeFeedback').hidden = true;
   $('typeSkip').hidden = false;
   $('typeDontKnow').hidden = false;
+  Pause.begin(typing, 'typePause');
   $('typeCounter').textContent = `${typing.idx + 1} / ${typing.items.length}`;
   $('typeProgress').style.width = `${(typing.idx / typing.items.length) * 100}%`;
   $('typeMeaning').textContent = item.back;
@@ -1215,7 +1407,7 @@ function drawEcho(value) {
 }
 
 function startTypeTimer() {
-  const limit = limitFor(typing.items[typing.idx], TYPE_TIME_LIMIT);
+  const limit = limitFor(typing.items[typing.idx], TYPE_TIME_LIMIT, 'type');
   const el = $('typeTimer');
   if (!limit) {
     el.textContent = '∞';
@@ -1225,7 +1417,7 @@ function startTypeTimer() {
   typing.left = limit;
   el.textContent = limit;
   el.classList.remove('is-hurry');
-  typing.timer = setInterval(() => {
+  const tick = () => {
     typing.left -= 0.1;
     const sec = Math.max(0, Math.ceil(typing.left));
     el.textContent = sec;
@@ -1234,7 +1426,9 @@ function startTypeTimer() {
       clearInterval(typing.timer);
       judgeTyping(true);
     }
-  }, 100);
+  };
+  typing.resumeTimer = () => { typing.timer = setInterval(tick, 100); };
+  typing.resumeTimer();
 }
 
 function judgeTyping(timeUp, unknown) {
@@ -1243,6 +1437,7 @@ function judgeTyping(timeUp, unknown) {
   clearInterval(typing.timer);
   $('typeSkip').hidden = true;
   $('typeDontKnow').hidden = true;
+  Pause.end();
 
   const item = typing.items[typing.idx];
   const sub = current.subject || subjectOfItem(item);
@@ -1799,7 +1994,7 @@ $('searchLink').onclick = () => {
   renderSearch('');
   show('search', '単語をさがす');
 };
-$('addLink').onclick = () => show('add', '問題を追加');
+$('addLink').onclick = () => { renderTeacher(); show('add', '問題を追加'); };
 
 document.querySelectorAll('.mode-card').forEach((btn) => {
   btn.onclick = () => {

@@ -153,6 +153,53 @@ $('importInput').onchange = (e) => {
 };
 
 /* ============================================================
+   3-1-2. 先生用の機能の出し分け
+   ------------------------------------------------------------
+   「CSVでまとめて追加」は生徒には見せない、というご要望への対応です。
+   合言葉を入れた端末だけで表示します。
+   ※これは「うっかり触らせない」ための目隠しです。端末の中を
+     調べれば合言葉は分かるため、鍵として扱わないでください。
+   ============================================================ */
+const DEFAULT_TEACHER_CODE = 'sensei';
+
+function teacherCode() {
+  return Store.data.teacherCode || DEFAULT_TEACHER_CODE;
+}
+
+function renderTeacher() {
+  const on = !!Store.data.flags.teacher;
+  $('csvCard').hidden = !on;
+  $('teacherCard').hidden = !on;
+  $('teacherUnlock').hidden = on;
+  $('teacherCodeInput').value = teacherCode();
+}
+
+$('teacherUnlock').onclick = () => {
+  const code = prompt('先生用の合言葉を入力してください');
+  if (code === null) return;
+  if (code.trim() !== teacherCode()) { toast('合言葉がちがいます'); return; }
+  Store.data.flags.teacher = true;
+  Store.save();
+  renderTeacher();
+  toast('先生用の機能を表示しました');
+};
+
+$('teacherLock').onclick = () => {
+  Store.data.flags.teacher = false;
+  Store.save();
+  renderTeacher();
+  toast('先生用の機能を隠しました');
+};
+
+$('teacherCodeInput').onchange = () => {
+  const v = $('teacherCodeInput').value.trim();
+  if (!v) { $('teacherCodeInput').value = teacherCode(); return; }
+  Store.data.teacherCode = v;
+  Store.save();
+  toast('合言葉を変えました');
+};
+
+/* ============================================================
    3-2. 問題データの書き出し／ファイル取り込み
    ------------------------------------------------------------
    作った問題をCSVファイルにして配れるようにします。
