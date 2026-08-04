@@ -52,8 +52,15 @@ function parseTable(text) {
     .filter((r) => r.length >= 2 && r[0] && r[1]);
 }
 
-/** 表の1行を問題データに変換する（問題,答え,解説,例文,制限時間,読み） */
+/**
+ * 表の1行を問題データに変換する。
+ * 列の順番： 問題, 答え, 解説, 例文, 制限時間, 読み, 誤答1, 誤答2, 誤答3
+ * 7列目から先は無くてもかまいません（そのときは誤答を自動で作ります）。
+ */
 function rowToItem(cols, idPrefix, i) {
+  const wrong = [cols[6], cols[7], cols[8]]
+    .map((s) => String(s == null ? '' : s).trim())
+    .filter(Boolean);
   return {
     id: `${idPrefix}-${i}`,
     front: cols[0],
@@ -62,7 +69,26 @@ function rowToItem(cols, idPrefix, i) {
     example: cols[3] || '',
     time: Number(cols[4]) || 0,
     reading: cols[5] || '',
+    wrong,                 // 作問者が指定した誤答（4択で使います）
   };
+}
+
+/**
+ * 1行目が見出し（項目名）かどうかを見分けます。
+ * 「問題,答え,…」のような行を問題として登録してしまわないようにするためです。
+ */
+const HEADER_WORDS = ['問題', '答え', '正解', '解説', '例文', '制限時間', '読み',
+                      '誤答', 'ダミー', '由来'];
+function looksLikeHeader(row) {
+  if (!row || row.length < 2) return false;
+  const hit = row.filter((c) => HEADER_WORDS.some((w) => String(c).indexOf(w) === 0)).length;
+  // 先頭2つが項目名らしく、行全体の半分以上が項目名なら見出しとみなします
+  return hit >= 2 && hit >= Math.ceil(row.length / 2);
+}
+
+/** 見出し行があれば取り除く */
+function dropHeader(rows) {
+  return (rows.length && looksLikeHeader(rows[0])) ? rows.slice(1) : rows;
 }
 
 /* ============================================================
@@ -70,7 +96,7 @@ function rowToItem(cols, idPrefix, i) {
    ============================================================ */
 $('csvImportBtn').onclick = () => {
   const raw = $('csvInput').value;
-  const rows = parseTable(raw);
+  const rows = dropHeader(parseTable(raw));
   if (!rows.length) { $('csvMsg').textContent = 'データが読み取れませんでした。'; return; }
   if (rows.length < 4) {
     $('csvMsg').textContent = '4択にするため、4行以上のデータを入れてください。';
@@ -210,12 +236,18 @@ function csvCell(v) {
   return /[",\n\t]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
 }
 
-/** 問題の配列を、取り込みと同じ列順のCSVにする */
+/** 問題の配列を、取り込みと同じ列順のCSVにする（1行目に見出しを付けます） */
+const CSV_HEADER = ['問題', '答え', '解説', '例文', '制限時間', '読み', '誤答1', '誤答2', '誤答3'];
 function itemsToCsv(items) {
-  return items.map((it) => [
-    it.front, it.back, it.explanation || '', it.example || '',
-    it.time || '', it.reading || '',
-  ].map(csvCell).join(',')).join('\r\n');
+  const rows = items.map((it) => {
+    const w = Array.isArray(it.wrong) ? it.wrong : [];
+    return [
+      it.front, it.back, it.explanation || '', it.example || '',
+      it.time || '', it.reading || '',
+      w[0] || '', w[1] || '', w[2] || '',
+    ].map(csvCell).join(',');
+  });
+  return [CSV_HEADER.join(',')].concat(rows).join('\r\n');
 }
 
 function exportQuestions(items, name) {
@@ -243,7 +275,7 @@ $('csvFileInput').onchange = (e) => {
 
   const reader = new FileReader();
   reader.onload = () => {
-    const rows = parseTable(String(reader.result).replace(/^﻿/, ''));
+    const rows = dropHeader(parseTable(String(reader.result).replace(/^﻿/, '')));
     if (rows.length < 4) {
       $('csvMsg').textContent = '4択にするため、4行以上のデータが入ったファイルを選んでください。';
       return;
@@ -647,7 +679,7 @@ async function ensureSubjectLoaded(subId) {
     try {
       const res = await fetch('questions/' + lv.file, { cache: 'no-cache' });
       if (!res.ok) continue;
-      const rows = parseTable(await res.text());
+      const rows = dropHeader(parseTable(await res.text()));
       lv.items = rows.map((cols, i) => rowToItem(cols, `${sub.id}-${lv.id}`, i));
       lv.loaded = true;
       changed = true;

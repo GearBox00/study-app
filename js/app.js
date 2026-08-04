@@ -346,15 +346,22 @@ function makeChoices(item, pool, dir) {
   const answer = aOf(item, dir);
   const wrongs = [];
 
+  const add = (a) => {
+    if (!a || wrongs.length >= 3 || a === answer || wrongs.indexOf(a) !== -1) return;
+    wrongs.push(a);
+  };
+
   const addFrom = (list) => {
     if (!list || wrongs.length >= 3) return;
     shuffle(list).forEach((p) => {
-      if (wrongs.length >= 3) return;
-      const a = aOf(p, dir);
-      if (!a || p.id === item.id || a === answer || wrongs.indexOf(a) !== -1) return;
-      wrongs.push(a);
+      if (p.id === item.id) return;
+      add(aOf(p, dir));
     });
   };
+
+  // 作問者が誤答を指定していれば、それを先に使います。
+  // 「問題→答え」の向きのときだけです（逆向きでは答えが問題文になるため）。
+  if (dir !== 'back' && Array.isArray(item.wrong)) item.wrong.forEach(add);
 
   addFrom(pool);
   if (wrongs.length < 3) addFrom(siblingItems(item));
