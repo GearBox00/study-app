@@ -12,7 +12,46 @@
 const STAMP_COLS = 5;
 const STAMP_ROWS = 10;
 const STAMP_MAX = STAMP_ROWS * STAMP_COLS;   // 50マス（5列×10行）
-const QR_PREFIX = 'manabi-card:v1:';         // このアプリのQRだと判別するための印
+const QR_PREFIX = 'manabi-card:v1:';         // 入退室用のQR
+const REWARD_PREFIX = 'manabi-card:r1:';     // ごほうびスタンプ用のQR（別物として扱います）
+
+/* ごほうびスタンプの色。名前と、台紙に出す印をひとまとめにしています */
+const STAMP_COLORS = [
+  { key: 'red',    name: '赤',       icon: '🔴' },
+  { key: 'pink',   name: 'ピンク',   icon: '🌸' },
+  { key: 'orange', name: 'オレンジ', icon: '🟠' },
+  { key: 'yellow', name: '黄',       icon: '🟡' },
+  { key: 'green',  name: '緑',       icon: '🟢' },
+  { key: 'blue',   name: '青',       icon: '🔵' },
+  { key: 'purple', name: 'むらさき', icon: '🟣' },
+];
+function colorOf(key) {
+  return STAMP_COLORS.find((c) => c.key === key) || STAMP_COLORS[0];
+}
+
+/**
+ * 台紙に印を1つ足します。
+ * 出席スタンプもごほうびスタンプも、同じ台紙に順番に押していきます。
+ * 従来の記録は「押した数（stamps）」だけを持っていたため、
+ * 数はそのまま使い、内訳を marks に足す形にしています。
+ * こうすると、これまでの記録をそのまま読み込めます。
+ */
+function pushMark(kind, name, color) {
+  const a = Store.data.attendance;
+  if (!Array.isArray(a.marks)) a.marks = [];
+  // これまでの記録には内訳がないので、すでに押してある分を出席スタンプで埋めます。
+  // これをしないと、古い出席スタンプが後ろへずれてしまいます。
+  while (a.marks.length < a.stamps) a.marks.push({ kind: 'attend', name: '', color: '' });
+  a.marks.push({ kind, name: name || '', color: color || '' });
+  a.stamps++;
+  if (a.stamps >= STAMP_MAX) {   // 1枚たまったら次の台紙へ
+    a.stamps = 0;
+    a.marks = [];
+    a.cards++;
+    return true;
+  }
+  return false;
+}
 
 /* ---------- 記録の読み書き ---------- */
 function todayLog() {
@@ -58,6 +97,30 @@ function minutesBetween(a, b) {
  */
 function handleScan(text) {
   closeStaleSessions();
+
+  // ごほうびスタンプのQR（入退室とは別。回数の制限はありません）
+  if (text && text.indexOf(REWARD_PREFIX) === 0) {
+    const body = text.slice(REWARD_PREFIX.length);
+    const at = body.lastIndexOf('|');
+    const name = (at >= 0 ? body.slice(0, at) : body).trim() || 'ごほうび';
+    const col = colorOf(at >= 0 ? body.slice(at + 1).trim() : '');
+    const done = pushMark('reward', name, col.key);
+    const a = Store.data.attendance;
+    Store.save();
+    if (done) {
+      return {
+        ok: true, kind: 'reward', complete: true,
+        title: 'カード1枚を達成しました！',
+        body: `${STAMP_MAX}マスすべてがそろいました。これで${a.cards}枚目です。`,
+      };
+    }
+    return {
+      ok: true, kind: 'reward',
+      title: `${col.icon} ${name}のスタンプ！`,
+      body: `台紙は ${a.stamps} / ${STAMP_MAX} マスになりました。`,
+    };
+  }
+
   if (!text || text.indexOf(QR_PREFIX) !== 0) {
     return { ok: false, title: 'このQRコードは使えません', body: '学習拠点に掲示されているQRコードを読み取ってください。' };
   }
@@ -87,14 +150,10 @@ function handleScan(text) {
   const first = log.sessions.length === 1;
   let stamped = false;
   if (first) {
-    // スタンプは1日1つだけ
-    a.stamps++;
+    // 出席のスタンプは、これまでどおり1日1つだけです
     a.totalDays++;
     stamped = true;
-    if (a.stamps >= STAMP_MAX) {
-      a.stamps = 0;
-      a.cards++;
-    }
+    pushMark('attend');
   }
   Store.save();
 
@@ -147,14 +206,26 @@ function renderStamp() {
   const state = stampState();
   const log = Store.data.attendance.logs[today()];
 
-  // 25マス
+  // 50マス。出席スタンプとごほうびスタンプが同じ台紙に並びます
+  const marks = Array.isArray(a.marks) ? a.marks : [];
   const grid = $('stampGrid');
   grid.innerHTML = '';
   for (let i = 0; i < STAMP_MAX; i++) {
     const cell = document.createElement('div');
     const filled = i < a.stamps;
     cell.className = 'stamp-cell' + (filled ? ' is-filled' : '');
-    cell.textContent = filled ? '💮' : '';
+    if (filled) {
+      // 内訳が無い古い記録は、これまでどおり出席スタンプとして表示します
+      const m = marks[i];
+      if (m && m.kind === 'reward') {
+        const c = colorOf(m.color);
+        cell.textContent = c.icon;
+        cell.title = m.name ? `${m.name}（${c.name}）` : c.name;
+      } else {
+        cell.textContent = '💮';
+        cell.title = '出席';
+      }
+    }
     grid.appendChild(cell);
   }
 
@@ -315,6 +386,9 @@ function showScanResult(res) {
 function renderVenue() {
   $('venueInput').value = Store.data.venue || 'main';
   drawVenueQr();
+  $('rewardName').value = Store.data.rewardName || '';
+  renderRewardColors();
+  drawRewardQr();
 }
 
 function drawVenueQr() {
@@ -339,6 +413,48 @@ function drawVenueQr() {
   if (svg) { svg.removeAttribute('width'); svg.removeAttribute('height'); svg.style.width = '100%'; }
 }
 
+/* ---------- ごほうびスタンプのQRコード ---------- */
+function renderRewardColors() {
+  const box = $('rewardColors');
+  box.innerHTML = '';
+  STAMP_COLORS.forEach((c) => {
+    const b = document.createElement('button');
+    b.dataset.rewardcolor = c.key;
+    b.textContent = `${c.icon} ${c.name}`;
+    b.onclick = () => { Store.data.rewardColor = c.key; Store.save(); drawRewardQr(); };
+    box.appendChild(b);
+  });
+}
+
+function drawRewardQr() {
+  const name = ($('rewardName').value.trim() || 'ごほうび');
+  const col = colorOf(Store.data.rewardColor);
+  Store.data.rewardName = name;
+  Store.save();
+
+  document.querySelectorAll('[data-rewardcolor]').forEach((b) => {
+    b.classList.toggle('is-on', b.dataset.rewardcolor === col.key);
+  });
+
+  const text = `${REWARD_PREFIX}${name}|${col.key}`;
+  $('rewardText').textContent = text;
+  $('rewardTitleName').textContent = `${col.icon} ${name}`;
+  $('rewardNote').textContent = `読み取ると「${name}」のスタンプ（${col.name}）がもらえます`;
+
+  const box = $('rewardQr');
+  box.innerHTML = '';
+  if (typeof qrcode !== 'function') {
+    box.textContent = 'QRコードの部品が読み込めませんでした。';
+    return;
+  }
+  const qr = qrcode(0, 'M');
+  qr.addData(text);
+  qr.make();
+  box.innerHTML = qr.createSvgTag({ cellSize: 6, margin: 4, scalable: true });
+  const svg = box.querySelector('svg');
+  if (svg) { svg.removeAttribute('width'); svg.removeAttribute('height'); svg.style.width = '100%'; }
+}
+
 /* ============================================================
    画面のボタン
    ============================================================ */
@@ -355,4 +471,15 @@ $('manualBtn').onclick = () => {
 
 $('venueLink').onclick = () => { renderVenue(); show('venue', '拠点用QRコード'); };
 $('venueInput').oninput = () => drawVenueQr();
-$('venuePrint').onclick = () => window.print();
+$('rewardName').oninput = () => drawRewardQr();
+// 印刷は、押したQRだけが紙に出るようにします
+$('venuePrint').onclick = () => printSheet('rewardSheet');
+$('rewardPrint').onclick = () => printSheet('venueSheet');
+
+function printSheet(hideId) {
+  const el = $(hideId);
+  const was = el.hidden;
+  el.hidden = true;
+  window.print();
+  setTimeout(() => { el.hidden = was; }, 300);
+}

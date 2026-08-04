@@ -756,6 +756,36 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 
 /* ---------- スキップ ---------- */
 .quiz-head__right { display: flex; align-items: center; gap: 12px; }
+/* 漢字の書き順 */
+.stroke-view {
+  position: relative;
+  width: 100%;
+  max-width: 260px;
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+/* 十字の下じき（字のバランスを見やすくするため） */
+.stroke-view__grid {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(var(--line), var(--line)) center / 100% 1px no-repeat,
+    linear-gradient(var(--line), var(--line)) center / 1px 100% no-repeat;
+  opacity: .7;
+}
+.stroke-view__svg { position: absolute; inset: 6%; }
+.stroke-view__svg svg { width: 100%; height: 100%; }
+.stroke-view__svg path { stroke: var(--ink); stroke-width: 4; }
+.stroke-count {
+  margin: 12px 0 0; text-align: center;
+  font-size: 15px; font-weight: 700; color: var(--ink-sub);
+}
+#screen-stroke .io-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+#screen-stroke .io-actions .btn { flex: 1; min-width: 110px; }
+#strokeInput { font-size: 22px; text-align: center; }
+
 /* 出題範囲を「第○問〜第○問」で指定する行 */
 .range-row {
   margin-top: 10px;

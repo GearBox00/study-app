@@ -87,6 +87,7 @@
       <button class="quick-link" id="addLink">📕<span>問題を追加する</span></button>
       <button class="quick-link" id="printLink">🖨️<span>紙のテストを作る</span></button>
       <button class="quick-link" id="manageLink">✏️<span>問題の管理</span></button>
+      <button class="quick-link" id="strokeLink">🖌️<span>漢字の書き順</span></button>
       <button class="quick-link quick-link--wide" id="summaryLink">📄<span>今日のまとめ（おうちの人へ）</span></button>
     </div>
   </section>
@@ -275,6 +276,45 @@
         <button class="btn btn--primary" id="dictNext">次へ ›</button>
       </div>
     </div>
+  </section>
+
+  <!-- ========== 漢字の書き順 ========== -->
+  <section class="screen" id="screen-stroke" hidden>
+    <div class="card">
+      <label class="field">
+        <span class="field__label">知りたい漢字を入れてください（1文字）</span>
+        <input type="text" id="strokeInput" maxlength="4" placeholder="例）漢">
+      </label>
+      <p class="note" id="strokeMsg">常用漢字2136字に対応しています。</p>
+    </div>
+
+    <div class="card" id="strokeBox" hidden>
+      <div class="stroke-view">
+        <div class="stroke-view__grid"></div>
+        <div class="stroke-view__svg" id="strokeSvg"></div>
+      </div>
+      <p class="stroke-count" id="strokeCount"></p>
+      <div class="io-actions">
+        <button class="btn btn--primary" id="strokePlay">▶ もう一度</button>
+        <button class="btn btn--ghost" id="strokeStep">1画ずつ</button>
+        <button class="btn btn--ghost" id="strokeAll">全部を表示</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">オフラインで使うために</h3>
+      <p class="note">
+        一度見た漢字は、この端末に残るので通信なしでも表示できます。<br>
+        教場で使う前に、下のボタンでまとめて取り込んでおくこともできます（約4MB）。
+      </p>
+      <button class="btn btn--ghost" id="strokePrefetch">まとめて取り込む</button>
+      <p class="note" id="strokePrefetchMsg"></p>
+    </div>
+
+    <p class="note">
+      書き順のデータは KanjiVG（作： Ulrich Apel 氏）を使わせていただいています。<br>
+      クリエイティブ・コモンズ 表示-継承 3.0 ライセンスで公開されているものです。
+    </p>
   </section>
 
   <!-- ========== 一時停止中の覆い ========== -->
@@ -614,6 +654,30 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
       <p class="venue-sheet__note">入るときと帰るときに読み取ってください</p>
       <p class="venue-sheet__code" id="venueText"></p>
     </div>
+
+    <div class="card no-print">
+      <h3 class="card__title">🎁 ごほうびスタンプのQRコード</h3>
+      <p class="note">
+        入退室用とは別のQRです。読み取ると、色のついたスタンプが台紙に押されます。<br>
+        回数の制限はありません。読み取った回数だけ押されます。
+      </p>
+      <label class="field">
+        <span class="field__label">スタンプの名前（例：体育、善行）</span>
+        <input type="text" id="rewardName" maxlength="12" placeholder="体育">
+      </label>
+      <div class="field">
+        <span class="field__label">色</span>
+        <div class="segmented__btns" id="rewardColors"></div>
+      </div>
+      <button class="btn btn--primary" id="rewardPrint">🖨️ このQRを印刷する</button>
+    </div>
+
+    <div class="venue-sheet" id="rewardSheet">
+      <h2 class="venue-sheet__title">ごほうびスタンプ <span id="rewardTitleName"></span></h2>
+      <div class="venue-qr" id="rewardQr"></div>
+      <p class="venue-sheet__note" id="rewardNote">読み取るとスタンプがもらえます</p>
+      <p class="venue-sheet__code" id="rewardText"></p>
+    </div>
   </section>
 
   <!-- ========== 紙のテストを作る ========== -->
@@ -697,6 +761,7 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
 <script src="js/app.js"></script>
 <script src="js/stamp.js"></script>
 <script src="js/dictation.js"></script>
+<script src="js/stroke.js"></script>
 <script src="js/tools.js"></script>
 <script src="js/boot.js"></script>
 </body>
