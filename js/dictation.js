@@ -31,9 +31,14 @@ function isDictationItem(item) {
   return !!(item && item.front && /\[[^\]]+\]/.test(item.front));
 }
 
-/** そのセットが書き取り向きか（すべての問題に空欄があるか） */
+/**
+ * そのセットが書き取り向きか（空欄のある問題が1問でもあるか）。
+ * 「すべての問題に空欄があること」を条件にすると、1問でも角かっこを
+ * 書き忘れたときにセットごと書き取りモードが消えてしまうため、
+ * 1問でもあれば使えるようにしています。空欄のない問題は全文入力になります。
+ */
 function isDictationSet(items) {
-  return items.length > 0 && items.every(isDictationItem);
+  return items.length > 0 && items.some(isDictationItem);
 }
 
 /**
@@ -59,6 +64,9 @@ function parseSentence(front) {
     last = m.index + m[0].length;
   }
   if (last < src.length) parts.push({ text: src.slice(last) });
+  // 文全体を [ ] で囲んだときも「全文の書き取り」として扱い、
+  // 入力欄を文の長さに合わせて広くします。
+  if (parts.length === 1 && parts[0].blank) parts[0].whole = true;
   return parts;
 }
 
