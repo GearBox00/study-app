@@ -756,6 +756,59 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 
 /* ---------- スキップ ---------- */
 .quiz-head__right { display: flex; align-items: center; gap: 12px; }
+/* 前の問題の見返し（記録は変わりません） */
+.review-pane {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: rgba(15, 40, 33, .45);
+}
+.review-pane__box {
+  width: 100%; max-width: 520px; max-height: 86vh; overflow-y: auto;
+  padding: 18px; border-radius: 16px; background: #fff;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .22);
+}
+.review-pane__head { display: flex; align-items: center; margin-bottom: 8px; }
+.review-pane__pos { margin: 0; font-size: 13px; color: var(--ink-sub); }
+.review-pane__close {
+  margin-left: auto; width: 32px; height: 32px;
+  border: none; border-radius: 50%; background: var(--bg);
+  font-size: 16px; color: var(--ink-sub); cursor: pointer;
+}
+.review-pane__mark { margin: 0 0 8px; font-size: 17px; font-weight: 700; }
+.review-pane__mark.ok { color: var(--brand); }
+.review-pane__mark.ng { color: var(--coral-deep); }
+.review-pane .btn:disabled { opacity: .4; cursor: default; }
+.review-pane #reviewBack { width: 100%; margin-top: 12px; }
+
+/* 解説を表示しておく秒数（正答・誤答・時間切れ・わからない） */
+.waits { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 12px; }
+.waits__item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--ink-sub);
+}
+.waits__item input {
+  width: 4.5em; margin-left: auto; padding: 6px 8px;
+  border: 1.5px solid var(--line); border-radius: 8px;
+  font-size: 15px; text-align: right;
+}
+@media (max-width: 380px) { .waits { grid-template-columns: 1fr; } }
+
+/* 「わからない」ボタン … 押すと答えと解説がすぐ出ます */
+.dontknow {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1.5px dashed var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink-sub);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.dontknow:hover { border-color: var(--brand); color: var(--brand); }
+
 .skip-btn {
   margin-top: 8px;
   padding: 6px 12px;
@@ -1032,6 +1085,11 @@ select {
 .sheet__answers { padding: 0 18px 18px; border-top: 1px dashed var(--line); }
 .sheet__answers h2 { font-size: 15px; }
 .sheet__answers ol { padding-left: 24px; font-size: 13px; line-height: 1.9; }
+/* 解答欄に出す選択肢の記号（A〜D） */
+.sheet__mark {
+  display: inline-block; min-width: 1.4em; margin-right: 6px;
+  text-align: center; border: 1px solid var(--line); border-radius: 3px;
+}
 
 /* ---------- 印刷 ---------- */
 @media print {

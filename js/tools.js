@@ -233,14 +233,15 @@ function saveCsv(rows, name) {
 /** 問題ごとの記録 */
 $('exportItemsCsv').onclick = () => {
   const now = Date.now();
-  const rows = [['科目', 'レベル', '問題', '答え', '解答回数', '間違い回数', '連続正解', '習得', '平均秒', '次に復習する日']];
+  const rows = [['科目', 'レベル', '問題', '答え', '解答回数', '間違い回数',
+                 'わからない回数', '連続正解', '習得', '平均秒', '次に復習する日']];
   allSubjects().forEach((sub) => {
     sub.levels.forEach((lv) => lv.items.forEach((it) => {
       const r = Store.data.items[it.id];
       if (!r || !r.count) return;                 // 一度も解いていない問題は出しません
       rows.push([
         sub.name, lv.name, stripBlanks(it.front), it.back,
-        r.count, r.wrong, r.streak, r.mastered ? '習得' : '',
+        r.count, r.wrong, r.unknown || 0, r.streak, r.mastered ? '習得' : '',
         r.ms && r.count ? (r.ms / r.count / 1000).toFixed(1) : '',
         r.due ? new Date(r.due).toLocaleDateString('ja-JP') : '',
       ]);
@@ -389,13 +390,18 @@ function buildPrint() {
     </div>`;
 
   let body = '<ol class="sheet__list">';
+  // 4択のとき、正解が選択肢の何番目に並んだかを覚えておきます（解答欄にA〜Dを出すため）
+  const marks = [];
   items.forEach((item) => {
     const q = escapeHtml(displayText(qOf(item, dir)));
     if (style === 'choice') {
       const choices = makeChoices(item, pool, dir);
+      const at = choices.indexOf(aOf(item, dir));
+      marks.push(at >= 0 ? 'ABCD'[at] : '');
       body += `<li><p class="sheet__q">${q}</p><ol class="sheet__choices">` +
         choices.map((c) => `<li>${escapeHtml(displayText(c))}</li>`).join('') + '</ol></li>';
     } else {
+      marks.push('');
       body += `<li><p class="sheet__q">${q}</p><p class="sheet__line"></p></li>`;
     }
   });
@@ -404,7 +410,10 @@ function buildPrint() {
   let answers = '';
   if (withAnswer) {
     answers = '<div class="sheet__answers"><h2>解答</h2><ol>' +
-      items.map((item) => `<li>${escapeHtml(displayText(aOf(item, dir)))}</li>`).join('') +
+      items.map((item, i) => {
+        const mark = marks[i] ? `<b class="sheet__mark">${marks[i]}</b>` : '';
+        return `<li>${mark}${escapeHtml(displayText(aOf(item, dir)))}</li>`;
+      }).join('') +
       '</ol></div>';
   }
 

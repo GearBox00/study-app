@@ -187,6 +187,7 @@
     </div>
 
     <div class="choices" id="quizChoices"></div>
+    <button class="dontknow" id="quizDontKnow">？ わからない</button>
 
     <div class="feedback" id="quizFeedback" hidden>
       <p class="feedback__mark" id="fbMark"></p>
@@ -195,6 +196,7 @@
       <p class="example" id="fbExample"></p>
       <button class="auto-pause" hidden>⏸ 自動送りを止める</button>
       <div class="feedback__actions">
+        <button class="btn btn--ghost" id="quizBack">‹ 前の問題を見る</button>
         <button class="btn btn--ghost" id="fbSpeak">🔊 もう一度聞く</button>
         <button class="btn btn--primary" id="fbNext">次へ ›</button>
       </div>
@@ -221,6 +223,7 @@
     <input class="type-input" id="typeInput" type="text"
            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
            placeholder="つづりを入力して Enter">
+    <button class="dontknow" id="typeDontKnow">？ わからない</button>
 
     <div class="feedback" id="typeFeedback" hidden>
       <p class="feedback__mark" id="typeMark"></p>
@@ -229,6 +232,7 @@
       <p class="example" id="typeExample"></p>
       <button class="auto-pause" hidden>⏸ 自動送りを止める</button>
       <div class="feedback__actions">
+        <button class="btn btn--ghost" id="typeBack">‹ 前の問題を見る</button>
         <button class="btn btn--ghost" id="typeSpeak">🔊 発音を聞く</button>
         <button class="btn btn--primary" id="typeNext">次へ ›</button>
       </div>
@@ -254,6 +258,7 @@
     <div class="dict-sentence" id="dictSentence"></div>
     <p class="dict-hint" id="dictHint"></p>
     <button class="btn btn--primary" id="dictCheck">答え合わせ</button>
+    <button class="dontknow" id="dictDontKnow">？ わからない</button>
 
     <div class="feedback" id="dictFeedback" hidden>
       <p class="feedback__mark" id="dictMark"></p>
@@ -262,11 +267,33 @@
       <p class="example" id="dictExample"></p>
       <button class="auto-pause" hidden>⏸ 自動送りを止める</button>
       <div class="feedback__actions">
+        <button class="btn btn--ghost" id="dictBack">‹ 前の問題を見る</button>
         <button class="btn btn--ghost" id="dictSpeak">🔊 もう一度聞く</button>
         <button class="btn btn--primary" id="dictNext">次へ ›</button>
       </div>
     </div>
   </section>
+
+  <!-- ========== 前の問題の見返し（記録は変わりません） ========== -->
+  <div class="review-pane" id="reviewPane" hidden>
+    <div class="review-pane__box">
+      <div class="review-pane__head">
+        <p class="review-pane__pos" id="reviewPos">1 / 1</p>
+        <button class="review-pane__close" id="reviewClose" title="閉じる">✕</button>
+      </div>
+      <p class="review-pane__mark" id="reviewMark"></p>
+      <p class="feedback__answer" id="reviewAnswer"></p>
+      <p class="feedback__exp" id="reviewExp"></p>
+      <p class="example" id="reviewExample"></p>
+      <p class="note">この画面では記録は変わりません。</p>
+      <div class="feedback__actions">
+        <button class="btn btn--ghost" id="reviewPrev">‹ 前へ</button>
+        <button class="btn btn--ghost" id="reviewSpeak">🔊 聞く</button>
+        <button class="btn btn--ghost" id="reviewNext">次へ ›</button>
+      </div>
+      <button class="btn btn--primary" id="reviewBack">解答にもどる</button>
+    </div>
+  </div>
 
   <!-- ========== 結果 ========== -->
   <section class="screen" id="screen-result" hidden>
@@ -350,7 +377,24 @@
           <button data-autospeed="normal">ふつう</button>
           <button data-autospeed="slow">ゆっくり</button>
         </div>
-        <p class="note">間違えたときは、解説を読めるように長めに待ちます。</p>
+        <p class="note">上の3つを押すと、下の秒数がまとめて入ります。</p>
+      </div>
+      <div class="field">
+        <span class="field__label">解説を表示しておく秒数</span>
+        <div class="waits">
+          <label class="waits__item">正 答
+            <input type="number" id="waitOk" min="0" max="60" step="0.1"><span>秒</span></label>
+          <label class="waits__item">誤 答
+            <input type="number" id="waitNg" min="0" max="60" step="0.1"><span>秒</span></label>
+          <label class="waits__item">時間切れ
+            <input type="number" id="waitTimeup" min="0" max="60" step="0.1"><span>秒</span></label>
+          <label class="waits__item">わからない
+            <input type="number" id="waitUnknown" min="0" max="60" step="0.1"><span>秒</span></label>
+        </div>
+        <p class="note">
+          この秒数は「自動送り」が入のときに使われます。<br>
+          切のときは、生徒が「次へ」を押すまで解説が出たままになります。
+        </p>
       </div>
       <label class="switch">
         <input type="checkbox" id="maskToggle">

@@ -77,6 +77,7 @@ function blankMatches(input, answers) {
 
 /* ---------- 出題 ---------- */
 function startDictation(items, label) {
+  resetAnswered();
   dict.items = shuffle(items);
   dict.idx = 0;
   dict.correct = 0;
@@ -96,6 +97,7 @@ function drawDictation() {
 
   $('dictFeedback').hidden = true;
   $('dictSkip').hidden = false;
+  $('dictDontKnow').hidden = false;
   $('dictCheck').hidden = false;
   $('dictCounter').textContent = `${dict.idx + 1} / ${dict.items.length}`;
   $('dictProgress').style.width = `${(dict.idx / dict.items.length) * 100}%`;
@@ -185,21 +187,22 @@ function startDictTimer(item) {
 }
 
 /* ---------- 採点 ---------- */
-function judgeDictation(timeUp) {
+function judgeDictation(timeUp, unknown) {
   if (dict.locked) return;
   dict.locked = true;
   clearInterval(dict.timer);
   $('dictSkip').hidden = true;
   $('dictCheck').hidden = true;
+  $('dictDontKnow').hidden = true;
 
   const item = dict.items[dict.idx];
   const sub = current.subject || subjectOfItem(item);
   const inputs = [...document.querySelectorAll('#dictSentence .dict-blank')];
 
-  let allOk = !timeUp;
+  let allOk = !timeUp && !unknown;
   inputs.forEach((input) => {
     const part = dict.parts[Number(input.dataset.part)];
-    const ok = !timeUp && blankMatches(input.value, part.answers);
+    const ok = !timeUp && !unknown && blankMatches(input.value, part.answers);
     input.classList.add(ok ? 'is-ok' : 'is-ng');
     input.disabled = true;
     if (!ok) {
@@ -214,12 +217,14 @@ function judgeDictation(timeUp) {
 
   const ms = Date.now() - dict.startAt;
   dict.ms += ms;
-  Store.record(item.id, allOk, ms);
+  Store.record(item.id, allOk, ms, { unknown: !!unknown });
   if (allOk) dict.correct++;
   else dict.wrong.push(item);
 
+  const outcome = outcomeOf(allOk, timeUp, unknown);
+  pushAnswered(item, outcome);
   const mark = $('dictMark');
-  mark.textContent = allOk ? '◯ 正解！' : (timeUp ? '△ 時間ぎれ' : '✕ おしい');
+  mark.textContent = { ok: '◯ 正解！', ng: '✕ おしい', timeup: '△ 時間ぎれ', unknown: '？ わからない' }[outcome];
   mark.className = 'feedback__mark ' + (allOk ? 'ok' : 'ng');
   $('dictAnswer').textContent = stripBlanks(item.front);
   $('dictExp').textContent = item.explanation || (item.back ? `意味： ${item.back}` : '');
@@ -229,7 +234,7 @@ function judgeDictation(timeUp) {
   $('dictFeedback').hidden = false;
   $('dictNext').textContent = (dict.idx === dict.items.length - 1) ? '結果を見る' : '次へ ›';
 
-  Speech.speak(sub, item, () => autoAdvance(allOk, () => $('dictNext').click()));
+  Speech.speak(sub, item, () => autoAdvance(outcome, () => $('dictNext').click()));
 }
 
 function skipDictation() {
@@ -278,6 +283,7 @@ $('dictPlay').onclick = () => {
 };
 $('dictCheck').onclick = () => judgeDictation(false);
 $('dictSkip').onclick = skipDictation;
+$('dictDontKnow').onclick = () => judgeDictation(false, true);
 $('dictNext').onclick = () => {
   cancelAuto();
   if (dict.idx < dict.items.length - 1) {

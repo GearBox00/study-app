@@ -75,6 +75,8 @@ const Store = {
         mode: 'practice',  // practice=生徒の設定を優先 / test=作問者の設定で固定
         auto: false,       // 自動送りモード
         autoSpeed: 'normal', // 自動送りの速さ（fast / normal / slow）
+        // 解説を表示しておく秒数。結果の種類ごとに決められます
+        waits: { ok: 0.9, ng: 3.5, timeup: 3.5, unknown: 4 },
         choicePool: 'level', // 4択の誤答をどこから作るか（set=セット内 / level=レベル全体）
       },
       loadedSubjects: [],  // 一度開いた科目（次回から起動時に読み込みます）
@@ -114,7 +116,10 @@ const Store = {
 
   item(id) {
     if (!this.data.items[id]) {
-      this.data.items[id] = { streak: 0, mastered: false, wrong: 0, count: 0, ms: 0, due: null };
+      this.data.items[id] = {
+        streak: 0, mastered: false, wrong: 0, count: 0, ms: 0, due: null,
+        unknown: 0,   // 「わからない」を押した回数（不正解とは別に数えます）
+      };
     }
     return this.data.items[id];
   },
@@ -135,11 +140,15 @@ const Store = {
    *  - 正解 … 連続正解の回数に応じて次回の出題を先延ばし
    *  - 不正解 … すぐ復習対象にする
    */
-  record(id, isCorrect, ms) {
+  record(id, isCorrect, ms, opts) {
     const rec = this.item(id);
     this.data.answered++;
     rec.count++;
     if (ms) { rec.ms += ms; this.data.totalMs += ms; this.data.timedCount++; }
+
+    // 「わからない」は不正解として数えたうえで、押した回数も別に残します。
+    // 迷って間違えた問題と、見当がつかなかった問題を、先生が分けて把握できます。
+    if (opts && opts.unknown) rec.unknown = (rec.unknown || 0) + 1;
 
     if (isCorrect) {
       rec.streak++;
@@ -618,6 +627,7 @@ function startReview() {
 const cardSession = { items: [], idx: 0, known: 0, unknown: [], label: '', dir: 'front' };
 
 function startCard(items, label) {
+  resetAnswered();
   cardSession.items = shuffle(items);
   cardSession.idx = 0;
   cardSession.known = 0;
@@ -664,6 +674,7 @@ function judgeCard(known) {
   const s = cardSession;
   const item = s.items[s.idx];
   Store.record(item.id, known, 0);
+  pushAnswered(item, known ? 'ok' : 'ng');
   if (known) s.known++;
   else s.unknown.push(item);
 
@@ -739,6 +750,7 @@ const quiz = {
 
 function startQuiz(items, label, opts) {
   opts = opts || {};
+  resetAnswered();
   quiz.items = shuffle(items);
   quiz.idx = 0;
   quiz.correct = 0;
@@ -766,6 +778,7 @@ function drawQuiz() {
 
   $('quizFeedback').hidden = true;
   $('quizSkip').hidden = false;
+  $('quizDontKnow').hidden = false;
   $('quizCounter').textContent = `${quiz.idx + 1} / ${quiz.items.length}`;
   $('quizProgress').style.width = `${(quiz.idx / quiz.items.length) * 100}%`;
 
@@ -821,16 +834,17 @@ function startTimer(item) {
   }, 100);
 }
 
-function answerQuiz(isCorrect, btn, item, timeUp) {
+function answerQuiz(isCorrect, btn, item, timeUp, unknown) {
   if (quiz.locked) return;
   quiz.locked = true;
   clearInterval(quiz.timer);
   $('quizSkip').hidden = true;
+  $('quizDontKnow').hidden = true;
 
   const sub = current.subject || subjectOfItem(item);
   const ms = Date.now() - quiz.startAt;
   quiz.ms += ms;
-  Store.record(item.id, isCorrect, ms);
+  Store.record(item.id, isCorrect, ms, { unknown: !!unknown });
   if (isCorrect) quiz.correct++;
   else quiz.wrong.push(item);
 
@@ -841,8 +855,10 @@ function answerQuiz(isCorrect, btn, item, timeUp) {
   });
   if (btn && !isCorrect) btn.classList.add('is-wrong');
 
+  const outcome = outcomeOf(isCorrect, timeUp, unknown);
+  pushAnswered(item, outcome);
   const mark = $('fbMark');
-  mark.textContent = isCorrect ? '◯ 正解！' : (timeUp ? '△ 時間ぎれ' : '✕ ざんねん');
+  mark.textContent = { ok: '◯ 正解！', ng: '✕ ざんねん', timeup: '△ 時間ぎれ', unknown: '？ わからない' }[outcome];
   mark.className = 'feedback__mark ' + (isCorrect ? 'ok' : 'ng');
   $('fbAnswer').textContent = `${displayText(item.front)} ： ${item.back}`;
   $('fbExp').textContent = item.explanation || '';
@@ -853,7 +869,7 @@ function answerQuiz(isCorrect, btn, item, timeUp) {
   $('fbNext').textContent = (quiz.idx === quiz.items.length - 1) ? '結果を見る' : '次へ ›';
 
   // 正解・不正解・時間切れのいずれでも読み上げます
-  Speech.speak(sub, item, () => autoAdvance(isCorrect, () => $('fbNext').click()));
+  Speech.speak(sub, item, () => autoAdvance(outcome, () => $('fbNext').click()));
 }
 
 /** スキップ … 記録せずに、その問題を後ろへ回す */
@@ -920,6 +936,8 @@ document.addEventListener('keydown', (e) => {
 });
 
 $('quizSkip').onclick = skipQuiz;
+$('quizDontKnow').onclick = () =>
+  answerQuiz(false, null, quiz.items[quiz.idx], false, true);
 $('quizSpeak').onclick = () => {
   const item = quiz.items[quiz.idx];
   Speech.speak(current.subject || subjectOfItem(item), item);
@@ -1008,13 +1026,78 @@ function resumeSession() {
    ・正解は短く、間違いは解説を読める長さだけ待ちます
    ・「一時停止」を押すと、その場で手動に切り替わります
    ============================================================ */
-/* 自動送りの待ち時間（ミリ秒）。正解は短く、間違いは解説を読める長さにします */
-const AUTO_WAITS = {
-  fast:   { ok: 600,  ng: 2500 },
-  normal: { ok: 900,  ng: 3500 },
-  slow:   { ok: 1500, ng: 5000 },
+/**
+ * 自動送りの待ち時間（秒）。結果の種類ごとに分けています。
+ *  ok=正答 / ng=誤答 / timeup=時間切れ / unknown=「わからない」を押したとき
+ * 「はやい・ふつう・ゆっくり」を押すと、この値がまとめて入ります。
+ * そのあと1つずつ秒数を変えることもできます。
+ */
+const AUTO_PRESETS = {
+  fast:   { ok: 0.6, ng: 2.5, timeup: 2.5, unknown: 3 },
+  normal: { ok: 0.9, ng: 3.5, timeup: 3.5, unknown: 4 },
+  slow:   { ok: 1.5, ng: 5,   timeup: 5,   unknown: 6 },
 };
+const WAIT_KEYS = ['ok', 'ng', 'timeup', 'unknown'];
 let autoTimer = null;
+
+/* ============================================================
+   前の問題の見返し
+   ------------------------------------------------------------
+   答えた問題を、あとから見返すためのものです。
+   見るだけで、いったん記録した解答は変わりません。
+   （答え直しで正答率が動くと、テストとして使えなくなるため）
+   ============================================================ */
+const MARK_LABEL = { ok: '◯ 正解', ng: '✕ まちがい', timeup: '△ 時間ぎれ', unknown: '？ わからない' };
+let answered = [];      // { item, outcome, sub } を答えた順に入れます
+let reviewAt = 0;
+
+/** 学習を始めるときに履歴を空にする */
+function resetAnswered() { answered = []; }
+
+/** 答えた問題を履歴に足す */
+function pushAnswered(item, outcome) {
+  answered.push({ item, outcome, sub: current.subject || subjectOfItem(item) });
+}
+
+function renderReview() {
+  const h = answered[reviewAt];
+  if (!h) return;
+  const dir = 'front';
+  $('reviewPos').textContent = `${reviewAt + 1} / ${answered.length}　（答えた順）`;
+  const mk = $('reviewMark');
+  mk.textContent = MARK_LABEL[h.outcome] || '';
+  mk.className = 'review-pane__mark ' + (h.outcome === 'ok' ? 'ok' : 'ng');
+  $('reviewAnswer').textContent = `${displayText(qOf(h.item, dir))} ： ${displayText(aOf(h.item, dir))}`;
+  $('reviewExp').textContent = h.item.explanation || '';
+  setExample($('reviewExample'), h.item);
+  $('reviewPrev').disabled = reviewAt <= 0;
+  $('reviewNext').disabled = reviewAt >= answered.length - 1;
+  $('reviewSpeak').hidden = !Speech.supported;
+}
+
+function openReview() {
+  if (!answered.length) { toast('まだ答えた問題がありません'); return; }
+  reviewAt = answered.length - 1;
+  renderReview();
+  $('reviewPane').hidden = false;
+}
+function closeReview() { $('reviewPane').hidden = true; }
+
+$('reviewPrev').onclick = () => { if (reviewAt > 0) { reviewAt--; renderReview(); } };
+$('reviewNext').onclick = () => { if (reviewAt < answered.length - 1) { reviewAt++; renderReview(); } };
+$('reviewSpeak').onclick = () => { const h = answered[reviewAt]; if (h) Speech.speak(h.sub, h.item); };
+$('reviewClose').onclick = closeReview;
+$('reviewBack').onclick = closeReview;
+$('quizBack').onclick = openReview;
+$('typeBack').onclick = openReview;
+$('dictBack').onclick = openReview;
+
+/** 正解かどうか・時間切れか・わからないかを、待ち時間の種類にまとめる */
+function outcomeOf(isCorrect, timeUp, unknown) {
+  if (unknown) return 'unknown';
+  if (isCorrect) return 'ok';
+  return timeUp ? 'timeup' : 'ng';
+}
 
 function cancelAuto() {
   clearTimeout(autoTimer);
@@ -1022,10 +1105,11 @@ function cancelAuto() {
   document.querySelectorAll('.auto-pause').forEach((b) => { b.hidden = true; });
 }
 
-function autoAdvance(isCorrect, nextFn) {
+function autoAdvance(outcome, nextFn) {
   if (!Store.data.settings.auto) return;
-  const w = AUTO_WAITS[Store.data.settings.autoSpeed] || AUTO_WAITS.normal;
-  const wait = isCorrect ? w.ok : w.ng;
+  const w = Store.data.settings.waits || AUTO_PRESETS.normal;
+  const sec = Number(w[outcome]);
+  const wait = (isFinite(sec) && sec >= 0 ? sec : AUTO_PRESETS.normal[outcome]) * 1000;
 
   // 一時停止ボタンを出す（押すとこの問題から手動に戻ります）
   const btn = document.querySelector('.screen:not([hidden]) .auto-pause');
@@ -1051,6 +1135,7 @@ const typing = {
 };
 
 function startTyping(items, label) {
+  resetAnswered();
   typing.items = shuffle(items);
   typing.idx = 0;
   typing.correct = 0;
@@ -1069,6 +1154,7 @@ function drawTyping() {
 
   $('typeFeedback').hidden = true;
   $('typeSkip').hidden = false;
+  $('typeDontKnow').hidden = false;
   $('typeCounter').textContent = `${typing.idx + 1} / ${typing.items.length}`;
   $('typeProgress').style.width = `${(typing.idx / typing.items.length) * 100}%`;
   $('typeMeaning').textContent = item.back;
@@ -1151,28 +1237,31 @@ function startTypeTimer() {
   }, 100);
 }
 
-function judgeTyping(timeUp) {
+function judgeTyping(timeUp, unknown) {
   if (typing.locked) return;
   typing.locked = true;
   clearInterval(typing.timer);
   $('typeSkip').hidden = true;
+  $('typeDontKnow').hidden = true;
 
   const item = typing.items[typing.idx];
   const sub = current.subject || subjectOfItem(item);
   const typed = $('typeInput').value;
-  const isCorrect = !timeUp && answerMatches(typed, item.front);
+  const isCorrect = !timeUp && !unknown && answerMatches(typed, item.front);
 
   const ms = Date.now() - typing.startAt;
   typing.ms += ms;
-  Store.record(item.id, isCorrect, ms);
+  Store.record(item.id, isCorrect, ms, { unknown: !!unknown });
   if (isCorrect) typing.correct++;
   else typing.wrong.push(item);
 
   $('typeInput').disabled = true;
   drawEcho($('typeInput').value);
 
+  const outcome = outcomeOf(isCorrect, timeUp, unknown);
+  pushAnswered(item, outcome);
   const mark = $('typeMark');
-  mark.textContent = isCorrect ? '◯ 正解！' : (timeUp ? '△ 時間ぎれ' : '✕ おしい');
+  mark.textContent = { ok: '◯ 正解！', ng: '✕ おしい', timeup: '△ 時間ぎれ', unknown: '？ わからない' }[outcome];
   mark.className = 'feedback__mark ' + (isCorrect ? 'ok' : 'ng');
   $('typeAnswer').textContent = `${displayText(item.front)} ： ${item.back}`;
   $('typeExp').textContent = item.explanation || '';
@@ -1184,7 +1273,7 @@ function judgeTyping(timeUp) {
   $('typeNext').focus();
 
   // 正解・不正解・時間切れのいずれでも読み上げます
-  Speech.speak(sub, item, () => autoAdvance(isCorrect, () => $('typeNext').click()));
+  Speech.speak(sub, item, () => autoAdvance(outcome, () => $('typeNext').click()));
 }
 
 function skipTyping() {
@@ -1228,6 +1317,7 @@ function finishTyping() {
 }
 
 $('typeSkip').onclick = skipTyping;
+$('typeDontKnow').onclick = () => judgeTyping(false, true);
 $('typeInput').oninput = (e) => { if (!typing.locked) drawEcho(e.target.value); };
 $('typeInput').onkeydown = (e) => { if (e.key === 'Enter') judgeTyping(false); };
 $('typeNext').onclick = () => {
@@ -1508,6 +1598,10 @@ function syncLimitButtons() {
   $('modeNote').textContent = Store.data.settings.mode === 'test'
     ? 'テスト中は、作問者が決めた制限時間で固定されます。'
     : '練習中は、上で選んだ制限時間が使われます。';
+
+  // 解説を表示しておく秒数を、入力欄に反映します
+  const w = Store.data.settings.waits || AUTO_PRESETS.normal;
+  WAIT_KEYS.forEach((key) => { $(WAIT_INPUTS[key]).value = w[key]; });
 }
 document.querySelectorAll('[data-limit]').forEach((b) => {
   b.onclick = () => {
@@ -1525,9 +1619,27 @@ document.querySelectorAll('[data-mode]').forEach((b) => {
 });
 document.querySelectorAll('[data-autospeed]').forEach((b) => {
   b.onclick = () => {
-    Store.data.settings.autoSpeed = b.dataset.autospeed;
+    const key = b.dataset.autospeed;
+    Store.data.settings.autoSpeed = key;
+    // 「はやい・ふつう・ゆっくり」を押すと、4つの秒数がまとめて入ります
+    Store.data.settings.waits = Object.assign({}, AUTO_PRESETS[key] || AUTO_PRESETS.normal);
     Store.save();
     syncLimitButtons();
+  };
+});
+
+/* 解説を表示しておく秒数（1つずつ変えられます） */
+const WAIT_INPUTS = { ok: 'waitOk', ng: 'waitNg', timeup: 'waitTimeup', unknown: 'waitUnknown' };
+WAIT_KEYS.forEach((key) => {
+  const el = $(WAIT_INPUTS[key]);
+  el.onchange = () => {
+    const v = Number(el.value);
+    const w = Store.data.settings.waits || (Store.data.settings.waits = Object.assign({}, AUTO_PRESETS.normal));
+    // 空欄や数字でない入力、負の数は元の値に戻します
+    if (el.value === '' || !isFinite(v) || v < 0) { el.value = w[key]; return; }
+    w[key] = Math.min(60, v);
+    el.value = w[key];
+    Store.save();
   };
 });
 document.querySelectorAll('[data-pool]').forEach((b) => {
