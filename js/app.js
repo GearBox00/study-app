@@ -1,5 +1,5 @@
 /* ============================================================
-   まなびカード - 本体
+   SJ式 - 本体
    ------------------------------------------------------------
    このデモではログイン不要。学習データは端末内(localStorage)に
    保存します。本番でアカウントを付ける場合も、この保存部分を
@@ -436,7 +436,7 @@ let navStack = [];
 
 function show(name, title) {
   SCREENS.forEach((s) => { $('screen-' + s).hidden = (s !== name); });
-  $('appTitle').textContent = title || 'まなびカード';
+  $('appTitle').textContent = title || 'SJ式';
   if (name === 'home') navStack = [];
   else navStack.push(name);
   $('backBtn').hidden = (name === 'home');
@@ -1963,7 +1963,7 @@ function stopTimers() {
 function goHome() {
   stopTimers();
   renderHome();
-  show('home', 'まなびカード');
+  show('home', 'SJ式');
 }
 
 $('backBtn').onclick = () => {

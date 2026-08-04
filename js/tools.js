@@ -104,7 +104,7 @@ function exportData() {
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const name = (Store.data.nick || 'ゲスト').replace(/[\\/:*?"<>|]/g, '');
-  downloadBlob(blob, `まなびカード_${name}_${today()}.json`);
+  downloadBlob(blob, `SJ式_${name}_${today()}.json`);
   toast('記録を書き出しました');
 }
 
@@ -233,7 +233,7 @@ function allMyQuestions() {
   return out;
 }
 
-$('exportAllQuestions').onclick = () => exportQuestions(allMyQuestions(), 'まなびカード_問題');
+$('exportAllQuestions').onclick = () => exportQuestions(allMyQuestions(), 'SJ式_問題');
 
 /** CSVファイルを選んで取り込む */
 $('csvFileInput').onchange = (e) => {
