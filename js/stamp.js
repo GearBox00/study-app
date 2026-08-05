@@ -39,6 +39,15 @@ function colorOf(key) {
 function pushMark(kind, name, color) {
   const a = Store.data.attendance;
   if (!Array.isArray(a.marks)) a.marks = [];
+
+  // 色ごとの通算（2026-08-05 追加）。台紙は1枚たまると内訳が消えるため、
+  // 枚数をまたいで数えられるよう、ここで別に足しています。
+  // これまでに押した分はさかのぼれないので、この日から先の分を数えます。
+  if (kind === 'reward') {
+    if (!a.rewardTotals) a.rewardTotals = {};
+    const key = color || 'other';
+    a.rewardTotals[key] = (a.rewardTotals[key] || 0) + 1;
+  }
   // これまでの記録には内訳がないので、すでに押してある分を出席スタンプで埋めます。
   // これをしないと、古い出席スタンプが後ろへずれてしまいます。
   while (a.marks.length < a.stamps) a.marks.push({ kind: 'attend', name: '', color: '' });
@@ -200,11 +209,40 @@ function renderStampSummary() {
   $('stampCta').classList.toggle('is-active', state === 'in');
 }
 
+/**
+ * ごほうびスタンプの色ごとの個数（通算）。
+ * ご要望により、スタンプカードより先に表示します（2026-08-05 追加）。
+ * 1つももらっていないうちは、欄ごと出しません。
+ */
+function renderRewardTotals() {
+  const totals = Store.data.attendance.rewardTotals || {};
+  const box = $('rewardTotals');
+  const card = $('rewardTotalsCard');
+  box.innerHTML = '';
+
+  let sum = 0;
+  STAMP_COLORS.forEach((c) => {
+    const n = totals[c.key] || 0;
+    if (!n) return;                       // もらっていない色は並べません
+    sum += n;
+    const chip = document.createElement('div');
+    chip.className = 'reward-total';
+    chip.innerHTML = `<span class="reward-total__icon">${c.icon}</span>`
+      + `<span class="reward-total__name">${c.name}</span>`
+      + `<b class="reward-total__num">${n}</b>`;
+    box.appendChild(chip);
+  });
+
+  card.hidden = sum === 0;
+}
+
 /** スタンプカードの画面 */
 function renderStamp() {
   const a = Store.data.attendance;
   const state = stampState();
   const log = Store.data.attendance.logs[today()];
+
+  renderRewardTotals();
 
   // 50マス。出席スタンプとごほうびスタンプが同じ台紙に並びます
   const marks = Array.isArray(a.marks) ? a.marks : [];

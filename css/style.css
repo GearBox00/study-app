@@ -969,6 +969,31 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 }
 .search-input:focus { outline: none; border-color: var(--mint); }
 
+/* ---------- ごほうびスタンプの通算（スタンプカードより先に出します） ---------- */
+.reward-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.reward-total {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+}
+.reward-total__icon { display: block; font-size: 18px; line-height: 1; }
+.reward-total__name { display: block; font-size: 13px; color: var(--ink-sub); }
+.reward-total__num {
+  display: block;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--mint-deep);
+}
+
 /* ---------- 出席スタンプカード ---------- */
 .stamp-cta .review-cta__title b { color: var(--mint-deep); }
 .stamp-cta.is-active { background: var(--mint-pale); }

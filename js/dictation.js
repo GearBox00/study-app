@@ -234,11 +234,11 @@ function judgeDictation(timeUp, unknown) {
   $('dictExp').textContent = item.explanation || (item.back ? `意味： ${item.back}` : '');
   setExample($('dictExample'), item);
   $('dictSpeak').hidden = !Speech.supported;
-  $('dictSpeak').onclick = () => Speech.speak(sub, item);
+  $('dictSpeak').onclick = () => Speech.speakAnswer(sub, item);
   $('dictFeedback').hidden = false;
   $('dictNext').textContent = (dict.idx === dict.items.length - 1) ? '結果を見る' : '次へ ›';
 
-  Speech.speak(sub, item, () => autoAdvance(outcome, () => $('dictNext').click()));
+  Speech.speakAnswer(sub, item, () => autoAdvance(outcome, () => $('dictNext').click()));
 }
 
 function skipDictation() {

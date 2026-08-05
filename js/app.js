@@ -258,40 +258,61 @@ function normalizeAnswer(s) {
     .replace(/[.,!?;:。、！？]+$/, ''); // 末尾の句読点は無視する
 }
 
-/** 解答が複数あるか（give / gave / given のようにスラッシュで区切られているか） */
+/**
+ * 答えが「順番どおり」の指定かどうか。
+ *   give/gave/given … これまでどおり、順番は問わない
+ *   give>gave>given … この順番でないと不正解（2026-08-05 追加）
+ * 動詞の活用や、原級・比較級・最上級のように順番に意味がある問題で使います。
+ * 「＞」「→」でも同じ扱いにします（先生が書きやすい記号を選べるようにするため）。
+ */
+const ORDERED_SEP = /[>＞]|→/;
+function isOrdered(correct) {
+  return ORDERED_SEP.test(String(correct == null ? '' : correct));
+}
+
+/** 解答が複数あるか（スラッシュ、または順番どおりの記号で区切られているか） */
 function answerParts(correct) {
-  return String(correct == null ? '' : correct)
-    .split(/[\/／]/)
-    .map((s) => s.trim())
+  const s = String(correct == null ? '' : correct);
+  return s
+    .split(isOrdered(s) ? /[>＞]|→/ : /[\/／]/)
+    .map((v) => v.trim())
     .filter(Boolean);
 }
 
 /**
  * 入力が正解かどうか。
- * 複数解答は「順番は問わないが、すべてそろっていること」を条件とします。
+ * 複数解答は「すべてそろっていること」が条件です。
+ * 順番は、記号がスラッシュなら問わず、「>」なら書いた順どおりを求めます。
  */
 function answerMatches(input, correct) {
+  const ordered = isOrdered(correct);
   const want = answerParts(correct).map(normalizeAnswer).filter(Boolean);
   if (want.length <= 1) return normalizeAnswer(input) === (want[0] || '');
 
   // 「look after」のように答えの中に空白がある場合、空白で区切ってしまうと
   // 正しい解答が不正解になるため、そのときは区切り記号だけで分けます。
   const hasSpace = want.some((w) => w.indexOf(' ') !== -1);
-  const sep = hasSpace ? /[\/／,、]+/ : /[\/／,、\s]+/;
+  // 生徒はスラッシュでも「>」でも区切って入力できます（どちらで書いても受け付けます）
+  const sep = hasSpace ? /[\/／,、>＞]+|→/ : /[\/／,、>＞\s]+|→/;
   const got = String(input == null ? '' : input)
     .split(sep)
     .map(normalizeAnswer)
     .filter(Boolean);
   if (got.length !== want.length) return false;
+  if (ordered) return got.every((v, i) => v === want[i]);   // 書いた順どおりを求めます
   const a = got.slice().sort();
   const b = want.slice().sort();
   return a.every((v, i) => v === b[i]);
 }
 
-/** 画面に出すときの表示（スラッシュの前後に空白を入れて読みやすくする） */
+/**
+ * 画面に出すときの表示。
+ * 順番どおりの問題は「→」でつないで、順番に意味があることが分かるようにします。
+ */
 function displayAnswer(s) {
   const parts = answerParts(s);
-  return parts.length > 1 ? parts.join(' / ') : String(s == null ? '' : s);
+  if (parts.length <= 1) return String(s == null ? '' : s);
+  return parts.join(isOrdered(s) ? ' → ' : ' / ');
 }
 
 /** 書き取り用の角かっこを外し、読みやすい形にして表示する */
@@ -408,10 +429,27 @@ const Speech = {
     return stripBlanks(item.front).replace(/\s*[\/／]\s*/g, '、');        // 複数解答は区切って読む
   },
 
+  /**
+   * 答え合わせのあとに読み上げる文。
+   * 「読み」の欄があれば、そちらを読みます（2026-08-05 追加）。
+   * 難読地名のように、問題文をそのまま合成音声に読ませると
+   * 誤った読み方を教えてしまう教材があるためです。
+   * 出題中は読み上げないので、答えを先に知られる心配はありません。
+   */
+  answerTextOf(subject, item) {
+    if (item && item.reading) return item.reading;
+    return this.textOf(subject, item);
+  },
+
+  /** 答え合わせのあとの読み上げ */
+  speakAnswer(subject, item, onend) {
+    this.speak(subject, item, onend, true);
+  },
+
   /** onend … 読み終わったときに呼ばれます（自動送りで使います） */
-  speak(subject, item, onend) {
+  speak(subject, item, onend, afterAnswer) {
     if (!this.supported) { if (onend) setTimeout(onend, 0); return; }
-    const text = this.textOf(subject, item);
+    const text = afterAnswer ? this.answerTextOf(subject, item) : this.textOf(subject, item);
     const u = new SpeechSynthesisUtterance(text);
     u.lang = this.langOf(item, text);
     u.rate = (u.lang === 'en-US' ? 0.9 : 1.0) * (Store.data.settings.speed || 1);
@@ -745,7 +783,7 @@ function startReview() {
     toast('いま復習する問題はありません');
     return;
   }
-  const picked = shuffle(list).slice(0, SET_SIZE).map((p) => p.item);
+  const picked = shuffle(list).slice(0, REVIEW_SIZE).map((p) => p.item);
   current.subject = null;
   startQuiz(picked, '復習コーナー', { review: true, pool: list.map((p) => p.item) });
 }
@@ -998,12 +1036,12 @@ function answerQuiz(isCorrect, btn, item, timeUp, unknown) {
   $('fbExp').textContent = item.explanation || '';
   setExample($('fbExample'), item);
   $('fbSpeak').hidden = !Speech.supported;
-  $('fbSpeak').onclick = () => Speech.speak(sub, item);
+  $('fbSpeak').onclick = () => Speech.speakAnswer(sub, item);
   $('quizFeedback').hidden = false;
   $('fbNext').textContent = (quiz.idx === quiz.items.length - 1) ? '結果を見る' : '次へ ›';
 
   // 正解・不正解・時間切れのいずれでも読み上げます
-  Speech.speak(sub, item, () => autoAdvance(outcome, () => $('fbNext').click()));
+  Speech.speakAnswer(sub, item, () => autoAdvance(outcome, () => $('fbNext').click()));
 }
 
 /** スキップ … 記録せずに、その問題を後ろへ回す */
@@ -1283,7 +1321,7 @@ function closeReview() { $('reviewPane').hidden = true; }
 
 $('reviewPrev').onclick = () => { if (reviewAt > 0) { reviewAt--; renderReview(); } };
 $('reviewNext').onclick = () => { if (reviewAt < answered.length - 1) { reviewAt++; renderReview(); } };
-$('reviewSpeak').onclick = () => { const h = answered[reviewAt]; if (h) Speech.speak(h.sub, h.item); };
+$('reviewSpeak').onclick = () => { const h = answered[reviewAt]; if (h) Speech.speakAnswer(h.sub, h.item); };
 $('reviewClose').onclick = closeReview;
 $('reviewBack').onclick = closeReview;
 $('quizBack').onclick = openReview;
@@ -1469,13 +1507,13 @@ function judgeTyping(timeUp, unknown) {
   $('typeExp').textContent = item.explanation || '';
   setExample($('typeExample'), item);
   $('typeSpeak').hidden = !Speech.supported;
-  $('typeSpeak').onclick = () => Speech.speak(sub, item);
+  $('typeSpeak').onclick = () => Speech.speakAnswer(sub, item);
   $('typeFeedback').hidden = false;
   $('typeNext').textContent = (typing.idx === typing.items.length - 1) ? '結果を見る' : '次へ ›';
   $('typeNext').focus();
 
   // 正解・不正解・時間切れのいずれでも読み上げます
-  Speech.speak(sub, item, () => autoAdvance(outcome, () => $('typeNext').click()));
+  Speech.speakAnswer(sub, item, () => autoAdvance(outcome, () => $('typeNext').click()));
 }
 
 function skipTyping() {
@@ -1710,7 +1748,7 @@ function renderWeak() {
   btn.onclick = () => {
     current.subject = null;
     const items = rows.map((r) => r.item);
-    startQuiz(items.slice(0, SET_SIZE), '苦手な問題', { pool: items });
+    startQuiz(items.slice(0, REVIEW_SIZE), '苦手な問題', { pool: items });
   };
 }
 
