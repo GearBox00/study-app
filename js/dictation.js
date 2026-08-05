@@ -236,6 +236,7 @@ function judgeDictation(timeUp, unknown) {
   $('dictSpeak').hidden = !Speech.supported;
   $('dictSpeak').onclick = () => Speech.speakAnswer(sub, item);
   $('dictFeedback').hidden = false;
+  revealFeedback($('dictFeedback'));
   $('dictNext').textContent = (dict.idx === dict.items.length - 1) ? '結果を見る' : '次へ ›';
 
   Speech.speakAnswer(sub, item, () => autoAdvance(outcome, () => $('dictNext').click()));

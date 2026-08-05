@@ -321,6 +321,26 @@ function displayText(s) {
 }
 
 /**
+ * 答え合わせの内容が画面の外に出ているときだけ、見える位置まで送ります。
+ * パソコンの画面では、問題と選択肢の下に解答・解説が続くため、
+ * 解説が長いと「次へ」まで届かず、スクロールしないと読めませんでした
+ * （2026-08-06 修正。ご指摘 No.46）。
+ * すでに見えているときは動かしません。画面が揺れないようにするためです。
+ */
+function revealFeedback(el) {
+  if (!el || typeof el.getBoundingClientRect !== 'function') return;
+  const run = () => {
+    const r = el.getBoundingClientRect();
+    const h = window.innerHeight || document.documentElement.clientHeight;
+    if (r.bottom <= h) return;                       // 見えているなら、そのまま
+    // 解説が画面より長いときは頭から読めるように、そうでなければ下端をそろえます
+    el.scrollIntoView({ behavior: 'smooth', block: r.height > h ? 'start' : 'end' });
+  };
+  if (typeof requestAnimationFrame === 'function') requestAnimationFrame(run);
+  else setTimeout(run, 0);
+}
+
+/**
  * この問題に使う制限時間（秒）を決める。0 なら制限なし。
  *  - テストモード … 作問者の指定（item.time）を必ず使う
  *  - 練習モード   … 生徒の設定があればそれを優先する
@@ -1038,6 +1058,7 @@ function answerQuiz(isCorrect, btn, item, timeUp, unknown) {
   $('fbSpeak').hidden = !Speech.supported;
   $('fbSpeak').onclick = () => Speech.speakAnswer(sub, item);
   $('quizFeedback').hidden = false;
+  revealFeedback($('quizFeedback'));
   $('fbNext').textContent = (quiz.idx === quiz.items.length - 1) ? '結果を見る' : '次へ ›';
 
   // 正解・不正解・時間切れのいずれでも読み上げます
@@ -1509,8 +1530,13 @@ function judgeTyping(timeUp, unknown) {
   $('typeSpeak').hidden = !Speech.supported;
   $('typeSpeak').onclick = () => Speech.speakAnswer(sub, item);
   $('typeFeedback').hidden = false;
+  revealFeedback($('typeFeedback'));
   $('typeNext').textContent = (typing.idx === typing.items.length - 1) ? '結果を見る' : '次へ ›';
-  $('typeNext').focus();
+  // 答え合わせに使ったEnterが、そのまま「次へ」を押してしまわないよう、
+  // 少し待ってからフォーカスを移します。
+  // これをしないと、正答・誤答のときに解答と解説が一瞬で消えていました
+  // （2026-08-06 修正。ご指摘 No.5）
+  setTimeout(() => { if (typing.locked) $('typeNext').focus(); }, 400);
 
   // 正解・不正解・時間切れのいずれでも読み上げます
   Speech.speakAnswer(sub, item, () => autoAdvance(outcome, () => $('typeNext').click()));
@@ -1559,7 +1585,13 @@ function finishTyping() {
 $('typeSkip').onclick = skipTyping;
 $('typeDontKnow').onclick = () => judgeTyping(false, true);
 $('typeInput').oninput = (e) => { if (!typing.locked) drawEcho(e.target.value); };
-$('typeInput').onkeydown = (e) => { if (e.key === 'Enter') judgeTyping(false); };
+$('typeInput').onkeydown = (e) => {
+  if (e.key !== 'Enter') return;
+  // 日本語入力の変換を確定するEnterでは、答え合わせをしません（書き取りと同じ扱い）
+  if (e.isComposing || e.keyCode === 229) return;
+  e.preventDefault();
+  judgeTyping(false);
+};
 $('typeNext').onclick = () => {
   cancelAuto();
   if (typing.idx < typing.items.length - 1) {
