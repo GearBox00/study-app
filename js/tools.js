@@ -54,8 +54,10 @@ function parseTable(text) {
 
 /**
  * 表の1行を問題データに変換する。
- * 列の順番： 問題, 答え, 解説, 例文, 制限時間, 読み, 誤答1, 誤答2, 誤答3
+ * 列の順番： 問題, 答え, 解説, 例文, 制限時間, 読み, 誤答1, 誤答2, 誤答3, セット
  * 7列目から先は無くてもかまいません（そのときは誤答を自動で作ります）。
+ * 10列目の「セット」は、1つのファイルを単元ごとに分けて登録するための欄です
+ * （2026-08-06 追加）。空欄なら、これまでどおり画面で入れた名前でまとめます。
  */
 function rowToItem(cols, idPrefix, i) {
   const wrong = [cols[6], cols[7], cols[8]]
@@ -70,7 +72,37 @@ function rowToItem(cols, idPrefix, i) {
     time: Number(cols[4]) || 0,
     reading: cols[5] || '',
     wrong,                 // 作問者が指定した誤答（4択で使います）
+    set: String(cols[9] == null ? '' : cols[9]).trim(),
   };
+}
+
+/**
+ * 「セット」欄の中身で、問題を単元ごとに分けます。
+ * 書いていない問題は、画面で入れた名前（fallback）にまとめます。
+ * 並び順は、ファイルに出てきた順のままです（先生が並べた順を尊重するため）。
+ */
+function groupBySet(items, fallback) {
+  const order = [];
+  const map = new Map();
+  items.forEach((it) => {
+    const name = it.set || fallback;
+    if (!map.has(name)) { map.set(name, []); order.push(name); }
+    map.get(name).push(it);
+    it.set = name;         // 書き出したときに、同じ形で戻せるようにします
+  });
+  return order.map((name) => ({ name, items: map.get(name) }));
+}
+
+/** 分けた単元を、まとめて登録します。戻り値は登録した単元の数と問題数 */
+function addGroupedSets(rows, fallback, idBase) {
+  const items = rows.map((cols, i) => rowToItem(cols, idBase, i));
+  const groups = groupBySet(items, fallback);
+  groups.forEach((g, gi) => {
+    Store.data.customSets.push({ id: `${idBase}-g${gi}`, name: g.name, items: g.items });
+  });
+  Store.save();
+  invalidateSearchIndex();
+  return { groups: groups.length, count: items.length, names: groups.map((g) => g.name) };
 }
 
 /**
@@ -78,7 +110,7 @@ function rowToItem(cols, idPrefix, i) {
  * 「問題,答え,…」のような行を問題として登録してしまわないようにするためです。
  */
 const HEADER_WORDS = ['問題', '答え', '正解', '解説', '例文', '制限時間', '読み',
-                      '誤答', 'ダミー', '由来'];
+                      '誤答', 'ダミー', '由来', 'セット', '単元'];
 function looksLikeHeader(row) {
   if (!row || row.length < 2) return false;
   const hit = row.filter((c) => HEADER_WORDS.some((w) => String(c).indexOf(w) === 0)).length;
@@ -104,18 +136,14 @@ $('csvImportBtn').onclick = () => {
   }
 
   const stamp = Date.now();
-  const items = rows.map((cols, i) => rowToItem(cols, `cs-${stamp}`, i));
-  Store.data.customSets.push({
-    id: 'cs-' + stamp,
-    name: $('csvName').value.trim() || `取り込み ${Store.data.customSets.length + 1}`,
-    items,
-  });
-  Store.save();
-  invalidateSearchIndex();
+  const fallback = $('csvName').value.trim() || `取り込み ${Store.data.customSets.length + 1}`;
+  const r = addGroupedSets(rows, fallback, `cs-${stamp}`);
   $('csvInput').value = '';
   $('csvName').value = '';
-  $('csvMsg').textContent = `${items.length}問を追加しました。ホームの「取り込んだ問題」から使えます。`;
-  toast(`${items.length}問を追加しました`);
+  $('csvMsg').textContent = r.groups > 1
+    ? `${r.count}問を、${r.groups}つの単元に分けて追加しました（${r.names.join('／')}）。`
+    : `${r.count}問を追加しました。ホームの「取り込んだ問題」から使えます。`;
+  toast(`${r.count}問を追加しました`);
 };
 
 /* ============================================================
@@ -237,14 +265,14 @@ function csvCell(v) {
 }
 
 /** 問題の配列を、取り込みと同じ列順のCSVにする（1行目に見出しを付けます） */
-const CSV_HEADER = ['問題', '答え', '解説', '例文', '制限時間', '読み', '誤答1', '誤答2', '誤答3'];
+const CSV_HEADER = ['問題', '答え', '解説', '例文', '制限時間', '読み', '誤答1', '誤答2', '誤答3', 'セット'];
 function itemsToCsv(items) {
   const rows = items.map((it) => {
     const w = Array.isArray(it.wrong) ? it.wrong : [];
     return [
       it.front, it.back, it.explanation || '', it.example || '',
       it.time || '', it.reading || '',
-      w[0] || '', w[1] || '', w[2] || '',
+      w[0] || '', w[1] || '', w[2] || '', it.set || '',
     ].map(csvCell).join(',');
   });
   return [CSV_HEADER.join(',')].concat(rows).join('\r\n');
@@ -281,16 +309,12 @@ $('csvFileInput').onchange = (e) => {
       return;
     }
     const stamp = Date.now();
-    const items = rows.map((cols, i) => rowToItem(cols, `cs-${stamp}`, i));
-    Store.data.customSets.push({
-      id: 'cs-' + stamp,
-      name: file.name.replace(/\.(csv|txt)$/i, '').replace(/_\d{4}-\d{2}-\d{2}$/, ''),
-      items,
-    });
-    Store.save();
-    invalidateSearchIndex();
-    $('csvMsg').textContent = `ファイルから${items.length}問を追加しました。`;
-    toast(`${items.length}問を追加しました`);
+    const fallback = file.name.replace(/\.(csv|txt)$/i, '').replace(/_\d{4}-\d{2}-\d{2}$/, '');
+    const r = addGroupedSets(rows, fallback, `cs-${stamp}`);
+    $('csvMsg').textContent = r.groups > 1
+      ? `ファイルから${r.count}問を、${r.groups}つの単元に分けて追加しました（${r.names.join('／')}）。`
+      : `ファイルから${r.count}問を追加しました。`;
+    toast(`${r.count}問を追加しました`);
   };
   reader.readAsText(file);
 };
