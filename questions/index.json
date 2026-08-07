@@ -2,6 +2,21 @@
   "_comment": "ここに科目とCSVファイルを書くと、起動時に目次だけ読み込まれ、科目を開いたときに中身を読み込みます。列は 問題,答え,解説,例文,制限時間(秒),読み の順です。問題文の [ ] は書き取りの空欄になります。count は一覧に出す件数の目安です。",
   "subjects": [
     {
+      "id": "kanji-grade",
+      "name": "学年の漢字",
+      "icon": "🈳",
+      "lang": "ja-JP",
+      "speakField": "reading",
+      "levels": [
+        {
+          "id": "kg-5",
+          "name": "小学5年生の漢字（193字）",
+          "file": "kanji-g5.csv",
+          "count": 193
+        }
+      ]
+    },
+    {
       "id": "science",
       "name": "理科",
       "icon": "🔬",
