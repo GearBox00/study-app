@@ -356,6 +356,61 @@ function limitFor(item, base, modeKey) {
   return teacher || base;
 }
 
+/* ============================================================
+   速く答えると高得点（2026-08-07 追加）
+   ------------------------------------------------------------
+   ご要望（機能一覧 No.58）への対応です。設定でオンにしたときだけ働きます。
+
+   1問あたりの点数
+     正解     … 100点 ＋ 速さボーナス（残り時間に比例。最大100点）
+     不正解   … −50点
+     時間切れ … 0点（ご提案どおり「失格」の扱いにしています）
+     わからない … 0点（正直に押したことは罰しません）
+
+   ★連打対策
+   4択は当てずっぽうでも4回に1回は当たるため、速さだけで点を付けると
+   「問題を読まずに連打する」のがいちばん得になってしまいます。
+   そこで MIN_THINK_MS（0.8秒）より速い解答には、ボーナスを付けません。
+   こうすると連打の期待値は 0.25×100 ＋ 0.75×(−50) ＝ −12.5点 となり、
+   まじめに解くより損になります。
+   ============================================================ */
+const SCORE_BASE = 100;     // 正解の基本点
+const SCORE_BONUS = 100;    // 速さボーナスの上限
+const SCORE_WRONG = -50;    // 不正解の減点
+const MIN_THINK_MS = 800;   // これより速い解答にはボーナスを付けません
+
+/**
+ * 1問ぶんの得点。
+ *   outcome … 'ok' | 'ng' | 'timeup' | 'unknown'
+ *   ms      … その問題にかかった時間（ミリ秒）
+ *   limit   … その問題の制限時間（秒）。0 なら制限なし
+ */
+function scoreOne(outcome, ms, limit) {
+  if (outcome === 'ng') return SCORE_WRONG;
+  if (outcome !== 'ok') return 0;                 // 時間切れ・わからない
+  if (!limit) return SCORE_BASE;                  // 制限なしのときは速さを測れません
+  if (ms < MIN_THINK_MS) return SCORE_BASE;       // 速すぎる解答にボーナスは付けません
+  const leftRatio = Math.max(0, Math.min(1, 1 - ms / (limit * 1000)));
+  return SCORE_BASE + Math.round(SCORE_BONUS * leftRatio);
+}
+
+/** 速さで点をつける設定がオンか */
+function speedScoreOn() {
+  return !!Store.data.settings.speedScore;
+}
+
+/** 教材ごとの自己ベスト。他人とではなく、自分の過去と比べます */
+function bestScoreOf(label) {
+  return (Store.data.bestScores || {})[label] || 0;
+}
+function saveBestScore(label, score) {
+  if (!Store.data.bestScores) Store.data.bestScores = {};
+  const prev = Store.data.bestScores[label] || 0;
+  const updated = score > prev;
+  if (updated) { Store.data.bestScores[label] = score; Store.save(); }
+  return { updated, prev };
+}
+
 /** 教材（タイトル）と出題形式の組み合わせに対して、先生が決めた秒数 */
 function levelKeyOf(sub, lv) { return `${sub.id}:${lv.id}`; }
 function levelLimitFor(modeKey) {
@@ -951,6 +1006,7 @@ function startQuiz(items, label, opts) {
   quiz.pool = opts.pool || (wide && wide.length > items.length ? wide : items);
   quiz.skipped = {};
   quiz.ms = 0;
+  quiz.score = 0;
   // リスニングは「音を聴いて意味を答える」ので向きは固定
   quiz.dir = quiz.listen ? 'front' : Store.data.settings.direction;
   show('quiz', label);
@@ -1048,6 +1104,7 @@ function answerQuiz(isCorrect, btn, item, timeUp, unknown) {
   if (btn && !isCorrect) btn.classList.add('is-wrong');
 
   const outcome = outcomeOf(isCorrect, timeUp, unknown);
+  if (speedScoreOn()) quiz.score += scoreOne(outcome, ms, limitFor(item, TIME_LIMIT, 'quiz'));
   pushAnswered(item, outcome);
   const mark = $('fbMark');
   mark.textContent = { ok: '◯ 正解！', ng: '✕ ざんねん', timeup: '△ 時間ぎれ', unknown: '？ わからない' }[outcome];
@@ -1104,6 +1161,8 @@ function finishQuiz() {
     isReview: quiz.review,
     ms: quiz.ms,
     answered,
+    score: quiz.score,
+    label,
     retryFn: (wrong) => startQuiz(wrong, label, opts),
     againFn: () => startQuiz(items, label, opts),
   });
@@ -1399,6 +1458,7 @@ function startTyping(items, label) {
   typing.wrong = [];
   typing.label = label;
   typing.ms = 0;
+  typing.score = 0;
   typing.skipped = {};
   show('type', label);
   drawTyping();
@@ -1520,6 +1580,7 @@ function judgeTyping(timeUp, unknown) {
   drawEcho($('typeInput').value);
 
   const outcome = outcomeOf(isCorrect, timeUp, unknown);
+  if (speedScoreOn()) typing.score += scoreOne(outcome, ms, limitFor(item, TYPE_TIME_LIMIT, 'type'));
   pushAnswered(item, outcome);
   const mark = $('typeMark');
   mark.textContent = { ok: '◯ 正解！', ng: '✕ おしい', timeup: '△ 時間ぎれ', unknown: '？ わからない' }[outcome];
@@ -1577,6 +1638,8 @@ function finishTyping() {
     wrong: typing.wrong,
     ms: typing.ms,
     answered,
+    score: typing.score,
+    label,
     retryFn: (wrong) => startTyping(wrong, label),
     againFn: () => startTyping(items, label),
   });
@@ -1653,6 +1716,19 @@ function showResult(res) {
     again.onclick = () => res.againFn();
   }
 
+  // 速さで点をつける設定がオンのときだけ、得点と自己ベストを出します
+  const sc = $('resultScore');
+  if (speedScoreOn() && res.mode !== 'card' && typeof res.score === 'number') {
+    const best = saveBestScore(res.label, res.score);
+    sc.hidden = false;
+    sc.innerHTML = `<span class="result-score__num">${res.score}</span><span class="result-score__unit">点</span>`
+      + (best.updated
+          ? '<span class="result-score__best is-new">自己ベスト更新！</span>'
+          : `<span class="result-score__best">自己ベスト ${best.prev}点</span>`);
+  } else {
+    sc.hidden = true;
+  }
+
   showNewBadges();
   show('result', '結果');
 }
@@ -1707,6 +1783,7 @@ function renderMypage() {
   $('goalInput').value = d.goal;
   $('maskToggle').checked = !!d.settings.mask;
   $('autoToggle').checked = !!d.settings.auto;
+  $('speedScoreToggle').checked = !!d.settings.speedScore;
   syncDirButtons();
   syncSpeedButtons();
   syncLimitButtons();
@@ -1840,6 +1917,12 @@ $('autoToggle').onchange = (e) => {
   Store.data.settings.auto = e.target.checked;
   Store.save();
   toast(e.target.checked ? '自動送りをオンにしました' : '自動送りをオフにしました');
+};
+
+$('speedScoreToggle').onchange = (e) => {
+  Store.data.settings.speedScore = e.target.checked;
+  Store.save();
+  toast(e.target.checked ? '点数をつけるようにしました' : '点数をつけないようにしました');
 };
 
 function syncDirButtons() {

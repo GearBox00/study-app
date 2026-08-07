@@ -1208,3 +1208,30 @@ select {
   .set-grid { grid-template-columns: repeat(3, 1fr); }
   .flashcard__inner { min-height: 280px; }
 }
+
+/* ---------- 速く答えると高得点（結果画面の点数） ---------- */
+.result-score {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  margin: 6px 0 10px;
+}
+.result-score__num {
+  display: block;
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--mint-deep);
+  line-height: 1.1;
+}
+.result-score__unit { display: block; font-size: 15px; color: var(--ink-sub); }
+.result-score__best {
+  display: block;
+  margin-left: 6px;
+  font-size: 13px;
+  color: var(--ink-sub);
+}
+.result-score__best.is-new {
+  color: var(--amber-deep, #b26a00);
+  font-weight: 700;
+}

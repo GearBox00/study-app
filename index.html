@@ -353,6 +353,7 @@
     <div class="result">
       <p class="result__emoji" id="resultEmoji">🎉</p>
       <p class="result__score"><span id="resultCorrect">0</span> / <span id="resultTotal">0</span> 問正解</p>
+      <p class="result-score" id="resultScore" hidden></p>
       <p class="result__time" id="resultTime"></p>
       <p class="result__note" id="resultNote"></p>
       <div class="badge-earned" id="badgeEarned" hidden></div>
@@ -449,6 +450,11 @@
           切のときは、生徒が「次へ」を押すまで解説が出たままになります。
         </p>
       </div>
+      <label class="switch">
+        <input type="checkbox" id="speedScoreToggle">
+        <span>速く答えると高得点（点数がつきます）</span>
+      </label>
+      <p class="note">正解で100点、早く答えるほど最大100点のボーナス。まちがえると50点ひかれ、時間切れは0点です。当てずっぽうの連打では点がのびません。</p>
       <label class="switch">
         <input type="checkbox" id="maskToggle">
         <span>赤シートを使う（カードの答えを隠す）</span>

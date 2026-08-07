@@ -84,6 +84,7 @@ function startDictation(items, label) {
   dict.wrong = [];
   dict.label = label;
   dict.ms = 0;
+  dict.score = 0;
   dict.skipped = {};
   show('dict', label);
   drawDictation();
@@ -226,6 +227,7 @@ function judgeDictation(timeUp, unknown) {
   else dict.wrong.push(item);
 
   const outcome = outcomeOf(allOk, timeUp, unknown);
+  if (speedScoreOn()) dict.score += scoreOne(outcome, ms, limitFor(item, DICT_TIME_LIMIT, 'dict'));
   pushAnswered(item, outcome);
   const mark = $('dictMark');
   mark.textContent = { ok: '◯ 正解！', ng: '✕ おしい', timeup: '△ 時間ぎれ', unknown: '？ わからない' }[outcome];
@@ -276,6 +278,8 @@ function finishDictation() {
     wrong: dict.wrong,
     ms: dict.ms,
     answered,
+    score: dict.score,
+    label,
     retryFn: (wrong) => startDictation(wrong, label),
     againFn: () => startDictation(items, label),
   });
