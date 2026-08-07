@@ -54,6 +54,12 @@
       "speakField": "reading",
       "levels": [
         {
+          "id": "kg-1",
+          "name": "小学1年生の漢字（80字）",
+          "file": "kanji-g1.csv",
+          "count": 80
+        },
+        {
           "id": "kg-5",
           "name": "小学5年生の漢字（193字）",
           "file": "kanji-g5.csv",
