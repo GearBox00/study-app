@@ -2,6 +2,51 @@
   "_comment": "ここに科目とCSVファイルを書くと、起動時に目次だけ読み込まれ、科目を開いたときに中身を読み込みます。列は 問題,答え,解説,例文,制限時間(秒),読み の順です。問題文の [ ] は書き取りの空欄になります。count は一覧に出す件数の目安です。",
   "subjects": [
     {
+      "id": "eng-g7",
+      "name": "中学1年の英単語",
+      "icon": "🔤",
+      "lang": "en-US",
+      "speakField": "front",
+      "levels": [
+        {
+          "id": "e7-1",
+          "name": "学校のことば",
+          "file": "eng-g7-1.csv",
+          "count": 20
+        },
+        {
+          "id": "e7-2",
+          "name": "家と家族",
+          "file": "eng-g7-2.csv",
+          "count": 20
+        },
+        {
+          "id": "e7-3",
+          "name": "毎日の動作",
+          "file": "eng-g7-3.csv",
+          "count": 20
+        },
+        {
+          "id": "e7-4",
+          "name": "食べものと身の回り",
+          "file": "eng-g7-4.csv",
+          "count": 20
+        },
+        {
+          "id": "e7-5",
+          "name": "ようすを表すことば",
+          "file": "eng-g7-5.csv",
+          "count": 20
+        },
+        {
+          "id": "e7-6",
+          "name": "数と時と場所",
+          "file": "eng-g7-6.csv",
+          "count": 20
+        }
+      ]
+    },
+    {
       "id": "kanji-grade",
       "name": "学年の漢字",
       "icon": "🈳",
