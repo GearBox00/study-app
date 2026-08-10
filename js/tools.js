@@ -225,10 +225,15 @@ function teacherCode() {
 }
 
 function renderTeacher() {
-  const on = !!Store.data.flags.teacher;
+  /*
+   * 役割が選ばれているときは、合言葉ではなく役割で決めます。
+   * 選ばれていないあいだ（第1段階の使い方）は、これまでどおり合言葉です。
+   */
+  const on = Auth.enforcing ? Auth.can('manageQuestions') : !!Store.data.flags.teacher;
   $('csvCard').hidden = !on;
   $('teacherCard').hidden = !on;
-  $('teacherUnlock').hidden = on;
+  // 役割で決まるようになったら、合言葉の入り口は出しません
+  $('teacherUnlock').hidden = on || Auth.enforcing;
   $('teacherCodeInput').value = teacherCode();
 }
 
@@ -755,3 +760,86 @@ $('printLink').onclick = async () => {
   show('print', '紙のテストを作る');
 };
 $('manageLink').onclick = () => { renderManage(); show('manage', '問題の管理'); };
+
+/* ============================================================
+   6. 役割の切り替え（第2段階の作りこみ中）
+   ------------------------------------------------------------
+   サーバーができるまでのあいだ、この端末の中だけで役割を変えて
+   画面の見え方を確かめるための画面です。
+   本番ではログインしたアカウントで役割が決まります。
+   ============================================================ */
+
+/* 画面に出す「できること」の一覧。左が説明、右が js/auth.js の判定名 */
+const PERM_ROWS = [
+  ['学習する', 'study'],
+  ['自分の記録を見る', 'ownRecord'],
+  ['問題を作る・直す・配る', 'manageQuestions'],
+  ['紙のテストを作る', 'printTest'],
+  ['生徒の成績を見る', 'viewGrades'],
+  ['生徒の氏名・保護者の連絡先を見る', 'viewPersonal'],
+  ['在籍・休塾・退塾を切り替える', 'changeEnrollment'],
+  ['先生のアカウントを発行する', 'manageTeachers'],
+  ['ほかの教場も見る', 'viewAllVenues'],
+  ['保護者へのメールを設定する', 'manageMail'],
+];
+
+function renderRole() {
+  const me = Auth.me;
+  const on = Auth.enforcing;
+
+  $('roleNow').textContent = on
+    ? `${Auth.label()}${me.venue ? `（教場：${me.venue}）` : ''}`
+    : 'まだ選ばれていません';
+  $('roleNowNote').textContent = on
+    ? '下の一覧のとおりに画面が出し分けられています。'
+    : '第1段階と同じで、すべての機能が見えている状態です。';
+
+  document.querySelectorAll('#screen-role .role-btn').forEach((b) => {
+    b.classList.toggle('is-on', on && b.dataset.role === me.role);
+  });
+  $('roleVenueField').hidden = !(on && me.role === ROLE.TEACHER);
+  $('roleVenue').value = me.venue || '';
+  $('roleLogout').hidden = !on;
+
+  $('permTable').innerHTML = PERM_ROWS.map(([label, key]) => {
+    // 役割を選ぶ前は全部できるので、そのときは「—」を出します
+    const mark = !on ? '—' : (Auth.can(key) ? '○' : '×');
+    const cls = !on ? '' : (Auth.can(key) ? 'perm--yes' : 'perm--no');
+    return `<tr><td>${escapeHtml(label)}</td><td class="${cls}">${mark}</td></tr>`;
+  }).join('');
+}
+
+/** 役割が変わったときに、画面全体を出し分け直します */
+function applyRole() {
+  // ホームの入り口
+  $('addLink').hidden = !Auth.can('manageQuestions');
+  $('manageLink').hidden = !Auth.can('manageQuestions');
+  $('printLink').hidden = !Auth.can('printTest');
+  // マイページの先生用カード
+  renderTeacher();
+  renderRole();
+}
+
+$('roleLink').onclick = () => { renderRole(); show('role', '役割の切り替え'); };
+
+document.querySelectorAll('#screen-role .role-btn').forEach((btn) => {
+  btn.onclick = () => {
+    const role = btn.dataset.role;
+    Auth.mockLogin(role, { venue: role === ROLE.TEACHER ? ($('roleVenue').value.trim() || 'main') : null });
+    applyRole();
+    toast(`${Auth.label()}として表示します`);
+  };
+});
+
+$('roleVenue').onchange = () => {
+  if (!Auth.isTeacher()) return;
+  Auth.mockLogin(ROLE.TEACHER, { venue: $('roleVenue').value.trim() || 'main' });
+  applyRole();
+  toast('教場を変えました');
+};
+
+$('roleLogout').onclick = () => {
+  Auth.logout();
+  applyRole();
+  toast('役割を解除しました');
+};

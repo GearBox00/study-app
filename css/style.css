@@ -1275,3 +1275,47 @@ select {
   margin: 4px 0 6px;
   object-fit: contain;
 }
+
+/* ---------- 役割の切り替え（第2段階の作りこみ中） ---------- */
+/* 作りこみ中であることが一目で分かるよう、他のカードと色を変えています */
+.card--wip {
+  background: var(--amber-pale, #fff6e4);
+  border-color: var(--amber-deep, #b26a00);
+}
+.role-now {
+  margin: 4px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--mint-deep);
+}
+.role-picker { display: grid; gap: 8px; margin-top: 4px; }
+.role-btn {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  background: #fff;
+  border: 2px solid var(--line, #dfe8e4);
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink);
+}
+.role-btn:hover { border-color: var(--mint); }
+.role-btn.is-on {
+  border-color: var(--mint);
+  background: #e4f6f0;
+}
+.role-btn__name { display: block; font-weight: 700; font-size: 16px; }
+.role-btn__desc {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-sub);
+}
+.perm-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.perm-table td { padding: 7px 6px; border-bottom: 1px solid var(--line, #dfe8e4); }
+.perm-table td:last-child { width: 3em; text-align: center; font-weight: 700; }
+.perm--yes { color: var(--mint-deep); }
+.perm--no { color: #b23a33; }

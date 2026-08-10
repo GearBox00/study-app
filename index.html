@@ -635,6 +635,61 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
     </div>
 
     <button class="text-link text-link--slim" id="teacherUnlock">先生用の機能を表示する</button>
+    <button class="text-link text-link--slim" id="roleLink">役割を切り替える（第2段階の作りこみ中）</button>
+  </section>
+
+  <!-- ========== 役割の切り替え（第2段階の作りこみ中） ========== -->
+  <section class="screen" id="screen-role" hidden>
+    <h2 class="section-title">役割の切り替え</h2>
+
+    <div class="card card--wip">
+      <h3 class="card__title">⚠ これは作りこみ中の画面です</h3>
+      <p class="note">
+        第2段階でサーバーにつなぐと、ここは「ログイン画面」に変わります。<br>
+        いまはサーバーがないので、この端末の中だけで役割を切り替えて、
+        画面の見え方をお確かめいただくためのものです。<br>
+        <b>本番では、役割はログインしたアカウントで決まります。</b>
+      </p>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">いまの役割</h3>
+      <p class="role-now" id="roleNow">まだ選ばれていません</p>
+      <p class="note" id="roleNowNote"></p>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">役割を選ぶ</h3>
+      <div class="role-picker">
+        <button class="role-btn" data-role="student">
+          <span class="role-btn__name">🧒 生徒</span>
+          <span class="role-btn__desc">学習と自分の記録だけ</span>
+        </button>
+        <button class="role-btn" data-role="teacher">
+          <span class="role-btn__name">👩‍🏫 先生</span>
+          <span class="role-btn__desc">自分の教場の成績まで。個人情報は見られません</span>
+        </button>
+        <button class="role-btn" data-role="admin">
+          <span class="role-btn__name">🛠 運営者</span>
+          <span class="role-btn__desc">すべての教場と、個人情報・アカウントの管理</span>
+        </button>
+      </div>
+      <label class="field" id="roleVenueField" hidden>
+        <span class="field__label">先生が受け持つ教場</span>
+        <input type="text" id="roleVenue" placeholder="例）main">
+        <p class="note">この先生は、ここに書いた教場の生徒だけを見られます。</p>
+      </label>
+      <button class="btn btn--ghost" id="roleLogout">役割を解除する（第1段階の見え方に戻す）</button>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">この役割でできること</h3>
+      <table class="perm-table" id="permTable"></table>
+      <p class="note">
+        ここでの出し分けは「うっかり触らせない」ための目隠しです。<br>
+        <b>本当に守るのはサーバー側</b>で、同じ判定をサーバーにも入れます。
+      </p>
+    </div>
   </section>
 
   <!-- ========== 出席スタンプカード ========== -->
@@ -810,6 +865,7 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
 <script src="vendor/qrcode.js"></script>
 <!-- storage.js は app.js より先に読みます（app.js が Storage を使うため） -->
 <script src="js/storage.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script src="js/stamp.js"></script>

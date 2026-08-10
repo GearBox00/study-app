@@ -580,7 +580,7 @@ const Speech = {
    4. 画面の切り替え
    ============================================================ */
 const SCREENS = ['home', 'sets', 'mode', 'card', 'quiz', 'type', 'dict', 'result', 'mypage',
-  'search', 'add', 'stamp', 'venue', 'print', 'manage', 'summary', 'stroke'];
+  'search', 'add', 'stamp', 'venue', 'print', 'manage', 'summary', 'stroke', 'role'];
 const $ = (id) => document.getElementById(id);
 let navStack = [];
 

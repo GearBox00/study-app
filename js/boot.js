@@ -10,6 +10,12 @@
   // 記録の読み込み。サーバーを使うようになると通信が入るので待ちます
   await Store.load();
 
+  // だれとして使っているか（第2段階の役割）。サーバーが無いあいだは生徒です
+  if (typeof Auth === 'object') {
+    await Auth.load();
+    if (typeof applyRole === 'function') applyRole();
+  }
+
   // 外部のCSVファイルに問題があれば読み込む（無ければ内蔵データだけで動きます）
   if (typeof loadExternalQuestions === 'function') {
     try { await loadExternalQuestions(); } catch (e) { /* 失敗しても起動は続ける */ }
