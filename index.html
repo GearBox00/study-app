@@ -635,7 +635,59 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
     </div>
 
     <button class="text-link text-link--slim" id="teacherUnlock">先生用の機能を表示する</button>
+    <button class="text-link text-link--slim" id="rosterLink" hidden>生徒の名簿を見る（第2段階の作りこみ中）</button>
     <button class="text-link text-link--slim" id="roleLink">役割を切り替える（第2段階の作りこみ中）</button>
+  </section>
+
+  <!-- ========== 名簿（運営者・先生用／第2段階の作りこみ中） ========== -->
+  <section class="screen" id="screen-roster" hidden>
+    <h2 class="section-title">生徒の名簿</h2>
+
+    <div class="card card--wip">
+      <h3 class="card__title">⚠ これは作りこみ中の画面です</h3>
+      <p class="note">
+        いま出ているのは<b>見本の生徒</b>で、本物の記録ではありません。<br>
+        サーバーにつなぐと、実際に登録された生徒がここに並びます。<br>
+        並び順や項目のご希望があれば、いまのうちにお知らせください。
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="roster-counts" id="rosterCounts"></div>
+
+      <div class="field">
+        <span class="field__label">在籍の状態でしぼる</span>
+        <div class="segmented__btns" id="rosterEnroll">
+          <button data-enroll="all">すべて</button>
+          <button data-enroll="active">在籍</button>
+          <button data-enroll="paused">休塾</button>
+          <button data-enroll="left">退塾</button>
+        </div>
+      </div>
+
+      <label class="field" id="rosterVenueField">
+        <span class="field__label">教場でしぼる</span>
+        <select id="rosterVenue"></select>
+      </label>
+
+      <label class="field">
+        <span class="field__label">キーワードでさがす</span>
+        <input type="search" id="rosterWord" placeholder="名前や教場で検索">
+        <p class="note" id="rosterWordNote"></p>
+      </label>
+    </div>
+
+    <p class="note" id="rosterMsg"></p>
+    <div id="rosterList"></div>
+
+    <div class="card" id="rosterSampleCard">
+      <h3 class="card__title">見本データ</h3>
+      <p class="note">画面の見え方を確かめるための、仮の生徒です。</p>
+      <div class="io-actions">
+        <button class="btn btn--ghost" id="rosterFill">見本の生徒を入れる</button>
+        <button class="btn btn--danger" id="rosterClear">名簿を空にする</button>
+      </div>
+    </div>
   </section>
 
   <!-- ========== 役割の切り替え（第2段階の作りこみ中） ========== -->
@@ -866,6 +918,7 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
 <!-- storage.js は app.js より先に読みます（app.js が Storage を使うため） -->
 <script src="js/storage.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/roster.js"></script>
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script src="js/stamp.js"></script>

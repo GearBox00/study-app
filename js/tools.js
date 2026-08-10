@@ -815,6 +815,8 @@ function applyRole() {
   $('addLink').hidden = !Auth.can('manageQuestions');
   $('manageLink').hidden = !Auth.can('manageQuestions');
   $('printLink').hidden = !Auth.can('printTest');
+  // 名簿は、成績を見られる人（先生・運営者）だけ
+  $('rosterLink').hidden = !(Auth.enforcing && Auth.can('viewGrades'));
   // マイページの先生用カード
   renderTeacher();
   renderRole();
@@ -842,4 +844,115 @@ $('roleLogout').onclick = () => {
   Auth.logout();
   applyRole();
   toast('役割を解除しました');
+};
+
+/* ============================================================
+   7. 生徒の名簿（運営者・先生用／第2段階の作りこみ中）
+   ------------------------------------------------------------
+   見えるものは役割で変わります。判定は js/auth.js と js/roster.js に
+   まとめてあるので、ここでは「並べて出す」ことだけをします。
+   ============================================================ */
+
+const rosterFilter = { enroll: 'all', venue: '', word: '' };
+
+function renderRosterCounts() {
+  const c = Roster.counts();
+  $('rosterCounts').innerHTML = [
+    ['在籍', c.active, 'is-active'],
+    ['休塾', c.paused, 'is-paused'],
+    ['退塾', c.left, 'is-left'],
+  ].map(([label, n, cls]) =>
+    `<span class="roster-count ${cls}"><b>${n}</b>${escapeHtml(label)}</span>`
+  ).join('') + `<span class="roster-count"><b>${c.all}</b>合計</span>`;
+}
+
+function renderRosterVenues() {
+  const vs = Roster.venues();
+  // 先生は自分の教場しか見えないので、選ばせる意味がありません
+  $('rosterVenueField').hidden = !Auth.can('viewAllVenues') || vs.length < 2;
+  $('rosterVenue').innerHTML = '<option value="">すべての教場</option>'
+    + vs.map((v) => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+  $('rosterVenue').value = rosterFilter.venue;
+}
+
+function rosterRow(v) {
+  const rate = v.answered ? Math.round((v.correct / v.answered) * 100) : 0;
+  // 状態を変えられるのは運営者だけ（G）。ほかの人には今の状態だけを見せます
+  const buttons = Auth.can('changeEnrollment')
+    ? `<div class="segmented__btns roster-row__enroll" data-id="${v.id}">`
+      + ['active', 'paused', 'left'].map((e) =>
+          `<button data-enroll="${e}" class="${v.enroll === e ? 'is-on' : ''}">`
+          + `${escapeHtml(ENROLL_LABEL[e])}</button>`).join('')
+      + '</div>'
+    : `<span class="enroll-tag enroll-tag--${v.enroll}">${escapeHtml(ENROLL_LABEL[v.enroll])}</span>`;
+
+  return `
+    <div class="roster-row roster-row--${v.enroll}">
+      <div class="roster-row__head">
+        <span class="roster-row__name${v.personalHidden ? ' is-hidden' : ''}">${escapeHtml(v.name)}</span>
+        <span class="roster-row__venue">${escapeHtml(v.venue)}</span>
+      </div>
+      <div class="roster-row__stats">
+        <span>解答 <b>${v.answered}</b></span>
+        <span>正答率 <b>${rate}%</b></span>
+        <span>最終 <b>${escapeHtml(v.lastStudied || '—')}</b></span>
+      </div>
+      ${v.personalHidden ? '<p class="roster-row__note">氏名と保護者の連絡先は、先生には表示されません。</p>'
+        : (v.parentEmail ? `<p class="roster-row__note">保護者：${escapeHtml(v.parentEmail)}</p>` : '')}
+      ${buttons}
+    </div>`;
+}
+
+function renderRoster() {
+  renderRosterCounts();
+  renderRosterVenues();
+
+  $('rosterWordNote').textContent = Auth.can('viewPersonal')
+    ? '名前・教場・保護者のメールで探せます。'
+    : '氏名は表示されないため、教場でお探しください。';
+  $('rosterSampleCard').hidden = !Auth.can('manageTeachers');
+
+  document.querySelectorAll('#rosterEnroll button').forEach((b) => {
+    b.classList.toggle('is-on', b.dataset.enroll === rosterFilter.enroll);
+  });
+
+  const rows = Roster.list(rosterFilter);
+  $('rosterMsg').textContent = rows.length
+    ? `${rows.length}名を表示しています。`
+    : (Roster.students.length ? '条件にあう生徒がいません。' : '名簿がまだ空です。');
+  $('rosterList').innerHTML = rows.map((s) => rosterRow(Roster.view(s))).join('');
+
+  // 状態を切り替えるボタン
+  document.querySelectorAll('.roster-row__enroll button').forEach((b) => {
+    b.onclick = async () => {
+      const id = Number(b.parentElement.dataset.id);
+      const r = await Roster.setEnroll(id, b.dataset.enroll);
+      toast(r.msg);
+      if (r.ok) renderRoster();
+    };
+  });
+}
+
+document.querySelectorAll('#rosterEnroll button').forEach((b) => {
+  b.onclick = () => { rosterFilter.enroll = b.dataset.enroll; renderRoster(); };
+});
+$('rosterVenue').onchange = () => { rosterFilter.venue = $('rosterVenue').value; renderRoster(); };
+$('rosterWord').oninput = () => { rosterFilter.word = $('rosterWord').value; renderRoster(); };
+
+$('rosterFill').onclick = async () => {
+  const r = await Roster.fillSample();
+  toast(r.msg);
+  if (r.ok) renderRoster();
+};
+$('rosterClear').onclick = async () => {
+  if (!confirm('名簿を空にします。よろしいですか？')) return;
+  const r = await Roster.clear();
+  toast(r.msg);
+  if (r.ok) renderRoster();
+};
+
+$('rosterLink').onclick = async () => {
+  await Roster.load();
+  renderRoster();
+  show('roster', '生徒の名簿');
 };

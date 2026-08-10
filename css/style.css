@@ -1319,3 +1319,88 @@ select {
 .perm-table td:last-child { width: 3em; text-align: center; font-weight: 700; }
 .perm--yes { color: var(--mint-deep); }
 .perm--no { color: #b23a33; }
+
+/* ---------- 生徒の名簿（第2段階の作りこみ中） ---------- */
+.roster-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.roster-count {
+  flex: 1 1 auto;
+  min-width: 72px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f4f7f6;
+  font-size: 12px;
+  color: var(--ink-sub);
+  text-align: center;
+}
+.roster-count b {
+  display: block;
+  font-size: 20px;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.roster-count.is-active b { color: var(--mint-deep); }
+.roster-count.is-paused b { color: var(--amber-deep, #8a5c05); }
+.roster-count.is-left b { color: #8a8a8a; }
+
+.roster-row {
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  background: #fff;
+  border: 1px solid var(--line, #dfe8e4);
+  border-left: 4px solid var(--mint);
+  border-radius: 10px;
+}
+/* 状態が一目で分かるように、左の色を変えています */
+.roster-row--paused { border-left-color: var(--amber-deep, #8a5c05); }
+.roster-row--left { border-left-color: #b9c4c0; background: #fafbfb; }
+
+.roster-row__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.roster-row__name { font-weight: 700; font-size: 15px; }
+/* 先生には伏せている名前。本名でないことが分かるようにします */
+.roster-row__name.is-hidden { color: var(--ink-sub); font-weight: 500; }
+.roster-row__venue {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef3f1;
+  font-size: 11px;
+  color: var(--ink-sub);
+}
+.roster-row__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--ink-sub);
+}
+.roster-row__stats b { color: var(--ink); font-size: 13px; }
+.roster-row__note {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--ink-sub);
+}
+.roster-row__enroll { margin-top: 8px; }
+
+.enroll-tag {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.enroll-tag--active { background: #e4f6f0; color: var(--mint-deep); }
+.enroll-tag--paused { background: var(--amber-pale, #fff6e4); color: var(--amber-deep, #8a5c05); }
+.enroll-tag--left { background: #eef0ef; color: #6b6b6b; }
