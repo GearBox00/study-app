@@ -1235,3 +1235,19 @@ select {
   color: var(--amber-deep, #b26a00);
   font-weight: 700;
 }
+
+/* ---------- 外部部品のクレジット（マイページ最下部） ---------- */
+.credits {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-sub);
+}
+.credits dt {
+  margin-top: 10px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.credits dt:first-child { margin-top: 0; }
+.credits dd { margin: 2px 0 0 1em; }
+.credits a { color: var(--mint-deep); }
