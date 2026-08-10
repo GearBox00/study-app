@@ -8,7 +8,7 @@
      第2段階として別に設計が必要です）
    ============================================================ */
 
-const CACHE = "manabi-card-v37";
+const CACHE = "manabi-card-v39";
 const ASSETS = [
   './',
   './index.html',
@@ -16,6 +16,8 @@ const ASSETS = [
   './js/storage.js',
   './js/auth.js',
   './js/roster.js',
+  './js/config.js',
+  './js/remote.js',
   './js/data.js',
   './js/app.js',
   './js/stamp.js',
@@ -80,8 +82,21 @@ function isQuestionFile(url) {
   return /\/questions\//.test(url.pathname);
 }
 
+/*
+ * サーバーとのやりとり（ログイン・記録・名簿）は、絶対に保存しません。
+ * 保存してしまうと、ログイン前の「あなたは生徒です」という返事が残り、
+ * ログインしても生徒のままになります（2026-08-11に実際に起きました）。
+ * 通信できないときも、古い返事を返すのではなく素直に失敗させます。
+ * アプリ側（js/storage.js）が端末の記録に切り替えてくれるためです。
+ */
+function isServerCall(url) {
+  return /\/server\//.test(url.pathname) || /\.php$/.test(url.pathname);
+}
+
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+
+  if (isServerCall(new URL(e.request.url))) return;   // 素通しにします
 
   if (isQuestionFile(new URL(e.request.url))) {
     e.respondWith(

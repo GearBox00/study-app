@@ -7,6 +7,10 @@
 'use strict';
 
 (async () => {
+  // js/config.js に場所が書かれていれば、サーバーの係を差しこみます。
+  // 書かれていなければ、これまでどおり端末の中だけで動きます
+  if (typeof Remote === 'object') Remote.install();
+
   // 記録の読み込み。サーバーを使うようになると通信が入るので待ちます
   await Store.load();
 

@@ -140,6 +140,19 @@ const Roster = {
     if (!s) return { ok: false, msg: '見つかりませんでした。' };
     if (!Auth.canSeeStudent(s)) return { ok: false, msg: 'この生徒は担当ではありません。' };
 
+    /*
+     * サーバーがあるときは、サーバーに変えてもらいます。
+     * 断られたら画面側も変えません。
+     * 先に画面を変えてしまうと、直っていないのに直ったように見えるためです。
+     */
+    if (this.remote && typeof this.remote.setEnroll === 'function') {
+      try {
+        await this.remote.setEnroll(id, enroll);
+      } catch (e) {
+        return { ok: false, msg: e.message || 'サーバーで変更できませんでした。' };
+      }
+    }
+
     s.enroll = enroll;
     s.enrollChangedAt = new Date().toISOString().slice(0, 10);
     await this.save();
