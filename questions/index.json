@@ -60,10 +60,34 @@
           "count": 80
         },
         {
+          "id": "kg-2",
+          "name": "小学2年生の漢字（160字）",
+          "file": "kanji-g2.csv",
+          "count": 160
+        },
+        {
+          "id": "kg-3",
+          "name": "小学3年生の漢字（200字）",
+          "file": "kanji-g3.csv",
+          "count": 200
+        },
+        {
+          "id": "kg-4",
+          "name": "小学4年生の漢字（202字）",
+          "file": "kanji-g4.csv",
+          "count": 202
+        },
+        {
           "id": "kg-5",
           "name": "小学5年生の漢字（193字）",
           "file": "kanji-g5.csv",
           "count": 193
+        },
+        {
+          "id": "kg-6",
+          "name": "小学6年生の漢字（191字）",
+          "file": "kanji-g6.csv",
+          "count": 191
         }
       ]
     },

@@ -8,7 +8,7 @@
      第2段階として別に設計が必要です）
    ============================================================ */
 
-const CACHE = "manabi-card-v32";
+const CACHE = "manabi-card-v33";
 const ASSETS = [
   './',
   './index.html',
@@ -25,6 +25,12 @@ const ASSETS = [
   './vendor/jsqr-LICENSE.txt',
   './THIRD-PARTY-NOTICES.md',
   './questions/index.json',
+  './questions/kanji-g1.csv',
+  './questions/kanji-g2.csv',
+  './questions/kanji-g3.csv',
+  './questions/kanji-g4.csv',
+  './questions/kanji-g5.csv',
+  './questions/kanji-g6.csv',
   './questions/science-1.csv',
   './questions/english-dictation.csv',
   './questions/japanese-dictation.csv',
