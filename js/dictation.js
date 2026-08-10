@@ -104,6 +104,7 @@ function drawDictation() {
   $('dictCounter').textContent = `${dict.idx + 1} / ${dict.items.length}`;
   $('dictProgress').style.width = `${(dict.idx / dict.items.length) * 100}%`;
 
+  paintQuestionImage('dictImage', item);
   dict.parts = parseSentence(item.front);
   renderSentence();
 

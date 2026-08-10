@@ -73,6 +73,7 @@ function rowToItem(cols, idPrefix, i) {
     reading: cols[5] || '',
     wrong,                 // 作問者が指定した誤答（4択で使います）
     set: String(cols[9] == null ? '' : cols[9]).trim(),
+    image: String(cols[10] == null ? '' : cols[10]).trim(),
   };
 }
 
@@ -110,7 +111,7 @@ function addGroupedSets(rows, fallback, idBase) {
  * 「問題,答え,…」のような行を問題として登録してしまわないようにするためです。
  */
 const HEADER_WORDS = ['問題', '答え', '正解', '解説', '例文', '制限時間', '読み',
-                      '誤答', 'ダミー', '由来', 'セット', '単元'];
+                      '誤答', 'ダミー', '由来', 'セット', '単元', '画像', '図'];
 function looksLikeHeader(row) {
   if (!row || row.length < 2) return false;
   const hit = row.filter((c) => HEADER_WORDS.some((w) => String(c).indexOf(w) === 0)).length;
@@ -265,14 +266,14 @@ function csvCell(v) {
 }
 
 /** 問題の配列を、取り込みと同じ列順のCSVにする（1行目に見出しを付けます） */
-const CSV_HEADER = ['問題', '答え', '解説', '例文', '制限時間', '読み', '誤答1', '誤答2', '誤答3', 'セット'];
+const CSV_HEADER = ['問題', '答え', '解説', '例文', '制限時間', '読み', '誤答1', '誤答2', '誤答3', 'セット', '画像'];
 function itemsToCsv(items) {
   const rows = items.map((it) => {
     const w = Array.isArray(it.wrong) ? it.wrong : [];
     return [
       it.front, it.back, it.explanation || '', it.example || '',
       it.time || '', it.reading || '',
-      w[0] || '', w[1] || '', w[2] || '', it.set || '',
+      w[0] || '', w[1] || '', w[2] || '', it.set || '', it.image || '',
     ].map(csvCell).join(',');
   });
   return [CSV_HEADER.join(',')].concat(rows).join('\r\n');
@@ -497,15 +498,18 @@ function buildPrint() {
   const marks = [];
   items.forEach((item) => {
     const q = escapeHtml(displayText(qOf(item, dir)));
+    // 図を見て答える問題は、図がないと解けないので紙にも刷ります
+    const src = imageSrcOf(item);
+    const img = src ? `<img class="sheet__img" src="${escapeHtml(src)}" alt="">` : '';
     if (style === 'choice') {
       const choices = makeChoices(item, pool, dir);
       const at = choices.indexOf(aOf(item, dir));
       marks.push(at >= 0 ? 'ABCD'[at] : '');
-      body += `<li><p class="sheet__q">${q}</p><ol class="sheet__choices">` +
+      body += `<li><p class="sheet__q">${q}</p>${img}<ol class="sheet__choices">` +
         choices.map((c) => `<li>${escapeHtml(displayText(c))}</li>`).join('') + '</ol></li>';
     } else {
       marks.push('');
-      body += `<li><p class="sheet__q">${q}</p><p class="sheet__line"></p></li>`;
+      body += `<li><p class="sheet__q">${q}</p>${img}<p class="sheet__line"></p></li>`;
     }
   });
   body += '</ol>';

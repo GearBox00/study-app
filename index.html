@@ -148,6 +148,7 @@
     <div class="flashcard" id="flashcard">
       <div class="flashcard__inner">
         <div class="flashcard__face flashcard__face--front">
+          <img class="q-image q-image--card" id="cardImage" alt="問題の画像" hidden>
           <p class="flashcard__text" id="cardFront"></p>
           <p class="flashcard__hint">タップして答えを見る</p>
         </div>
@@ -184,6 +185,7 @@
       </div>
     </div>
 
+    <img class="q-image" id="quizImage" alt="問題の画像" hidden>
     <div class="question">
       <p class="question__text" id="quizFront"></p>
       <button class="speak-btn" id="quizSpeak" title="発音を聞く">🔊</button>
@@ -218,6 +220,7 @@
       </div>
     </div>
 
+    <img class="q-image" id="typeImage" alt="問題の画像" hidden>
     <div class="type-question">
       <p class="type-question__meaning" id="typeMeaning"></p>
       <p class="type-question__hint" id="typeHint"></p>
@@ -255,6 +258,7 @@
       </div>
     </div>
 
+    <img class="q-image" id="dictImage" alt="問題の画像" hidden>
     <div class="dict-play">
       <button class="dict-play__btn" id="dictPlay" title="音声を聞く">🔊</button>
       <p class="dict-play__note">押すと何度でも聞けます</p>
@@ -582,6 +586,11 @@
       <label class="field">
         <span class="field__label">例文（任意）</span>
         <input type="text" id="myExample" placeholder="例）He is curious about science.">
+      </label>
+      <label class="field">
+        <span class="field__label">画像（任意）</span>
+        <input type="text" id="myImage" placeholder="例）chizu-01.jpg">
+        <p class="note">questions/images/ に置いた画像のファイル名を書きます。</p>
       </label>
       <button class="btn btn--primary" id="myAddBtn">マイ単語帳に追加</button>
       <p class="note" id="myMsg"></p>

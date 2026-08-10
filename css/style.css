@@ -1251,3 +1251,27 @@ select {
 .credits dt:first-child { margin-top: 0; }
 .credits dd { margin: 2px 0 0 1em; }
 .credits a { color: var(--mint-deep); }
+
+/* ---------- 問題に付ける画像（2026-08-10 追加） ---------- */
+.q-image {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  max-height: 40vh;          /* 画像で画面が埋まって、問題文や選択肢が隠れないように */
+  margin: 0 auto 12px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--line, #dfe8e4);
+}
+/* カードの表面は縦が狭いので、少し小さめに収める */
+.q-image--card { max-width: 260px; max-height: 30vh; margin-bottom: 10px; }
+
+/* 紙のテストに刷る図 */
+.sheet__img {
+  display: block;
+  max-width: 70mm;
+  max-height: 50mm;
+  margin: 4px 0 6px;
+  object-fit: contain;
+}

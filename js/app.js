@@ -424,6 +424,25 @@ function levelLimitFor(modeKey) {
 function qOf(item, dir) { return dir === 'back' ? item.back : item.front; }
 function aOf(item, dir) { return dir === 'back' ? item.front : item.back; }
 
+/**
+ * 問題に画像が指定されていれば出し、なければ場所ごと隠します（2026-08-10 追加）。
+ * 画像が見つからないときも隠します。壊れた画像の記号が出ると
+ * 生徒が「アプリの不具合」と受け取ってしまうためです。
+ */
+function paintQuestionImage(elId, item) {
+  const el = $(elId);
+  if (!el) return;
+  const src = imageSrcOf(item);
+  if (!src) {
+    el.hidden = true;
+    el.removeAttribute('src');
+    return;
+  }
+  el.onerror = () => { el.hidden = true; };
+  el.src = src;
+  el.hidden = false;
+}
+
 /** その問題が属する科目の全問題（誤答の補充に使います） */
 function siblingItems(item) {
   const sub = subjectOfItem(item);
@@ -891,6 +910,7 @@ function drawCard() {
   card.style.opacity = '';
 
   $('cardFront').textContent = displayText(qOf(item, s.dir));
+  paintQuestionImage('cardImage', item);
   $('cardBack').textContent = displayText(aOf(item, s.dir));
   $('cardExp').textContent = item.explanation || '';
   setExample($('cardExample'), item);
@@ -1031,6 +1051,7 @@ function drawQuiz() {
   } else {
     $('quizFront').textContent = displayText(qOf(item, quiz.dir));
   }
+  paintQuestionImage('quizImage', item);
   $('quizSpeak').hidden = !Speech.supported;
 
   const box = $('quizChoices');
@@ -1476,6 +1497,7 @@ function drawTyping() {
   $('typeCounter').textContent = `${typing.idx + 1} / ${typing.items.length}`;
   $('typeProgress').style.width = `${(typing.idx / typing.items.length) * 100}%`;
   $('typeMeaning').textContent = item.back;
+  paintQuestionImage('typeImage', item);
   const parts = answerParts(item.front);
   $('typeHint').textContent = parts.length > 1
     ? `${parts.length}つの語を「/」で区切って入力（順番は自由）`
@@ -2100,10 +2122,11 @@ $('myAddBtn').onclick = () => {
     back,
     explanation: $('myExp').value.trim(),
     example: $('myExample').value.trim(),
+    image: $('myImage').value.trim(),
   });
   Store.save();
   invalidateSearchIndex();
-  ['myFront', 'myBack', 'myExp', 'myExample'].forEach((id) => { $(id).value = ''; });
+  ['myFront', 'myBack', 'myExp', 'myExample', 'myImage'].forEach((id) => { $(id).value = ''; });
   $('myMsg').textContent = `「${front}」を追加しました。合計${Store.data.myWords.length}問。`;
   toast('マイ単語帳に追加しました');
 };
