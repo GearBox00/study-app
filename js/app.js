@@ -9,7 +9,12 @@
 'use strict';
 
 /* ---------- 設定 ---------- */
-const STORAGE_KEY = 'manabi-card-v2';
+/*
+ * 保存に使う名前。js/storage.js に置いてある値をそのまま使います。
+ * （2026-08-10：保存の出入り口を storage.js にまとめたため）
+ * この名前を変えると、すでにある学習記録が読めなくなります。
+ */
+const STORAGE_KEY = Backend.key;
 const TIME_LIMIT = 10;          // 4択・リスニングの制限時間（秒）
 const TYPE_TIME_LIMIT = 15;     // タイピングテストの制限時間（秒）
 const MASTER_STREAK = 2;        // 連続正解が何回で「習得」になるか
@@ -89,13 +94,13 @@ const Store = {
     };
   },
 
-  load() {
-    let saved = null;
-    try {
-      saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    } catch (e) {
-      saved = null;
-    }
+  /*
+   * 記録を読み込みます。
+   * サーバーを使うようになると通信の返事を待つ必要があるため、
+   * 呼び出す側では await してください（2026-08-10に「待てる形」へ変更）。
+   */
+  async load() {
+    const saved = await Backend.read();
     // 足りない項目は初期値で補う（古い保存データがあっても壊れないように）
     this.data = Object.assign(this.blank(), saved || {});
     const b = this.blank();
@@ -110,8 +115,14 @@ const Store = {
     return this.data;
   },
 
+  /*
+   * 記録を保存します。
+   * 端末への保存はここで終わります。サーバーを使う設定のときは、
+   * 送信は storage.js が裏で行うので、呼び出す側は待ちません。
+   * （通信を待つと、電波の悪い教場で学習が止まってしまうためです）
+   */
   save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+    Backend.save(this.data);
   },
 
   item(id) {

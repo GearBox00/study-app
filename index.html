@@ -808,6 +808,8 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
 
 <script src="vendor/jsqr.js"></script>
 <script src="vendor/qrcode.js"></script>
+<!-- storage.js は app.js より先に読みます（app.js が Storage を使うため） -->
+<script src="js/storage.js"></script>
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script src="js/stamp.js"></script>

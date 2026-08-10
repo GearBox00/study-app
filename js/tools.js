@@ -176,7 +176,7 @@ function downloadBlob(blob, filename) {
 
 function importData(file) {
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = async () => {
     let payload;
     try {
       payload = JSON.parse(reader.result);
@@ -191,8 +191,11 @@ function importData(file) {
     const nick = payload.data.nick || 'ゲスト';
     if (!confirm(`「${nick}」さんの記録を読み込みます。\nいまこの端末にある記録は置きかえられます。よろしいですか？`)) return;
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload.data));
-    Store.load();
+    // 読み込んだ記録を端末に置いてから読み直します。
+    // サーバーを使う設定のときは、このあと裏で送信されます
+    Backend.writeLocal(payload.data);
+    await Store.load();
+    Store.save();
     invalidateSearchIndex();
     $('ioMsg').textContent = `「${nick}」さんの記録を読み込みました。`;
     renderMypage();

@@ -7,7 +7,8 @@
 'use strict';
 
 (async () => {
-  Store.load();
+  // 記録の読み込み。サーバーを使うようになると通信が入るので待ちます
+  await Store.load();
 
   // 外部のCSVファイルに問題があれば読み込む（無ければ内蔵データだけで動きます）
   if (typeof loadExternalQuestions === 'function') {
