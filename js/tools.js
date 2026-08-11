@@ -819,6 +819,8 @@ function applyRole() {
   $('rosterLink').hidden = !(Auth.enforcing && Auth.can('viewGrades'));
   // 保護者メールの設定は運営者だけ（E）
   $('mailLink').hidden = !(Auth.enforcing && Auth.can('manageMail'));
+  // アカウントの発行は運営者だけ（D・F）
+  $('accountsLink').hidden = !(Auth.enforcing && Auth.can('manageTeachers'));
   // マイページの先生用カード
   renderTeacher();
   renderRole();
@@ -1030,4 +1032,187 @@ $('mailSave').onclick = async () => {
 $('mailLink').onclick = async () => {
   show('mail', '保護者へのお知らせメール');
   await renderMail();
+};
+
+/* ============================================================
+   9. アカウントの発行（運営者だけ）
+   ------------------------------------------------------------
+   パスワードはサーバーが作り、発行の直後に一度だけ返ってきます。
+   ここでも保存しません。閉じたら二度と出せないことを画面に明記します。
+   ============================================================ */
+
+const acctState = { role: 'student', filter: 'all', users: [], venues: [] };
+
+function renderAcctVenues() {
+  $('acctVenue').innerHTML = acctState.venues.length
+    ? acctState.venues.map((v) =>
+        `<option value="${escapeHtml(v.id)}">${escapeHtml(v.name)}（${escapeHtml(v.id)}）</option>`
+      ).join('')
+    : '<option value="">（教場がまだありません）</option>';
+}
+
+function acctRow(u) {
+  const off = u.enroll === 'left';
+  const roleLabel = { admin: '運営者', teacher: '先生', student: '生徒' }[u.role] || u.role;
+  const buttons = u.role === 'admin'
+    ? '<p class="note">運営者は止められません。</p>'
+    : `<div class="io-actions io-actions--col">
+         <button class="btn btn--ghost" data-act="reset" data-id="${u.id}">パスワードを作り直す</button>
+         <button class="btn ${off ? 'btn--primary' : 'btn--danger'}"
+                 data-act="${off ? 'enable' : 'disable'}" data-id="${u.id}">
+           ${off ? '使えるように戻す' : '使えないようにする'}</button>
+       </div>`;
+  return `
+    <div class="roster-row${off ? ' roster-row--left' : ''}">
+      <div class="roster-row__head">
+        <span class="roster-row__name">${escapeHtml(u.name)}</span>
+        <span class="roster-row__venue">${escapeHtml(roleLabel)}</span>
+      </div>
+      <div class="roster-row__stats">
+        <span>ID <b>${escapeHtml(u.loginId)}</b></span>
+        <span>教場 <b>${escapeHtml(u.venueName || u.venue || '—')}</b></span>
+        <span>状態 <b>${off ? '停止中' : '有効'}</b></span>
+      </div>
+      ${buttons}
+    </div>`;
+}
+
+function renderAcctList() {
+  const rows = acctState.users.filter((u) =>
+    acctState.filter === 'all' || u.role === acctState.filter);
+  $('acctListMsg').textContent = `${rows.length}件を表示しています。`;
+  $('acctList').innerHTML = rows.map(acctRow).join('');
+
+  $('acctList').querySelectorAll('button[data-act]').forEach((b) => {
+    b.onclick = () => acctAction(b.dataset.act, Number(b.dataset.id));
+  });
+}
+
+/**
+ * 控えを画面から消します。
+ * 隠すだけでは、パスワードが画面の中に残ったままになります。
+ * 見えていなくても、あとから画面を開いた人に読めてしまうため、
+ * 隠すときは必ず中身も空にします。
+ */
+function hideIssued() {
+  $('issuedCard').hidden = true;
+  $('issuedBox').textContent = '';
+}
+
+/** 発行したログイン情報を、控えとして出します */
+function showIssued(v, title) {
+  const lines = [
+    `${title}`,
+    `お名前　　： ${v.name}`,
+    `ログインID： ${v.loginId}`,
+    `パスワード： ${v.password}`,
+  ];
+  $('issuedBox').textContent = lines.join('\n');
+  $('issuedCard').hidden = false;
+  $('issuedCard').scrollIntoView({ block: 'center' });
+}
+
+async function renderAccounts() {
+  $('acctMsg').textContent = '';
+  $('venueMsg').textContent = '';
+  if (typeof Remote !== 'object' || !Remote.enabled) {
+    $('acctListMsg').textContent = 'サーバーにつないでいないため、読み込めません。';
+    return;
+  }
+  try {
+    const r = await Remote.accounts();
+    acctState.users = r.users;
+    acctState.venues = r.venues;
+    renderAcctVenues();
+    renderAcctList();
+  } catch (e) {
+    $('acctListMsg').textContent = e.message || '読み込めませんでした。';
+  }
+}
+
+async function acctAction(act, id) {
+  const u = acctState.users.find((x) => x.id === id);
+  if (!u) return;
+  try {
+    if (act === 'reset') {
+      if (!confirm(`${u.name} さんのパスワードを作り直します。\nいまのパスワードは使えなくなります。よろしいですか？`)) return;
+      const r = await Remote.resetPassword(id);
+      showIssued(r, '新しいパスワードを発行しました');
+    } else {
+      const on = act === 'enable';
+      if (!on && !confirm(`${u.name} さんを使えないようにします。\n記録は消えません。よろしいですか？`)) return;
+      await Remote.setAccountEnabled(id, on);
+      toast(on ? '使えるようにしました' : '止めました');
+    }
+    await renderAccounts();
+  } catch (e) {
+    toast(e.message || 'できませんでした');
+  }
+}
+
+document.querySelectorAll('#acctRole button').forEach((b) => {
+  b.onclick = () => {
+    acctState.role = b.dataset.role;
+    document.querySelectorAll('#acctRole button').forEach((x) =>
+      x.classList.toggle('is-on', x === b));
+    // 先生には保護者の欄は要りません
+    $('acctParentField').hidden = acctState.role !== 'student';
+  };
+});
+
+document.querySelectorAll('#acctFilter button').forEach((b) => {
+  b.onclick = () => {
+    acctState.filter = b.dataset.role;
+    document.querySelectorAll('#acctFilter button').forEach((x) =>
+      x.classList.toggle('is-on', x === b));
+    renderAcctList();
+  };
+});
+
+$('acctCreate').onclick = async () => {
+  $('acctMsg').textContent = '';
+  try {
+    const r = await Remote.createAccount({
+      role: acctState.role,
+      name: $('acctName').value.trim(),
+      loginId: $('acctLoginId').value.trim(),
+      venue: $('acctVenue').value,
+      parentEmail: $('acctParentEmail').value.trim(),
+    });
+    showIssued(r, `${acctState.role === 'teacher' ? '先生' : '生徒'}のアカウントを発行しました`);
+    ['acctName', 'acctLoginId', 'acctParentEmail'].forEach((id) => { $(id).value = ''; });
+    await renderAccounts();
+  } catch (e) {
+    // 断られた理由（IDが重複、など）をそのまま出します
+    $('acctMsg').textContent = e.message || '発行できませんでした。';
+  }
+};
+
+$('venueAdd').onclick = async () => {
+  $('venueMsg').textContent = '';
+  try {
+    await Remote.addVenue($('venueId').value.trim(), $('venueName').value.trim());
+    $('venueId').value = '';
+    $('venueName').value = '';
+    $('venueMsg').textContent = '教場を追加しました。';
+    await renderAccounts();
+  } catch (e) {
+    $('venueMsg').textContent = e.message || '追加できませんでした。';
+  }
+};
+
+$('issuedCopy').onclick = async () => {
+  try {
+    await navigator.clipboard.writeText($('issuedBox').textContent);
+    toast('コピーしました');
+  } catch (e) {
+    toast('コピーできませんでした。手で控えてください');
+  }
+};
+$('issuedClose').onclick = hideIssued;
+
+$('accountsLink').onclick = async () => {
+  hideIssued();
+  show('accounts', 'アカウントの発行');
+  await renderAccounts();
 };

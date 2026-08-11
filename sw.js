@@ -8,7 +8,7 @@
      第2段階として別に設計が必要です）
    ============================================================ */
 
-const CACHE = "manabi-card-v40";
+const CACHE = "manabi-card-v41";
 const ASSETS = [
   './',
   './index.html',

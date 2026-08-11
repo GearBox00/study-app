@@ -1404,3 +1404,27 @@ select {
 .enroll-tag--active { background: #e4f6f0; color: var(--mint-deep); }
 .enroll-tag--paused { background: var(--amber-pale, #fff6e4); color: var(--amber-deep, #8a5c05); }
 .enroll-tag--left { background: #eef0ef; color: #6b6b6b; }
+
+/* ---------- アカウントの発行（運営者だけ） ---------- */
+/* 一度しか見られない情報なので、他と明確に見た目を変えます */
+.card--issued {
+  background: #e4f6f0;
+  border-color: var(--mint);
+  border-width: 2px;
+}
+.issued {
+  margin: 10px 0;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid var(--line, #dfe8e4);
+  border-radius: 10px;
+  /* IDとパスワードは1文字ずつ読むので、等幅で出します */
+  font-family: "SFMono-Regular", Consolas, "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  word-break: break-all;
+  /* 紙に書き写せるよう、選択してコピーできるままにします */
+  user-select: text;
+}
+.io-actions--col { display: grid; gap: 6px; margin-top: 8px; }

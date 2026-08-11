@@ -74,6 +74,18 @@ const Remote = {
     });
   },
 
+  /* ---------- アカウントの発行（運営者だけ） ---------- */
+
+  accounts() { return this._call('accounts.php'); },
+  createAccount(v) { return this._call('accounts.php', { method: 'POST', body: { do: 'create', ...v } }); },
+  resetPassword(id) { return this._call('accounts.php', { method: 'POST', body: { do: 'reset', id } }); },
+  setAccountEnabled(id, on) {
+    return this._call('accounts.php', { method: 'POST', body: { do: on ? 'enable' : 'disable', id } });
+  },
+  addVenue(venueId, venueName) {
+    return this._call('accounts.php', { method: 'POST', body: { do: 'addVenue', venueId, venueName } });
+  },
+
   /* ---------- 保護者メールの設定（運営者だけ） ---------- */
 
   mailSettings() { return this._call('mailsettings.php'); },

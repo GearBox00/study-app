@@ -581,11 +581,18 @@ const Speech = {
    ============================================================ */
 const SCREENS = ['home', 'sets', 'mode', 'card', 'quiz', 'type', 'dict', 'result', 'mypage',
   'search', 'add', 'stamp', 'venue', 'print', 'manage', 'summary', 'stroke',
-  'role', 'roster', 'mail'];
+  'role', 'roster', 'mail', 'accounts'];
 const $ = (id) => document.getElementById(id);
 let navStack = [];
 
 function show(name, title) {
+  /*
+   * アカウント発行で出した控え（パスワード）は、
+   * その画面を離れた時点で消します。隠すだけだと画面の中に残り、
+   * あとからその端末を触った人に読めてしまうためです。
+   */
+  if (name !== 'accounts' && typeof hideIssued === 'function') hideIssued();
+
   SCREENS.forEach((s) => { $('screen-' + s).hidden = (s !== name); });
   $('appTitle').textContent = title || 'SJ式';
   if (name === 'home') navStack = [];

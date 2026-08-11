@@ -636,8 +636,96 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
 
     <button class="text-link text-link--slim" id="teacherUnlock">先生用の機能を表示する</button>
     <button class="text-link text-link--slim" id="rosterLink" hidden>生徒の名簿を見る（第2段階の作りこみ中）</button>
+    <button class="text-link text-link--slim" id="accountsLink" hidden>アカウントの発行</button>
     <button class="text-link text-link--slim" id="mailLink" hidden>保護者へのお知らせメールの設定</button>
     <button class="text-link text-link--slim" id="roleLink">役割を切り替える（第2段階の作りこみ中）</button>
+  </section>
+
+  <!-- ========== アカウントの発行（運営者だけ） ========== -->
+  <section class="screen" id="screen-accounts" hidden>
+    <h2 class="section-title">アカウントの発行</h2>
+
+    <div class="card card--wip">
+      <h3 class="card__title">⚠ サーバーにつないでいるときだけ働きます</h3>
+      <p class="note">
+        先生と生徒さんのアカウントを作れます。<br>
+        <b>パスワードは作った直後に一度だけ表示されます。</b>
+        こちらでは保存していないため、あとから見ることはできません。<br>
+        忘れてしまったときは「パスワードを作り直す」でやり直せます。
+      </p>
+    </div>
+
+    <!-- 作った直後だけ出る、控え用の枠 -->
+    <div class="card card--issued" id="issuedCard" hidden>
+      <h3 class="card__title">✅ 発行しました</h3>
+      <p class="note">この内容をお渡しください。<b>この画面を閉じると二度と見られません。</b></p>
+      <div class="issued" id="issuedBox"></div>
+      <div class="io-actions">
+        <button class="btn btn--primary" id="issuedCopy">コピーする</button>
+        <button class="btn btn--ghost" id="issuedClose">閉じる</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">新しく作る</h3>
+      <div class="field">
+        <span class="field__label">どちらを作りますか</span>
+        <div class="segmented__btns" id="acctRole">
+          <button data-role="student" class="is-on">生徒</button>
+          <button data-role="teacher">先生</button>
+        </div>
+        <p class="note">運営者は増やせません（佐藤様おひとりというお決めごとのため）。</p>
+      </div>
+      <label class="field">
+        <span class="field__label">お名前</span>
+        <input type="text" id="acctName" placeholder="例）鈴木 ゆい">
+      </label>
+      <label class="field">
+        <span class="field__label">ログインID</span>
+        <input type="text" id="acctLoginId" placeholder="例）suzuki-yui">
+        <p class="note">半角の英数字と - _ で、3文字以上。あとから変えられません。</p>
+      </label>
+      <label class="field">
+        <span class="field__label">教場</span>
+        <select id="acctVenue"></select>
+      </label>
+      <label class="field" id="acctParentField">
+        <span class="field__label">保護者のメールアドレス（任意）</span>
+        <input type="email" id="acctParentEmail" placeholder="例）hogosha@example.com">
+        <p class="note">入退室のお知らせを送る先です。あとからでも登録できます。</p>
+      </label>
+      <button class="btn btn--primary" id="acctCreate">この内容で発行する</button>
+      <p class="note" id="acctMsg"></p>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">教場を追加する</h3>
+      <label class="field">
+        <span class="field__label">教場のID</span>
+        <input type="text" id="venueId" placeholder="例）kita">
+        <p class="note">QRの合言葉にもなります。半角の英数字と - _ 。</p>
+      </label>
+      <label class="field">
+        <span class="field__label">教場の名前</span>
+        <input type="text" id="venueName" placeholder="例）北教場">
+      </label>
+      <button class="btn btn--ghost" id="venueAdd">教場を追加する</button>
+      <p class="note" id="venueMsg"></p>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">いまあるアカウント</h3>
+      <div class="field">
+        <span class="field__label">しぼりこみ</span>
+        <div class="segmented__btns" id="acctFilter">
+          <button data-role="all" class="is-on">すべて</button>
+          <button data-role="teacher">先生</button>
+          <button data-role="student">生徒</button>
+        </div>
+      </div>
+      <p class="note" id="acctListMsg"></p>
+    </div>
+    <div id="acctList"></div>
   </section>
 
   <!-- ========== 保護者へのお知らせメール（運営者だけ） ========== -->

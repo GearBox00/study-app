@@ -28,8 +28,8 @@ if (!password_verify($password, $hash) || !$u) {
     fail(401, 'ログインIDまたはパスワードがちがいます。');
 }
 
-// 退塾した生徒は入れません（G）
-if ($u['role'] === ROLE_STUDENT && $u['enroll'] === ENROLL_LEFT) {
+// 退塾した生徒と、止めた先生は入れません（G・D）
+if ($u['role'] !== ROLE_ADMIN && $u['enroll'] === ENROLL_LEFT) {
     audit($u, 'login_denied_left', (string)$u['id']);
     fail(403, 'このアカウントは現在ご利用いただけません。教室へお問い合わせください。');
 }

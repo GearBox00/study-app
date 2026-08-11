@@ -147,8 +147,13 @@ function current_user(): ?array
         $st->execute([$_SESSION['uid']]);
         $u = $st->fetch() ?: null;
 
-        // 退塾した人は、そのままでは使えないようにします
-        if ($u && $u['role'] === ROLE_STUDENT && $u['enroll'] === ENROLL_LEFT) {
+        /*
+         * 止めた人は、そのままでは使えないようにします。
+         * 生徒の「退塾」だけでなく、先生を止めたときも同じ扱いです
+         * （2026-08-11：アカウント発行の画面で先生も止められるようにしたため）。
+         * 運営者だけは、うっかり自分を締め出さないよう対象外にしています。
+         */
+        if ($u && $u['role'] !== ROLE_ADMIN && $u['enroll'] === ENROLL_LEFT) {
             $u = null;
         }
     }
