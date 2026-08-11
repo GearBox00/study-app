@@ -105,6 +105,17 @@ foreach ($ids as $n => $uid) {
     ]);
 }
 
+/*
+ * メールの設定。手元では実際には送らず、
+ * server/mail-dryrun.log に書き出すだけにします。
+ * 本番へ移すときは mail_dry_run を消してください。
+ */
+$set = $pdo->prepare('INSERT INTO settings (name, value) VALUES (?, ?)
+                      ON DUPLICATE KEY UPDATE value = VALUES(value)');
+$set->execute(['mail_dry_run', '1']);
+$set->execute(['mail_enabled', '0']);
+$set->execute(['mail_from', 'info@example.com']);
+
 echo "見本の利用者を入れました。\n";
 echo "  運営者 … admin / admin-pass\n";
 echo "  先生   … sensei-k, sensei-m / sensei-pass\n";

@@ -72,3 +72,28 @@ CREATE TABLE IF NOT EXISTS audit_log (
   created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------- 入退室の記録（2026-08-11 追加） ----------
+-- 保護者へのお知らせに使います。誰がいつ入って、いつ出たか。
+CREATE TABLE IF NOT EXISTS attendance (
+  id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id    INT UNSIGNED NOT NULL,
+  venue_id   VARCHAR(32)  NULL,
+  kind       ENUM('in','out') NOT NULL,
+  happened_at DATETIME    NOT NULL,
+  minutes    INT UNSIGNED NULL,               -- 退室のときだけ。その回の勉強時間
+  mail_state ENUM('none','sent','failed','skipped') NOT NULL DEFAULT 'none',
+  mail_error VARCHAR(255) NOT NULL DEFAULT '',
+  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_user_time (user_id, happened_at),
+  CONSTRAINT fk_att_user FOREIGN KEY (user_id) REFERENCES users(id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------- 設定（2026-08-11 追加） ----------
+-- 運営者が画面から変えられる値を入れます。メールの文面など。
+CREATE TABLE IF NOT EXISTS settings (
+  name       VARCHAR(64)  NOT NULL PRIMARY KEY,
+  value      TEXT         NOT NULL,
+  updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

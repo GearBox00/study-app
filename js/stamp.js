@@ -147,6 +147,7 @@ function handleScan(text) {
     log.minutes += m;
     a.totalMinutes += m;
     Store.save();
+    notifyAttendance('out', m);
     return {
       ok: true, kind: 'out',
       title: 'おつかれさま！',
@@ -165,6 +166,7 @@ function handleScan(text) {
     pushMark('attend');
   }
   Store.save();
+  notifyAttendance('in', null);
 
   if (stamped && a.stamps === 0) {
     return {
@@ -185,6 +187,23 @@ function handleScan(text) {
 function formatMinutes(m) {
   if (m < 60) return `${m}分`;
   return `${Math.floor(m / 60)}時間${m % 60 ? (m % 60) + '分' : ''}`;
+}
+
+/**
+ * 入退室をサーバーへ知らせます（2026-08-11 追加）。
+ * 保護者へのお知らせメールは、サーバー側が送ります。
+ *
+ * わざと「待たない」形にしています。
+ * メールの送信を待ってから画面を出すと、通信が遅い教場で
+ * 生徒がその場で待たされてしまうためです。
+ * サーバーへ届かなくても、出席の記録は端末に残っています。
+ */
+function notifyAttendance(kind, minutes) {
+  if (typeof Backend !== 'object' || !Backend.remote) return;
+  if (typeof Remote !== 'object' || !Remote.enabled) return;
+  Remote.attendance(kind, minutes).catch(() => {
+    // 送れなくても、生徒の画面には出しません。生徒には直せないためです
+  });
 }
 
 /* ============================================================

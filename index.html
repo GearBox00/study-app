@@ -636,7 +636,95 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
 
     <button class="text-link text-link--slim" id="teacherUnlock">先生用の機能を表示する</button>
     <button class="text-link text-link--slim" id="rosterLink" hidden>生徒の名簿を見る（第2段階の作りこみ中）</button>
+    <button class="text-link text-link--slim" id="mailLink" hidden>保護者へのお知らせメールの設定</button>
     <button class="text-link text-link--slim" id="roleLink">役割を切り替える（第2段階の作りこみ中）</button>
+  </section>
+
+  <!-- ========== 保護者へのお知らせメール（運営者だけ） ========== -->
+  <section class="screen" id="screen-mail" hidden>
+    <h2 class="section-title">保護者へのお知らせメール</h2>
+
+    <div class="card card--wip">
+      <h3 class="card__title">⚠ サーバーにつないでいるときだけ働きます</h3>
+      <p class="note">
+        生徒さんが入退室のQRを読み取ると、保護者の方へ自動でメールが届きます。<br>
+        送るのはサーバーですので、<b>この設定はサーバーに保存されます</b>。
+      </p>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">送信の入・切</h3>
+      <label class="switch">
+        <input type="checkbox" id="mailEnabled">
+        <span>入退室のお知らせを保護者へ送る</span>
+      </label>
+      <p class="note">
+        切のあいだは、入退室の記録だけが残り、メールは送りません。<br>
+        <b>保護者の方の同意をいただいてから</b>入にしてください。<br>
+        休塾中の生徒さんには送りません。
+      </p>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">差出人</h3>
+      <label class="field">
+        <span class="field__label">メールアドレス</span>
+        <input type="email" id="mailFrom" placeholder="例）info@satojun.org">
+        <p class="note">
+          <b>Xサーバーで作ったメールアドレスをお使いください。</b><br>
+          外部のアドレス（GmailやYahooなど）を差出人にすると、
+          迷惑メール扱いされて届かないことがあります。
+        </p>
+      </label>
+      <label class="field">
+        <span class="field__label">差出人の名前</span>
+        <input type="text" id="mailFromName" placeholder="例）SJ式 学習アプリ">
+      </label>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">入室のお知らせ</h3>
+      <label class="field">
+        <span class="field__label">件名</span>
+        <input type="text" id="mailSubjectIn" maxlength="120">
+      </label>
+      <label class="field">
+        <span class="field__label">本文</span>
+        <textarea id="mailBodyIn" rows="8"></textarea>
+      </label>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">退室のお知らせ</h3>
+      <label class="field">
+        <span class="field__label">件名</span>
+        <input type="text" id="mailSubjectOut" maxlength="120">
+      </label>
+      <label class="field">
+        <span class="field__label">本文</span>
+        <textarea id="mailBodyOut" rows="9"></textarea>
+      </label>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">文面に差しこめるもの</h3>
+      <table class="perm-table">
+        <tr><td><code>{name}</code></td><td>お子さんのお名前</td></tr>
+        <tr><td><code>{time}</code></td><td>入退室した時刻</td></tr>
+        <tr><td><code>{venue}</code></td><td>教場の名前</td></tr>
+        <tr><td><code>{minutes}</code></td><td>その日の学習時間（退室のときだけ）</td></tr>
+      </table>
+      <p class="note">中かっこごと、そのまま書いてください。送るときに置きかわります。</p>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">送信のようす（この30日）</h3>
+      <div class="roster-counts" id="mailStats"></div>
+      <div id="mailErrors"></div>
+    </div>
+
+    <button class="btn btn--primary" id="mailSave">この内容で保存する</button>
+    <p class="note" id="mailMsg"></p>
   </section>
 
   <!-- ========== 名簿（運営者・先生用／第2段階の作りこみ中） ========== -->

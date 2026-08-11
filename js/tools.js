@@ -817,6 +817,8 @@ function applyRole() {
   $('printLink').hidden = !Auth.can('printTest');
   // 名簿は、成績を見られる人（先生・運営者）だけ
   $('rosterLink').hidden = !(Auth.enforcing && Auth.can('viewGrades'));
+  // 保護者メールの設定は運営者だけ（E）
+  $('mailLink').hidden = !(Auth.enforcing && Auth.can('manageMail'));
   // マイページの先生用カード
   renderTeacher();
   renderRole();
@@ -955,4 +957,77 @@ $('rosterLink').onclick = async () => {
   await Roster.load();
   renderRoster();
   show('roster', '生徒の名簿');
+};
+
+/* ============================================================
+   8. 保護者へのお知らせメールの設定（運営者だけ）
+   ------------------------------------------------------------
+   実際に送るのはサーバーです。ここは設定を預けるだけです。
+   ============================================================ */
+
+const MAIL_FIELDS = {
+  mail_from:        'mailFrom',
+  mail_from_name:   'mailFromName',
+  mail_subject_in:  'mailSubjectIn',
+  mail_subject_out: 'mailSubjectOut',
+  mail_body_in:     'mailBodyIn',
+  mail_body_out:    'mailBodyOut',
+};
+
+function renderMailStats(stats, errors) {
+  const s = stats || {};
+  $('mailStats').innerHTML = [
+    ['送れた', s.sent || 0, 'is-active'],
+    ['送れなかった', s.failed || 0, 'is-paused'],
+    ['送らなかった', s.skipped || 0, 'is-left'],
+  ].map(([label, n, cls]) =>
+    `<span class="roster-count ${cls}"><b>${n}</b>${escapeHtml(label)}</span>`
+  ).join('');
+
+  const list = errors || [];
+  $('mailErrors').innerHTML = list.length
+    ? '<p class="note"><b>直近の失敗</b></p>' + list.map((e) =>
+        `<p class="note">${escapeHtml(e.happened_at)}　`
+        + `${e.kind === 'in' ? '入室' : '退室'}　${escapeHtml(e.mail_error || '理由不明')}</p>`
+      ).join('')
+    : '';
+}
+
+async function renderMail() {
+  $('mailMsg').textContent = '';
+  if (typeof Remote !== 'object' || !Remote.enabled) {
+    $('mailMsg').textContent = 'サーバーにつないでいないため、設定を読み込めません。';
+    return;
+  }
+  try {
+    const r = await Remote.mailSettings();
+    $('mailEnabled').checked = r.settings.mail_enabled === '1';
+    Object.keys(MAIL_FIELDS).forEach((k) => { $(MAIL_FIELDS[k]).value = r.settings[k] || ''; });
+    renderMailStats(r.stats30d, r.recentErrors);
+  } catch (e) {
+    $('mailMsg').textContent = e.message || '設定を読み込めませんでした。';
+  }
+}
+
+$('mailSave').onclick = async () => {
+  if (typeof Remote !== 'object' || !Remote.enabled) {
+    $('mailMsg').textContent = 'サーバーにつないでいないため、保存できません。';
+    return;
+  }
+  const values = { mail_enabled: $('mailEnabled').checked ? '1' : '0' };
+  Object.keys(MAIL_FIELDS).forEach((k) => { values[k] = $(MAIL_FIELDS[k]).value; });
+  try {
+    await Remote.saveMailSettings(values);
+    $('mailMsg').textContent = '保存しました。';
+    toast('保存しました');
+  } catch (e) {
+    // 断られた理由（差出人が空、など）をそのまま出します
+    $('mailMsg').textContent = e.message || '保存できませんでした。';
+    toast('保存できませんでした');
+  }
+};
+
+$('mailLink').onclick = async () => {
+  show('mail', '保護者へのお知らせメール');
+  await renderMail();
 };

@@ -61,6 +61,26 @@ const Remote = {
     };
   },
 
+  /* ---------- 入退室（js/stamp.js から呼ばれます） ---------- */
+
+  /**
+   * 入室・退室をサーバーへ知らせます。
+   * 保護者へのお知らせメールは、サーバー側が送ります。
+   */
+  attendance(kind, minutes) {
+    return this._call('attendance.php', {
+      method: 'POST',
+      body: { kind, minutes: minutes == null ? null : minutes },
+    });
+  },
+
+  /* ---------- 保護者メールの設定（運営者だけ） ---------- */
+
+  mailSettings() { return this._call('mailsettings.php'); },
+  saveMailSettings(values) {
+    return this._call('mailsettings.php', { method: 'POST', body: values });
+  },
+
   /* ---------- js/roster.js から呼ばれます ---------- */
 
   rosterStore() {
