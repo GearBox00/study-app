@@ -21,11 +21,27 @@ require __DIR__ . '/../lib.php';
 $me = require_login();
 require_can($me, 'manageTeachers');
 
+/*
+ * 選べる学年（2026-08-12 追加）。
+ * 自由に入力できるようにすると表記がばらつき、繰り上げもできなくなるため、
+ * 決まった文字だけを使います。
+ */
+const GRADES = ['小1', '小2', '小3', '小4', '小5', '小6',
+                '中1', '中2', '中3', '高1', '高2', '高3', 'その他'];
+
+/* 進級で1つ上がる先。高3とその他は上がりません */
+const GRADE_NEXT = [
+    '小1' => '小2', '小2' => '小3', '小3' => '小4', '小4' => '小5', '小5' => '小6',
+    '小6' => '中1', '中1' => '中2', '中2' => '中3', '中3' => '高1',
+    '高1' => '高2', '高2' => '高3',
+];
+
 /* ---------- 一覧 ---------- */
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
     $st = db()->query(
-        "SELECT u.id, u.login_id, u.role, u.name, u.venue_id, u.enroll,
-                u.parent_email, u.created_at, v.name AS venue_name
+        "SELECT u.id, u.login_id, u.role, u.name, u.grade, u.joined_on,
+                u.venue_id, u.enroll, u.app_access, u.parent_email, u.created_at,
+                v.name AS venue_name
            FROM users u LEFT JOIN venues v ON v.id = u.venue_id
           ORDER BY FIELD(u.role,'admin','teacher','student'), u.id");
     $rows = [];
@@ -35,15 +51,18 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
             'loginId'   => $u['login_id'],
             'role'      => $u['role'],
             'name'      => $u['name'],
+            'grade'     => $u['grade'],
+            'joinedOn'  => $u['joined_on'] ?? '',
             'venue'     => $u['venue_id'],
             'venueName' => $u['venue_name'],
             'enroll'    => $u['enroll'],
+            'appAccess' => (int)$u['app_access'] === 1,
             'parentEmail' => $u['parent_email'],
             'createdAt' => $u['created_at'],
         ];
     }
     $vs = db()->query('SELECT id, name FROM venues ORDER BY id')->fetchAll();
-    ok(['users' => $rows, 'venues' => $vs]);
+    ok(['users' => $rows, 'venues' => $vs, 'grades' => GRADES]);
 }
 
 require_post();
@@ -124,13 +143,36 @@ if ($do === 'create') {
     }
     if ($role === ROLE_TEACHER) $parentEmail = '';   // 先生には保護者欄はありません
 
+    /* 学年（2026-08-12 追加）。決まった文字だけを受けつけます */
+    $grade = trim((string)($in['grade'] ?? ''));
+    if ($grade !== '' && !in_array($grade, GRADES, true)) {
+        fail(400, 'その学年は選べません。');
+    }
+    if ($role === ROLE_TEACHER) $grade = '';    // 先生に学年はありません
+
+    /* 入塾日（2026-08-12 追加） */
+    $joined = trim((string)($in['joinedOn'] ?? ''));
+    if ($joined !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $joined)) {
+        fail(400, '入塾日の形が正しくありません（例：2026-04-01）。');
+    }
+    if ($joined === '') $joined = null;
+
     $password = make_password();
     $ins = db()->prepare(
-        'INSERT INTO users (login_id, password_hash, role, name, venue_id, enroll, parent_email)
-         VALUES (?, ?, ?, ?, ?, ?, ?)');
+        'INSERT INTO users (login_id, password_hash, role, name, grade, joined_on,
+                            venue_id, enroll, app_access, parent_email)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)');
     $ins->execute([$loginId, password_hash($password, PASSWORD_DEFAULT),
-                   $role, $name, $venue, ENROLL_ACTIVE, $parentEmail]);
+                   $role, $name, $grade, $joined, $venue, ENROLL_ACTIVE, $parentEmail]);
     $newId = (int)db()->lastInsertId();
+
+    /* 保護者の連絡先も、新しい表へ入れておきます */
+    if ($role === ROLE_STUDENT && $parentEmail !== '') {
+        $g = db()->prepare(
+            'INSERT INTO guardians (user_id, relation, email, notify_attendance)
+             VALUES (?, ?, ?, 1)');
+        $g->execute([$newId, '保護者', $parentEmail]);
+    }
 
     // 記録に残すのはIDと役割だけ。パスワードは絶対に残しません
     audit($me, 'account_create', (string)$newId, $role . ' ' . $loginId);
@@ -184,12 +226,116 @@ if ($do === 'disable' || $do === 'enable') {
     if (!$u) fail(404, 'その利用者は見つかりませんでした。');
     if ($u['role'] === ROLE_ADMIN) fail(403, '運営者は止められません。');
 
+    /*
+     * 在籍の状態とあわせて、アプリの利用可否もそろえます。
+     * 2026-08-12に「使えるかどうか」を別の欄へ移したため、
+     * ここを変え忘れると、止めたのに使えたままになります。
+     */
     $next = ($do === 'disable') ? ENROLL_LEFT : ENROLL_ACTIVE;
-    $up = db()->prepare('UPDATE users SET enroll = ?, enroll_changed_at = CURDATE() WHERE id = ?');
-    $up->execute([$next, $id]);
+    $access = ($do === 'disable') ? 0 : 1;
+    $up = db()->prepare(
+        'UPDATE users SET enroll = ?, app_access = ?, enroll_changed_at = CURDATE() WHERE id = ?');
+    $up->execute([$next, $access, $id]);
 
     audit($me, 'account_' . $do, (string)$id, $u['login_id']);
     ok(['id' => $id, 'enroll' => $next]);
+}
+
+/* ============================================================
+   学年と入塾日を直す（2026-08-12 追加）
+   ============================================================ */
+if ($do === 'setProfile') {
+    $id = (int)($in['id'] ?? 0);
+    $st = db()->prepare("SELECT id, login_id, role FROM users WHERE id = ?");
+    $st->execute([$id]);
+    $u = $st->fetch();
+    if (!$u) fail(404, 'その利用者は見つかりませんでした。');
+
+    $sets = [];
+    $args = [];
+    if (array_key_exists('grade', $in)) {
+        $grade = trim((string)$in['grade']);
+        if ($grade !== '' && !in_array($grade, GRADES, true)) fail(400, 'その学年は選べません。');
+        $sets[] = 'grade = ?';
+        $args[] = $grade;
+    }
+    if (array_key_exists('joinedOn', $in)) {
+        $joined = trim((string)$in['joinedOn']);
+        if ($joined !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $joined)) {
+            fail(400, '入塾日の形が正しくありません（例：2026-04-01）。');
+        }
+        $sets[] = 'joined_on = ?';
+        $args[] = ($joined === '' ? null : $joined);
+    }
+    if (!$sets) fail(400, '変える項目がありません。');
+
+    $args[] = $id;
+    $up = db()->prepare('UPDATE users SET ' . implode(', ', $sets) . ' WHERE id = ?');
+    $up->execute($args);
+    audit($me, 'profile_change', (string)$id, implode(',', array_keys($in)));
+    ok(['id' => $id]);
+}
+
+/* ============================================================
+   進級（全員の学年を1つ繰り上げる）
+   ------------------------------------------------------------
+   一度押すと全員に及ぶ操作ですので、
+   「下見」と「実行」を分けています。
+   下見で内容を確かめてから実行していただく形です。
+   ============================================================ */
+if ($do === 'promotePreview' || $do === 'promote') {
+    $st = db()->query(
+        "SELECT id, name, grade, venue_id, enroll FROM users
+          WHERE role = 'student' AND grade <> '' ORDER BY grade, id");
+
+    $changes = [];
+    $stay = [];
+    foreach ($st->fetchAll() as $u) {
+        $next = GRADE_NEXT[$u['grade']] ?? null;
+        $row = [
+            'id'    => (int)$u['id'],
+            'name'  => $u['name'],
+            'from'  => $u['grade'],
+            'to'    => $next,
+            'venue' => $u['venue_id'],
+            'enroll' => $u['enroll'],
+        ];
+        if ($next === null) {
+            // 高3とその他は上がりません（卒業される学年です）
+            $row['reason'] = 'これ以上は上がりません';
+            $stay[] = $row;
+        } else {
+            $changes[] = $row;
+        }
+    }
+
+    if ($do === 'promotePreview') {
+        ok(['changes' => $changes, 'stay' => $stay]);
+    }
+
+    /* 実行。除きたい生徒さんは exclude で指定できます */
+    $exclude = [];
+    if (isset($in['exclude']) && is_array($in['exclude'])) {
+        foreach ($in['exclude'] as $x) $exclude[] = (int)$x;
+    }
+
+    $up = db()->prepare('UPDATE users SET grade = ? WHERE id = ?');
+    $done = 0;
+    db()->beginTransaction();
+    try {
+        foreach ($changes as $c) {
+            if (in_array($c['id'], $exclude, true)) continue;
+            $up->execute([$c['to'], $c['id']]);
+            $done++;
+        }
+        db()->commit();
+    } catch (Throwable $e) {
+        db()->rollBack();
+        fail(500, '繰り上げの途中で問題が起きたため、元に戻しました。');
+    }
+
+    audit($me, 'promote', '', "done={$done} excluded=" . count($exclude));
+    ok(['promoted' => $done, 'excluded' => count($exclude), 'stayed' => count($stay)]);
 }
 
 /* ============================================================

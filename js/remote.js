@@ -77,6 +77,15 @@ const Remote = {
   /* ---------- アカウントの発行（運営者だけ） ---------- */
 
   accounts() { return this._call('accounts.php'); },
+  setProfile(id, values) {
+    return this._call('accounts.php', { method: 'POST', body: { do: 'setProfile', id, ...values } });
+  },
+  promotePreview() {
+    return this._call('accounts.php', { method: 'POST', body: { do: 'promotePreview' } });
+  },
+  promote(exclude) {
+    return this._call('accounts.php', { method: 'POST', body: { do: 'promote', exclude: exclude || [] } });
+  },
   createAccount(v) { return this._call('accounts.php', { method: 'POST', body: { do: 'create', ...v } }); },
   resetPassword(id) { return this._call('accounts.php', { method: 'POST', body: { do: 'reset', id } }); },
   setAccountEnabled(id, on) {
@@ -103,7 +112,8 @@ const Remote = {
        * 数百名までなら十分に速く、通信の回数も減らせるためです。
        * 千名を超えるようになったら、条件をURLに付けて渡します。
        */
-      list: () => this._call('students.php?enroll=all'),
+      list: (order) => this._call(
+        'students.php?enroll=all' + (order ? '&order=' + encodeURIComponent(order) : '')),
 
       /*
        * 名簿はサーバーが持ち主なので、まるごと上書きはしません。
@@ -113,6 +123,10 @@ const Remote = {
 
       setEnroll: (id, enroll) =>
         this._call('students.php', { method: 'POST', body: { id, enroll } }),
+
+      /* アプリを使えるかどうか（2026-08-12 追加） */
+      setAppAccess: (id, appAccess) =>
+        this._call('students.php', { method: 'POST', body: { id, appAccess } }),
     };
   },
 

@@ -41,6 +41,55 @@ foreach (array_filter(array_map('trim', explode(';', $sql))) as $stmt) {
 }
 echo "表を用意しました（{$made}件の命令）。\n";
 
+/* ============================================================
+   あとから足した列
+   ------------------------------------------------------------
+   すでに動いているデータベースにも当てられるよう、
+   「無ければ足す」形にしています。何度実行しても安全です。
+   ============================================================ */
+$dbName = $cfg['db_name'];
+$addColumn = static function (PDO $pdo, string $db, string $table,
+                             string $column, string $ddl) : bool {
+    $st = $pdo->prepare(
+        'SELECT COUNT(*) FROM information_schema.COLUMNS
+          WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?');
+    $st->execute([$db, $table, $column]);
+    if ((int)$st->fetchColumn() > 0) return false;
+    $pdo->exec("ALTER TABLE `{$table}` ADD COLUMN {$ddl}");
+    return true;
+};
+
+$added = 0;
+/* 学年。「小1」「中2」など、決まった文字で持ちます */
+$added += (int)$addColumn($pdo, $dbName, 'users', 'grade',
+    "`grade` VARCHAR(8) NOT NULL DEFAULT '' AFTER `kana`");
+/* 入塾日 */
+$added += (int)$addColumn($pdo, $dbName, 'users', 'joined_on',
+    "`joined_on` DATE NULL AFTER `grade`");
+/*
+ * アプリを使えるかどうか。在籍の状態とは切り離して持ちます。
+ * 休塾の定義があとから決められるようにするためです（2026-08-12 ご要望）。
+ */
+$added += (int)$addColumn($pdo, $dbName, 'users', 'app_access',
+    "`app_access` TINYINT(1) NOT NULL DEFAULT 1 AFTER `enroll`");
+echo $added ? "列を{$added}件足しました。\n" : "足す列はありませんでした。\n";
+
+/*
+ * すでに登録されている保護者のメールを、新しい表へ移します。
+ * 何度実行しても二重にならないようにしています。
+ */
+$moved = $pdo->exec(
+    "INSERT INTO guardians (user_id, relation, email, notify_attendance)
+     SELECT u.id, '保護者', u.parent_email, 1
+       FROM users u
+      WHERE u.parent_email <> ''
+        AND NOT EXISTS (SELECT 1 FROM guardians g
+                         WHERE g.user_id = u.id AND g.email = u.parent_email)");
+if ($moved) echo "保護者の連絡先を{$moved}件、新しい表へ移しました。\n";
+
+/* 退塾している生徒は、アプリも使えない状態にそろえます */
+$pdo->exec("UPDATE users SET app_access = 0 WHERE role = 'student' AND enroll = 'left'");
+
 if (!in_array('--sample', $argv, true)) {
     echo "見本の利用者を入れるには --sample を付けてください。\n";
     exit(0);

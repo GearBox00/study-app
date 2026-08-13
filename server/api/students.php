@@ -43,12 +43,30 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
         $args[]  = $enroll;
     }
 
-    $sql = 'SELECT u.id, u.name, u.kana, u.venue_id, u.enroll, u.parent_email, u.note,
-                   r.answered, r.correct, r.last_studied
+    /*
+     * 並び順（2026-08-12にご要望で選べるようにしました）
+     *   recent … 最終学習日が古い順。しばらく来ていない子が上に来ます（既定）
+     *   name  … お名前順
+     *   id    … 登録した順
+     * 先生には氏名が見えないので、名前順は運営者だけにします。
+     */
+    $order = (string)($_GET['order'] ?? 'recent');
+    if ($order === 'name' && can($me, 'viewPersonal')) {
+        $orderSql = 'u.kana ASC, u.name ASC, u.id ASC';
+    } elseif ($order === 'id') {
+        $orderSql = 'u.id ASC';
+    } else {
+        $orderSql = 'r.last_studied IS NULL DESC, r.last_studied ASC, u.id ASC';
+    }
+
+    $sql = 'SELECT u.id, u.name, u.kana, u.grade, u.joined_on,
+                   u.venue_id, u.enroll, u.app_access, u.parent_email, u.note,
+                   r.answered, r.correct, r.last_studied,
+                   (SELECT COUNT(*) FROM guardians g WHERE g.user_id = u.id) AS guardian_count
               FROM users u
               LEFT JOIN records r ON r.user_id = u.id
              WHERE ' . implode(' AND ', $where) . '
-             ORDER BY r.last_studied IS NULL DESC, r.last_studied ASC, u.id ASC';
+             ORDER BY ' . $orderSql;
     $st = db()->prepare($sql);
     $st->execute($args);
 
@@ -63,26 +81,49 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
     ok($rows);
 }
 
-/* ---------- 在籍の状態を変える（G） ---------- */
+/* ---------- 在籍の状態、またはアプリの利用可否を変える ---------- */
 require_post();
 require_can($me, 'changeEnrollment');
 
 $in = body();
 $id = isset($in['id']) ? (int)$in['id'] : 0;
-$enroll = (string)($in['enroll'] ?? '');
 
-if (!in_array($enroll, [ENROLL_ACTIVE, ENROLL_PAUSED, ENROLL_LEFT], true)) {
-    fail(400, '知らない状態です。');
-}
-
-$st = db()->prepare("SELECT id, name, venue_id, enroll, role FROM users WHERE id = ? AND role = 'student'");
+$st = db()->prepare("SELECT id, name, venue_id, enroll, app_access, role
+                       FROM users WHERE id = ? AND role = 'student'");
 $st->execute([$id]);
 $s = $st->fetch();
 if (!$s) fail(404, 'その生徒は見つかりませんでした。');
 if (!can_see_student($me, $s)) fail(403, 'この生徒は担当ではありません。');
 
-$up = db()->prepare('UPDATE users SET enroll = ?, enroll_changed_at = CURDATE() WHERE id = ?');
-$up->execute([$enroll, $id]);
+/* ---- アプリの利用可否だけを変える場合（2026-08-12 追加） ---- */
+if (array_key_exists('appAccess', $in)) {
+    $access = $in['appAccess'] ? 1 : 0;
+    $up = db()->prepare('UPDATE users SET app_access = ? WHERE id = ?');
+    $up->execute([$access, $id]);
+    audit($me, 'app_access', (string)$id, $access ? 'on' : 'off');
+    ok(['id' => $id, 'appAccess' => (bool)$access]);
+}
 
-audit($me, 'enroll_change', (string)$id, $s['enroll'] . ' -> ' . $enroll);
-ok(['id' => $id, 'enroll' => $enroll]);
+/* ---- 在籍の状態を変える（G） ---- */
+$enroll = (string)($in['enroll'] ?? '');
+if (!in_array($enroll, [ENROLL_ACTIVE, ENROLL_PAUSED, ENROLL_LEFT], true)) {
+    fail(400, '知らない状態です。');
+}
+
+/*
+ * 在籍の状態を変えたら、アプリの利用可否も自動でそろえます。
+ * 毎回2か所を触るのは手間なためです。
+ * 休塾のときだけは、いまの設定をそのままにします
+ * （休塾の定義がお決まりでないため、運営者に個別に決めていただきます）。
+ */
+$access = (int)$s['app_access'];
+if ($enroll === ENROLL_ACTIVE)    $access = 1;
+elseif ($enroll === ENROLL_LEFT)  $access = 0;
+
+$up = db()->prepare(
+    'UPDATE users SET enroll = ?, app_access = ?, enroll_changed_at = CURDATE() WHERE id = ?');
+$up->execute([$enroll, $access, $id]);
+
+audit($me, 'enroll_change', (string)$id,
+      $s['enroll'] . ' -> ' . $enroll . ' / access=' . ($access ? 'on' : 'off'));
+ok(['id' => $id, 'enroll' => $enroll, 'appAccess' => (bool)$access]);

@@ -142,18 +142,21 @@ function current_user(): ?array
     static $u = null;
     if ($u === null) {
         $st = db()->prepare(
-            'SELECT id, login_id, role, name, kana, venue_id, enroll, parent_email
+            'SELECT id, login_id, role, name, kana, grade, joined_on,
+                    venue_id, enroll, app_access, parent_email
                FROM users WHERE id = ?');
         $st->execute([$_SESSION['uid']]);
         $u = $st->fetch() ?: null;
 
         /*
-         * 止めた人は、そのままでは使えないようにします。
-         * 生徒の「退塾」だけでなく、先生を止めたときも同じ扱いです
-         * （2026-08-11：アカウント発行の画面で先生も止められるようにしたため）。
+         * 使えないことにしている人は、そのままでは入れないようにします。
+         *
+         * 2026-08-12に「アプリを使えるかどうか」を在籍の状態から切り離したため、
+         * 判断はその欄（app_access）だけを見ます。
+         * 休塾の定義があとから決まっても、ここを直さずに済みます。
          * 運営者だけは、うっかり自分を締め出さないよう対象外にしています。
          */
-        if ($u && $u['role'] !== ROLE_ADMIN && $u['enroll'] === ENROLL_LEFT) {
+        if ($u && $u['role'] !== ROLE_ADMIN && (int)$u['app_access'] === 0) {
             $u = null;
         }
     }
@@ -208,9 +211,17 @@ function student_view(array $me, array $s): array
         'name'           => $open ? $s['name'] : ('生徒 ' . $s['id']),
         'kana'           => $open ? ($s['kana'] ?? '') : '',
         'parentEmail'    => $open ? ($s['parent_email'] ?? '') : '',
+        'guardians'      => $open ? (int)($s['guardian_count'] ?? 0) : 0,
         'personalHidden' => !$open,
+        /*
+         * 学年と入塾日は、先生にもお見せします（2026-08-12 ご要望）。
+         * 学年が分からないと、成績を見ても指導に結びつかないためです。
+         */
+        'grade'          => $s['grade'] ?? '',
+        'joinedOn'       => $s['joined_on'] ?? '',
         'venue'          => $s['venue_id'] ?? '',
         'enroll'         => $s['enroll'],
+        'appAccess'      => (int)($s['app_access'] ?? 1) === 1,
         'answered'       => (int)($s['answered'] ?? 0),
         'correct'        => (int)($s['correct'] ?? 0),
         'lastStudied'    => $s['last_studied'] ?? '',

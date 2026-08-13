@@ -12,7 +12,7 @@ if ($loginId === '' || $password === '') {
     fail(400, 'ログインIDとパスワードを入れてください。');
 }
 
-$st = db()->prepare('SELECT id, login_id, password_hash, role, name, venue_id, enroll
+$st = db()->prepare('SELECT id, login_id, password_hash, role, name, venue_id, enroll, app_access
                        FROM users WHERE login_id = ?');
 $st->execute([$loginId]);
 $u = $st->fetch();
@@ -28,8 +28,12 @@ if (!password_verify($password, $hash) || !$u) {
     fail(401, 'ログインIDまたはパスワードがちがいます。');
 }
 
-// 退塾した生徒と、止めた先生は入れません（G・D）
-if ($u['role'] !== ROLE_ADMIN && $u['enroll'] === ENROLL_LEFT) {
+/*
+ * 使えないことにしている人は入れません。
+ * 2026-08-12に「アプリを使えるかどうか」を在籍の状態から切り離したため、
+ * ここも current_user() と同じ欄だけを見ます。
+ */
+if ($u['role'] !== ROLE_ADMIN && (int)$u['app_access'] === 0) {
     audit($u, 'login_denied_left', (string)$u['id']);
     fail(403, 'このアカウントは現在ご利用いただけません。教室へお問い合わせください。');
 }

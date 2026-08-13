@@ -857,7 +857,7 @@ $('roleLogout').onclick = () => {
    まとめてあるので、ここでは「並べて出す」ことだけをします。
    ============================================================ */
 
-const rosterFilter = { enroll: 'all', venue: '', word: '' };
+const rosterFilter = { enroll: 'all', venue: '', word: '', order: 'recent' };
 
 function renderRosterCounts() {
   const c = Roster.counts();
@@ -881,8 +881,10 @@ function renderRosterVenues() {
 
 function rosterRow(v) {
   const rate = v.answered ? Math.round((v.correct / v.answered) * 100) : 0;
+  const canEdit = Auth.can('changeEnrollment');
+
   // 状態を変えられるのは運営者だけ（G）。ほかの人には今の状態だけを見せます
-  const buttons = Auth.can('changeEnrollment')
+  const enrollBtns = canEdit
     ? `<div class="segmented__btns roster-row__enroll" data-id="${v.id}">`
       + ['active', 'paused', 'left'].map((e) =>
           `<button data-enroll="${e}" class="${v.enroll === e ? 'is-on' : ''}">`
@@ -890,20 +892,42 @@ function rosterRow(v) {
       + '</div>'
     : `<span class="enroll-tag enroll-tag--${v.enroll}">${escapeHtml(ENROLL_LABEL[v.enroll])}</span>`;
 
+  /*
+   * アプリを使えるかどうかは、在籍の状態とは別に切り替えます（2026-08-12 追加）。
+   * 休塾の定義があとから決まっても、ここだけで調整できます。
+   */
+  const accessBtns = canEdit
+    ? `<div class="segmented__btns roster-row__access" data-id="${v.id}">`
+      + `<button data-access="1" class="${v.appAccess ? 'is-on' : ''}">アプリ 使える</button>`
+      + `<button data-access="0" class="${v.appAccess ? '' : 'is-on'}">使えない</button>`
+      + '</div>'
+    : (v.appAccess ? '' : '<span class="enroll-tag enroll-tag--left">アプリ停止中</span>');
+
+  // 学年と入塾日は先生にも見せます（2026-08-12 ご要望）
+  const profile = [
+    v.grade ? `<span class="roster-row__grade">${escapeHtml(v.grade)}</span>` : '',
+    v.joinedOn ? `<span>入塾 <b>${escapeHtml(v.joinedOn)}</b></span>` : '',
+  ].filter(Boolean).join('');
+
   return `
-    <div class="roster-row roster-row--${v.enroll}">
+    <div class="roster-row roster-row--${v.enroll}${v.appAccess ? '' : ' roster-row--noaccess'}">
       <div class="roster-row__head">
         <span class="roster-row__name${v.personalHidden ? ' is-hidden' : ''}">${escapeHtml(v.name)}</span>
         <span class="roster-row__venue">${escapeHtml(v.venue)}</span>
       </div>
+      ${profile ? `<div class="roster-row__stats">${profile}</div>` : ''}
       <div class="roster-row__stats">
         <span>解答 <b>${v.answered}</b></span>
         <span>正答率 <b>${rate}%</b></span>
         <span>最終 <b>${escapeHtml(v.lastStudied || '—')}</b></span>
       </div>
       ${v.personalHidden ? '<p class="roster-row__note">氏名と保護者の連絡先は、先生には表示されません。</p>'
-        : (v.parentEmail ? `<p class="roster-row__note">保護者：${escapeHtml(v.parentEmail)}</p>` : '')}
-      ${buttons}
+        : (v.parentEmail
+            ? `<p class="roster-row__note">保護者：${escapeHtml(v.parentEmail)}`
+              + (v.guardians > 1 ? `　ほか${v.guardians - 1}名` : '') + '</p>'
+            : '')}
+      ${enrollBtns}
+      ${accessBtns}
     </div>`;
 }
 
@@ -919,6 +943,12 @@ function renderRoster() {
   document.querySelectorAll('#rosterEnroll button').forEach((b) => {
     b.classList.toggle('is-on', b.dataset.enroll === rosterFilter.enroll);
   });
+  document.querySelectorAll('#rosterOrder button').forEach((b) => {
+    b.classList.toggle('is-on', b.dataset.order === rosterFilter.order);
+  });
+  // 先生には氏名が見えないので、名前順は選べないようにします
+  const nameBtn = document.querySelector('#rosterOrder button[data-order="name"]');
+  if (nameBtn) nameBtn.hidden = !Auth.can('viewPersonal');
 
   const rows = Roster.list(rosterFilter);
   $('rosterMsg').textContent = rows.length
@@ -926,7 +956,7 @@ function renderRoster() {
     : (Roster.students.length ? '条件にあう生徒がいません。' : '名簿がまだ空です。');
   $('rosterList').innerHTML = rows.map((s) => rosterRow(Roster.view(s))).join('');
 
-  // 状態を切り替えるボタン
+  // 在籍の状態を切り替えるボタン
   document.querySelectorAll('.roster-row__enroll button').forEach((b) => {
     b.onclick = async () => {
       const id = Number(b.parentElement.dataset.id);
@@ -935,10 +965,28 @@ function renderRoster() {
       if (r.ok) renderRoster();
     };
   });
+
+  // アプリを使えるかどうかを切り替えるボタン（2026-08-12 追加）
+  document.querySelectorAll('.roster-row__access button').forEach((b) => {
+    b.onclick = async () => {
+      const id = Number(b.parentElement.dataset.id);
+      const r = await Roster.setAppAccess(id, b.dataset.access === '1');
+      toast(r.msg);
+      if (r.ok) renderRoster();
+    };
+  });
 }
 
 document.querySelectorAll('#rosterEnroll button').forEach((b) => {
   b.onclick = () => { rosterFilter.enroll = b.dataset.enroll; renderRoster(); };
+});
+document.querySelectorAll('#rosterOrder button').forEach((b) => {
+  b.onclick = async () => {
+    rosterFilter.order = b.dataset.order;
+    // 並べ替えはサーバー側で行うので、取り直します
+    await Roster.load(rosterFilter.order);
+    renderRoster();
+  };
 });
 $('rosterVenue').onchange = () => { rosterFilter.venue = $('rosterVenue').value; renderRoster(); };
 $('rosterWord').oninput = () => { rosterFilter.word = $('rosterWord').value; renderRoster(); };
@@ -1216,3 +1264,36 @@ $('accountsLink').onclick = async () => {
   show('accounts', 'アカウントの発行');
   await renderAccounts();
 };
+
+/* ============================================================
+   10. 送信できていないことの表示（2026-08-12 追加）
+   ------------------------------------------------------------
+   学習の記録がサーバーへ送れていないあいだ、上部に細く出します。
+   生徒が押すものではありません。通信が戻れば自動で消えます。
+
+   サーバーを使わない設定のときは、送る先がないので出しません
+   （第1段階の見た目は変わりません）。
+   ============================================================ */
+
+function renderSyncBar(unsent, error) {
+  const bar = $('syncBar');
+  if (!bar) return;
+
+  // サーバーを使っていなければ、そもそも出しません
+  if (!Backend.remote) { bar.hidden = true; return; }
+
+  if (!unsent && !error) { bar.hidden = true; return; }
+
+  /*
+   * 生徒が読む文言にします。
+   * 「同期」「サーバー」といった言葉は避け、
+   * 本人がすべきこと（何もしなくてよい）が伝わるようにします。
+   */
+  $('syncBarText').textContent = unsent
+    ? 'まだ送れていません。通信がつながると自動で送られます'
+    : (error || '');
+  bar.hidden = false;
+}
+
+/* 保存の状況が変わるたびに呼ばれます */
+Backend.onstatus = renderSyncBar;

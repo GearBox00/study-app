@@ -97,3 +97,43 @@ CREATE TABLE IF NOT EXISTS settings (
   value      TEXT         NOT NULL,
   updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+--  2026-08-12 の追加
+--  ------------------------------------------------------------
+--  ・学年と入塾日（佐藤様のご要望）
+--  ・アプリを使えるかどうかを、在籍の状態とは切り離して生徒ごとに持つ
+--    （休塾の定義を後から決められるようにするため）
+--  ・保護者を複数登録できるようにする（父母・祖母など）
+--
+--  すでに動いているデータベースにも当てられるよう、
+--  ALTER は setup.php 側で「無ければ足す」形にしています。
+-- ============================================================
+
+-- ---------- 保護者（1人の生徒に何人でも） ----------
+CREATE TABLE IF NOT EXISTS guardians (
+  id         INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id    INT UNSIGNED NOT NULL,               -- どの生徒の保護者か
+  name       VARCHAR(100) NOT NULL DEFAULT '',    -- お名前（任意）
+  relation   VARCHAR(32)  NOT NULL DEFAULT '',    -- 続柄（母・父・祖母など）
+  email      VARCHAR(255) NOT NULL,
+  -- 入退室のお知らせも送るか。祖母には大事な連絡だけ、という使い分けのため
+  notify_attendance TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_user (user_id),
+  CONSTRAINT fk_guardian_user FOREIGN KEY (user_id) REFERENCES users(id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------- 保護者へ送ったご連絡の控え ----------
+CREATE TABLE IF NOT EXISTS messages (
+  id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  sender_id  INT UNSIGNED NULL,                   -- 送った人（運営者）
+  subject    VARCHAR(200) NOT NULL,
+  bodytext   TEXT         NOT NULL,
+  scope      VARCHAR(64)  NOT NULL DEFAULT '',    -- 個別／一斉のしぼりこみ条件の控え
+  sent_count INT UNSIGNED NOT NULL DEFAULT 0,
+  fail_count INT UNSIGNED NOT NULL DEFAULT 0,
+  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

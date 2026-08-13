@@ -31,10 +31,15 @@ const Roster = {
 
   /* ---------- 読み書き ---------- */
 
-  async load() {
+  /**
+   * 名簿を読み込みます。
+   * order を渡すと、その並びでサーバーから受け取ります
+   *   recent … 来ていない順（既定）／ name … 名前順 ／ id … 登録順
+   */
+  async load(order) {
     if (this.remote) {
       try {
-        this.students = (await this.remote.list()) || [];
+        this.students = (await this.remote.list(order)) || [];
         return this.students;
       } catch (e) {
         // つながらないときは、この端末に残っているものを使います
@@ -117,9 +122,15 @@ const Roster = {
       name: open ? s.name : `生徒 ${s.id}`,
       kana: open ? (s.kana || '') : '',
       parentEmail: open ? (s.parentEmail || '') : '',
+      guardians: open ? (s.guardians || 0) : 0,
       personalHidden: !open,
+      /* 学年と入塾日は、先生にもお見せします（2026-08-12 ご要望） */
+      grade: s.grade || '',
+      joinedOn: s.joinedOn || '',
       venue: s.venue || '',
       enroll: s.enroll || ENROLL.ACTIVE,
+      /* アプリを使えるかどうか。在籍の状態とは別に持ちます */
+      appAccess: s.appAccess !== false,
       answered: s.answered || 0,
       correct: s.correct || 0,
       lastStudied: s.lastStudied || '',
@@ -154,9 +165,39 @@ const Roster = {
     }
 
     s.enroll = enroll;
+    /*
+     * 在籍の状態を変えたら、アプリの利用可否もそろえます。
+     * 休塾のときは、いまの設定をそのままにします
+     * （休塾の定義がお決まりでないため、運営者に個別に決めていただきます）。
+     */
+    if (enroll === ENROLL.ACTIVE) s.appAccess = true;
+    else if (enroll === ENROLL.LEFT) s.appAccess = false;
     s.enrollChangedAt = new Date().toISOString().slice(0, 10);
     await this.save();
     return { ok: true, msg: `${s.name} さんを「${ENROLL_LABEL[enroll]}」にしました。` };
+  },
+
+  /**
+   * アプリを使えるかどうかを切り替えます（2026-08-12 追加）。
+   * 在籍の状態とは別に、生徒さんごとに決められます。
+   */
+  async setAppAccess(id, on) {
+    if (!Auth.can('changeEnrollment')) return { ok: false, msg: 'この操作は運営者だけができます。' };
+    const s = this.students.find((x) => x.id === id);
+    if (!s) return { ok: false, msg: '見つかりませんでした。' };
+    if (!Auth.canSeeStudent(s)) return { ok: false, msg: 'この生徒は担当ではありません。' };
+
+    if (this.remote && typeof this.remote.setAppAccess === 'function') {
+      try {
+        await this.remote.setAppAccess(id, !!on);
+      } catch (e) {
+        return { ok: false, msg: e.message || 'サーバーで変更できませんでした。' };
+      }
+    }
+    s.appAccess = !!on;
+    await this.save();
+    return { ok: true,
+             msg: `${s.name} さんのアプリを「${on ? '使える' : '使えない'}」にしました。` };
   },
 
   /* ---------- 見本のデータ（サーバーができるまでの確認用） ---------- */
@@ -175,15 +216,22 @@ const Roster = {
     const enrolls = [ENROLL.ACTIVE, ENROLL.ACTIVE, ENROLL.ACTIVE, ENROLL.ACTIVE,
                      ENROLL.PAUSED, ENROLL.LEFT];
 
+    const grades = ['小3', '小4', '小5', '小6', '中1', '中2'];
+
     const list = [];
     for (let i = 0; i < 24; i++) {
       const answered = 40 + ((i * 37) % 260);
+      const enroll = enrolls[i % enrolls.length];
       list.push({
         id: 1001 + i,
         name: `${sei[i % sei.length]} ${mei[i % mei.length]}`,
         kana: '',
+        grade: grades[i % grades.length],
+        joinedOn: `202${4 + (i % 3)}-0${1 + (i % 9)}-01`,
         venue: venues[i % venues.length],
-        enroll: enrolls[i % enrolls.length],
+        enroll,
+        // 退塾の子は使えない状態にそろえます
+        appAccess: enroll !== ENROLL.LEFT,
         parentEmail: `hogosha${i + 1}@example.com`,
         answered,
         correct: Math.round(answered * (0.55 + ((i * 7) % 35) / 100)),

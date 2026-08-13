@@ -18,6 +18,12 @@
   <button class="appbar__mypage" id="mypageBtn">マイページ</button>
 </header>
 
+<!-- 記録がまだサーバーへ送れていないときだけ出ます（2026-08-12 追加） -->
+<div class="sync-bar" id="syncBar" hidden>
+  <span class="sync-bar__dot"></span>
+  <span class="sync-bar__text" id="syncBarText">まだ送れていません</span>
+</div>
+
 <main id="main">
 
   <!-- ========== ホーム ========== -->
@@ -851,6 +857,19 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
         <input type="search" id="rosterWord" placeholder="名前や教場で検索">
         <p class="note" id="rosterWordNote"></p>
       </label>
+
+      <div class="field">
+        <span class="field__label">並び順</span>
+        <div class="segmented__btns" id="rosterOrder">
+          <button data-order="recent" class="is-on">来ていない順</button>
+          <button data-order="name">名前順</button>
+          <button data-order="id">登録順</button>
+        </div>
+        <p class="note">
+          「来ていない順」は、しばらく学習していない生徒さんが上に来ます。<br>
+          声をかけるべき子を見つけやすくするための並びです。
+        </p>
+      </div>
     </div>
 
     <p class="note" id="rosterMsg"></p>

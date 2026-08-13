@@ -1428,3 +1428,50 @@ select {
   user-select: text;
 }
 .io-actions--col { display: grid; gap: 6px; margin-top: 8px; }
+
+/* ---------- 送信できていないことの表示（2026-08-12 追加） ---------- */
+/*
+ * 学習の記録がサーバーへ送れていないときだけ出ます。
+ * 生徒が操作するものではないので、押せる見た目にはしません。
+ * 学習の邪魔にならないよう、上部に細く出すだけにしています。
+ */
+.sync-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--amber-pale, #fff6e4);
+  border-bottom: 1px solid var(--amber-deep, #8a5c05);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--amber-deep, #8a5c05);
+}
+.sync-bar__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amber-deep, #8a5c05);
+  /* ゆっくり点滅させて、止まっている表示ではないことを示します */
+  animation: sync-blink 1.6s ease-in-out infinite;
+}
+@keyframes sync-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+/* 動きを減らす設定にしている端末では点滅させません */
+@media (prefers-reduced-motion: reduce) {
+  .sync-bar__dot { animation: none; }
+}
+.sync-bar__text { flex: 1 1 auto; }
+
+/* ---------- 名簿の追加項目（2026-08-12） ---------- */
+/* 学年は一目で分かるよう、丸い札にします */
+.roster-row__grade {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #eef3f1;
+  font-weight: 700;
+  color: var(--ink);
+}
+/* アプリを使えない生徒は、行全体を薄くして見分けられるようにします */
+.roster-row--noaccess { opacity: 0.72; }
+.roster-row__access { margin-top: 6px; }
