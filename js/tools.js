@@ -819,6 +819,8 @@ function applyRole() {
   $('rosterLink').hidden = !(Auth.enforcing && Auth.can('viewGrades'));
   // 保護者メールの設定は運営者だけ（E）
   $('mailLink').hidden = !(Auth.enforcing && Auth.can('manageMail'));
+  // 保護者へのご連絡も運営者だけ（2026-08-12 追加）
+  $('messageLink').hidden = !(Auth.enforcing && Auth.can('manageMail'));
   // アカウントの発行は運営者だけ（D・F）
   $('accountsLink').hidden = !(Auth.enforcing && Auth.can('manageTeachers'));
   // マイページの先生用カード
@@ -928,6 +930,10 @@ function rosterRow(v) {
             : '')}
       ${enrollBtns}
       ${accessBtns}
+      ${Auth.can('viewPersonal')
+        ? `<button class="btn btn--ghost roster-row__guardian" data-guardian="${v.id}">`
+          + `保護者の連絡先（${v.guardians}名）</button>`
+        : ''}
     </div>`;
 }
 
@@ -963,6 +969,15 @@ function renderRoster() {
       const r = await Roster.setEnroll(id, b.dataset.enroll);
       toast(r.msg);
       if (r.ok) renderRoster();
+    };
+  });
+
+  // 保護者の連絡先を開くボタン（2026-08-12 追加）
+  document.querySelectorAll('button[data-guardian]').forEach((b) => {
+    b.onclick = () => {
+      const id = Number(b.dataset.guardian);
+      const s = Roster.students.find((x) => x.id === id);
+      if (s) openGuardians(s);
     };
   });
 
@@ -1297,3 +1312,217 @@ function renderSyncBar(unsent, error) {
 
 /* 保存の状況が変わるたびに呼ばれます */
 Backend.onstatus = renderSyncBar;
+
+/* ============================================================
+   11. 保護者の連絡先（運営者だけ／2026-08-12 追加）
+   ------------------------------------------------------------
+   1人の生徒に、お父様・お母様・お祖母様など何人でも登録できます。
+   入退室のお知らせを受け取るかは、お一人ずつ選べます。
+   ============================================================ */
+
+let guardianStudent = null;   // いま開いている生徒
+
+function guardianRow(g) {
+  const who = [g.relation, g.name].filter(Boolean).join('　') || '（続柄なし）';
+  return `
+    <div class="roster-row">
+      <div class="roster-row__head">
+        <span class="roster-row__name">${escapeHtml(who)}</span>
+      </div>
+      <div class="roster-row__stats"><span>${escapeHtml(g.email)}</span></div>
+      <label class="switch">
+        <input type="checkbox" data-notify="${g.id}" ${g.notifyAttendance ? 'checked' : ''}>
+        <span>入退室のお知らせも受け取る</span>
+      </label>
+      <button class="btn btn--danger" data-del="${g.id}">この連絡先を消す</button>
+    </div>`;
+}
+
+async function renderGuardians() {
+  $('gMsg').textContent = '';
+  if (!guardianStudent) return;
+  try {
+    const r = await Remote.guardians(guardianStudent.id);
+    $('guardiansTitle').textContent = `${r.student.name} さんの保護者`;
+    $('guardianList').innerHTML = r.guardians.length
+      ? r.guardians.map(guardianRow).join('')
+      : '<p class="note">まだ登録されていません。</p>';
+
+    $('guardianList').querySelectorAll('input[data-notify]').forEach((el) => {
+      el.onchange = async () => {
+        try {
+          await Remote.updateGuardian(Number(el.dataset.notify), { notifyAttendance: el.checked });
+          toast(el.checked ? '入退室のお知らせも送ります' : '入退室のお知らせは送りません');
+        } catch (e) {
+          toast(e.message || '変えられませんでした');
+          el.checked = !el.checked;   // 断られたら見た目も戻します
+        }
+      };
+    });
+    $('guardianList').querySelectorAll('button[data-del]').forEach((b) => {
+      b.onclick = async () => {
+        if (!confirm('この連絡先を消します。よろしいですか？')) return;
+        try {
+          await Remote.deleteGuardian(Number(b.dataset.del));
+          toast('消しました');
+          await renderGuardians();
+        } catch (e) { toast(e.message || '消せませんでした'); }
+      };
+    });
+  } catch (e) {
+    $('gMsg').textContent = e.message || '読み込めませんでした。';
+  }
+}
+
+$('gAdd').onclick = async () => {
+  $('gMsg').textContent = '';
+  try {
+    await Remote.addGuardian({
+      userId: guardianStudent.id,
+      relation: $('gRelation').value.trim(),
+      name: $('gName').value.trim(),
+      email: $('gEmail').value.trim(),
+      notifyAttendance: $('gNotify').checked,
+    });
+    ['gRelation', 'gName', 'gEmail'].forEach((id) => { $(id).value = ''; });
+    $('gNotify').checked = true;
+    await renderGuardians();
+    toast('追加しました');
+  } catch (e) {
+    $('gMsg').textContent = e.message || '追加できませんでした。';
+  }
+};
+
+/** 名簿の行から開きます */
+async function openGuardians(student) {
+  guardianStudent = student;
+  show('guardians', '保護者の連絡先');
+  await renderGuardians();
+}
+
+/* ============================================================
+   12. 保護者へのご連絡（運営者だけ／2026-08-12 追加）
+   ============================================================ */
+
+const msgState = { mode: 'bulk', enroll: 'active', venue: '', picked: [] };
+
+function msgTargets() {
+  return msgState.mode === 'one'
+    ? { studentIds: msgState.picked }
+    : { venue: msgState.venue, enroll: msgState.enroll };
+}
+
+function renderMsgStudents() {
+  const word = $('msgSearch').value.trim().toLowerCase();
+  const rows = Roster.students
+    .filter((s) => !word || [s.name, s.venue].filter(Boolean)
+      .some((v) => String(v).toLowerCase().indexOf(word) !== -1))
+    .slice(0, 60);
+
+  $('msgStudentList').innerHTML = rows.map((s) => `
+    <label class="switch">
+      <input type="checkbox" data-sid="${s.id}" ${msgState.picked.indexOf(s.id) >= 0 ? 'checked' : ''}>
+      <span>${escapeHtml(s.name)}　<small>${escapeHtml(s.venue || '')}</small></span>
+    </label>`).join('');
+
+  $('msgStudentList').querySelectorAll('input[data-sid]').forEach((el) => {
+    el.onchange = () => {
+      const id = Number(el.dataset.sid);
+      const i = msgState.picked.indexOf(id);
+      if (el.checked && i < 0) msgState.picked.push(id);
+      if (!el.checked && i >= 0) msgState.picked.splice(i, 1);
+      $('msgPicked').textContent = msgState.picked.length
+        ? `${msgState.picked.length}名を選んでいます`
+        : 'まだ選ばれていません';
+    };
+  });
+}
+
+async function renderMsgHistory() {
+  try {
+    const rows = await Remote.messageHistory();
+    $('msgHistory').innerHTML = rows.length
+      ? rows.map((m) => `<p class="note">${escapeHtml(m.created_at)}　`
+          + `<b>${escapeHtml(m.subject)}</b>　${escapeHtml(m.scope)}　`
+          + `送信${m.sent_count}件${m.fail_count > 0 ? `／失敗${m.fail_count}件` : ''}</p>`).join('')
+      : '<p class="note">まだ送っていません。</p>';
+  } catch (e) {
+    $('msgHistory').innerHTML = '';
+  }
+}
+
+document.querySelectorAll('#msgMode button').forEach((b) => {
+  b.onclick = () => {
+    msgState.mode = b.dataset.mode;
+    document.querySelectorAll('#msgMode button').forEach((x) => x.classList.toggle('is-on', x === b));
+    $('msgBulkFields').hidden = msgState.mode !== 'bulk';
+    $('msgOneFields').hidden = msgState.mode !== 'one';
+    $('msgPreviewCard').hidden = true;
+    if (msgState.mode === 'one') renderMsgStudents();
+  };
+});
+document.querySelectorAll('#msgEnroll button').forEach((b) => {
+  b.onclick = () => {
+    msgState.enroll = b.dataset.enroll;
+    document.querySelectorAll('#msgEnroll button').forEach((x) => x.classList.toggle('is-on', x === b));
+    $('msgPreviewCard').hidden = true;
+  };
+});
+$('msgVenue').onchange = () => { msgState.venue = $('msgVenue').value; $('msgPreviewCard').hidden = true; };
+$('msgSearch').oninput = renderMsgStudents;
+
+$('msgPreview').onclick = async () => {
+  $('msgResult').textContent = '';
+  try {
+    const r = await Remote.messagePreview(msgTargets());
+    $('msgPreviewTitle').textContent =
+      `生徒 ${r.studentCount}名 ／ メール ${r.mailCount}通に届きます`;
+    /*
+     * 宛先はすべて出します。多いときも省きません。
+     * 誰に届くかを確かめるための画面だからです。
+     */
+    $('msgPreviewList').innerHTML = r.recipients.length
+      ? r.recipients.map((x) => `<p class="note">${escapeHtml(x.studentName)}`
+          + `${x.relation ? `（${escapeHtml(x.relation)}）` : ''}　${escapeHtml(x.email)}</p>`).join('')
+      : '<p class="note">送り先が1件もありません。</p>';
+    $('msgPreviewCard').hidden = false;
+    $('msgSend').hidden = r.mailCount === 0;
+    $('msgPreviewCard').scrollIntoView({ block: 'center' });
+  } catch (e) {
+    $('msgResult').textContent = e.message || '確かめられませんでした。';
+  }
+};
+
+$('msgCancel').onclick = () => { $('msgPreviewCard').hidden = true; };
+
+$('msgSend').onclick = async () => {
+  if (!confirm('この内容で送ります。送ると取り消せません。よろしいですか？')) return;
+  $('msgResult').textContent = '送っています…';
+  try {
+    const r = await Remote.messageSend({
+      ...msgTargets(),
+      subject: $('msgSubject').value,
+      body: $('msgBody').value,
+    });
+    $('msgPreviewCard').hidden = true;
+    $('msgResult').textContent = r.failed
+      ? `${r.sent}通を送りました。${r.failed}通は送れませんでした。`
+      : `${r.sent}通を送りました。`;
+    toast(`${r.sent}通を送りました`);
+    await renderMsgHistory();
+  } catch (e) {
+    $('msgResult').textContent = e.message || '送れませんでした。';
+  }
+};
+
+$('messageLink').onclick = async () => {
+  $('msgPreviewCard').hidden = true;
+  $('msgResult').textContent = '';
+  show('message', '保護者へのご連絡');
+  await Roster.load();
+  // 教場の選択肢を、名簿から作ります
+  $('msgVenue').innerHTML = '<option value="">すべての教場</option>'
+    + Roster.venues().map((v) => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+  if (msgState.mode === 'one') renderMsgStudents();
+  await renderMsgHistory();
+};

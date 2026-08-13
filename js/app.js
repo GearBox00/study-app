@@ -581,7 +581,7 @@ const Speech = {
    ============================================================ */
 const SCREENS = ['home', 'sets', 'mode', 'card', 'quiz', 'type', 'dict', 'result', 'mypage',
   'search', 'add', 'stamp', 'venue', 'print', 'manage', 'summary', 'stroke',
-  'role', 'roster', 'mail', 'accounts'];
+  'role', 'roster', 'mail', 'accounts', 'guardians', 'message'];
 const $ = (id) => document.getElementById(id);
 let navStack = [];
 

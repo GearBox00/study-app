@@ -162,8 +162,18 @@ function notify_guardian(array $student, string $kind, ?int $minutes, string &$e
 {
     if (mail_setting('mail_enabled') !== '1') return 'skipped';
 
-    $to = (string)($student['parent_email'] ?? '');
-    if (!valid_email($to)) return 'skipped';
+    /*
+     * 送り先は guardians 表から取ります（2026-08-12 に複数登録へ対応）。
+     * 入退室のお知らせを受け取らない設定の方（お祖母様など）は外します。
+     */
+    $st = db()->prepare(
+        'SELECT email FROM guardians WHERE user_id = ? AND notify_attendance = 1');
+    $st->execute([$student['id']]);
+    $tos = [];
+    foreach ($st->fetchAll() as $g) {
+        if (valid_email($g['email'])) $tos[] = $g['email'];
+    }
+    if (!$tos) return 'skipped';
 
     /*
      * 連投を防ぎます。
@@ -188,5 +198,18 @@ function notify_guardian(array $student, string $kind, ?int $minutes, string &$e
     $subject = fill_template(mail_setting($kind === 'in' ? 'mail_subject_in' : 'mail_subject_out'), $vars);
     $body    = fill_template(mail_setting($kind === 'in' ? 'mail_body_in' : 'mail_body_out'), $vars);
 
-    return send_mail($to, $subject, $body, $error) ? 'sent' : 'failed';
+    /*
+     * 1人でも送れたら「送れた」とします。
+     * 全員に送れなかったときだけ失敗として残し、運営者の画面に出します。
+     */
+    $sent = 0;
+    $lastError = '';
+    foreach ($tos as $to) {
+        $e = '';
+        if (send_mail($to, $subject, $body, $e)) $sent++;
+        else $lastError = $e;
+    }
+    if ($sent > 0) return 'sent';
+    $error = $lastError ?: '送信できませんでした。';
+    return 'failed';
 }

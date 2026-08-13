@@ -95,6 +95,23 @@ const Remote = {
     return this._call('accounts.php', { method: 'POST', body: { do: 'addVenue', venueId, venueName } });
   },
 
+  /* ---------- 保護者の連絡先（運営者だけ） ---------- */
+
+  guardians(studentId) { return this._call('guardians.php?id=' + Number(studentId)); },
+  addGuardian(v) { return this._call('guardians.php', { method: 'POST', body: { do: 'add', ...v } }); },
+  updateGuardian(id, v) {
+    return this._call('guardians.php', { method: 'POST', body: { do: 'update', id, ...v } });
+  },
+  deleteGuardian(id) {
+    return this._call('guardians.php', { method: 'POST', body: { do: 'delete', id } });
+  },
+
+  /* ---------- 保護者へのご連絡（運営者だけ） ---------- */
+
+  messagePreview(v) { return this._call('message.php', { method: 'POST', body: { do: 'preview', ...v } }); },
+  messageSend(v) { return this._call('message.php', { method: 'POST', body: { do: 'send', ...v } }); },
+  messageHistory() { return this._call('message.php'); },
+
   /* ---------- 保護者メールの設定（運営者だけ） ---------- */
 
   mailSettings() { return this._call('mailsettings.php'); },

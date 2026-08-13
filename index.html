@@ -643,8 +643,128 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
     <button class="text-link text-link--slim" id="teacherUnlock">先生用の機能を表示する</button>
     <button class="text-link text-link--slim" id="rosterLink" hidden>生徒の名簿を見る（第2段階の作りこみ中）</button>
     <button class="text-link text-link--slim" id="accountsLink" hidden>アカウントの発行</button>
+    <button class="text-link text-link--slim" id="messageLink" hidden>保護者へご連絡する</button>
     <button class="text-link text-link--slim" id="mailLink" hidden>保護者へのお知らせメールの設定</button>
     <button class="text-link text-link--slim" id="roleLink">役割を切り替える（第2段階の作りこみ中）</button>
+  </section>
+
+  <!-- ========== 保護者の連絡先（運営者だけ） ========== -->
+  <section class="screen" id="screen-guardians" hidden>
+    <h2 class="section-title" id="guardiansTitle">保護者の連絡先</h2>
+
+    <div class="card">
+      <h3 class="card__title">登録されている方</h3>
+      <p class="note">
+        お父様・お母様・お祖母様など、必要なだけご登録いただけます。<br>
+        <b>入退室のお知らせを受け取るかどうかは、お一人ずつ選べます。</b>
+      </p>
+      <div id="guardianList"></div>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">新しく追加する</h3>
+      <label class="field">
+        <span class="field__label">続柄</span>
+        <input type="text" id="gRelation" placeholder="例）母" maxlength="32">
+      </label>
+      <label class="field">
+        <span class="field__label">お名前（任意）</span>
+        <input type="text" id="gName" placeholder="例）鈴木 みどり" maxlength="100">
+      </label>
+      <label class="field">
+        <span class="field__label">メールアドレス</span>
+        <input type="email" id="gEmail" placeholder="例）hogosha@example.com">
+      </label>
+      <label class="switch">
+        <input type="checkbox" id="gNotify" checked>
+        <span>入退室のお知らせも受け取る</span>
+      </label>
+      <p class="note">
+        切にすると、入退室の通知は届かず、<b>個別・一斉のご連絡だけ</b>が届きます。
+      </p>
+      <button class="btn btn--primary" id="gAdd">追加する</button>
+      <p class="note" id="gMsg"></p>
+    </div>
+  </section>
+
+  <!-- ========== 保護者へのご連絡（運営者だけ） ========== -->
+  <section class="screen" id="screen-message" hidden>
+    <h2 class="section-title">保護者へのご連絡</h2>
+
+    <div class="card card--wip">
+      <h3 class="card__title">⚠ 送ると取り消せません</h3>
+      <p class="note">
+        送る前に「<b>誰に届くか確かめる</b>」を押して、宛先と件数をご確認ください。<br>
+        宛先はお一人ずつ送りますので、ほかの保護者の方にアドレスは見えません。
+      </p>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">送り先</h3>
+      <div class="field">
+        <span class="field__label">送り方</span>
+        <div class="segmented__btns" id="msgMode">
+          <button data-mode="bulk" class="is-on">まとめて送る</button>
+          <button data-mode="one">生徒を選んで送る</button>
+        </div>
+      </div>
+
+      <div id="msgBulkFields">
+        <label class="field">
+          <span class="field__label">教場</span>
+          <select id="msgVenue"></select>
+        </label>
+        <div class="field">
+          <span class="field__label">在籍の状態</span>
+          <div class="segmented__btns" id="msgEnroll">
+            <button data-enroll="active" class="is-on">在籍</button>
+            <button data-enroll="paused">休塾</button>
+            <button data-enroll="left">退塾</button>
+            <button data-enroll="all">すべて</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="msgOneFields" hidden>
+        <label class="field">
+          <span class="field__label">生徒をさがす</span>
+          <input type="search" id="msgSearch" placeholder="名前や教場で検索">
+        </label>
+        <p class="note" id="msgPicked">まだ選ばれていません</p>
+        <div id="msgStudentList"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">送る内容</h3>
+      <label class="field">
+        <span class="field__label">件名</span>
+        <input type="text" id="msgSubject" maxlength="120" placeholder="例）【SJ式】夏期講習のご案内">
+      </label>
+      <label class="field">
+        <span class="field__label">本文</span>
+        <textarea id="msgBody" rows="10" placeholder="いつもお世話になっております。"></textarea>
+      </label>
+      <p class="note">
+        <code>{name}</code> と書くと、お子さんのお名前に置きかわります。
+      </p>
+    </div>
+
+    <button class="btn btn--ghost" id="msgPreview">誰に届くか確かめる</button>
+
+    <div class="card card--issued" id="msgPreviewCard" hidden>
+      <h3 class="card__title" id="msgPreviewTitle">宛先の確認</h3>
+      <div id="msgPreviewList"></div>
+      <button class="btn btn--primary" id="msgSend">この内容で送る</button>
+      <button class="btn btn--ghost" id="msgCancel">やめる</button>
+    </div>
+
+    <p class="note" id="msgResult"></p>
+
+    <div class="card">
+      <h3 class="card__title">送った控え</h3>
+      <div id="msgHistory"></div>
+    </div>
   </section>
 
   <!-- ========== アカウントの発行（運営者だけ） ========== -->
