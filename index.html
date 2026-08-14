@@ -1005,8 +1005,26 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
         <input type="email" id="acctParentEmail" placeholder="例）hogosha@example.com">
         <p class="note">入退室のお知らせを送る先です。あとからでも登録できます。</p>
       </label>
+      <label class="field" id="acctEmailField" hidden>
+        <span class="field__label">先生のメールアドレス（任意）</span>
+        <input type="email" id="acctEmail" placeholder="例）sensei@example.com">
+        <p class="note">
+          パスワードを忘れたときの、再設定のご案内の宛先です。<br>
+          登録がないと、ご本人では再設定できません（運営者が作り直してお渡しします）。
+        </p>
+      </label>
       <button class="btn btn--primary" id="acctCreate">この内容で発行する</button>
       <p class="note" id="acctMsg"></p>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">パスワード再設定の宛先</h3>
+      <p class="note">
+        先生と運営者の連絡先です。<b>パスワードを忘れたときのご案内は、ここへ届きます。</b><br>
+        生徒さんは保護者の方のアドレスへお送りしますので、ここには出てきません。
+      </p>
+      <div id="acctEmailList"></div>
+      <p class="note" id="acctEmailMsg"></p>
     </div>
 
     <div class="card">

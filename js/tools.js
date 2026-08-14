@@ -1207,9 +1207,68 @@ async function renderAccounts() {
     renderAcctVenues();
     renderGradeOptions(r.grades);
     renderAcctList();
+    renderAcctEmails();
   } catch (e) {
     $('acctListMsg').textContent = e.message || '読み込めませんでした。';
   }
+}
+
+/*
+ * パスワード再設定の宛先（先生と運営者）。
+ * 生徒は保護者のアドレスへ送るので、ここには出しません。
+ * 登録が無いと本人では再設定できないため、空欄が目で分かるようにします。
+ */
+function renderAcctEmails() {
+  const box = $('acctEmailList');
+  box.innerHTML = '';
+  const rows = acctState.users.filter((u) => u.role !== 'student');
+  if (!rows.length) {
+    box.appendChild(el('p', 'note', '先生と運営者のアカウントがまだありません。'));
+    return;
+  }
+
+  rows.forEach((u) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'cat-row';
+
+    const name = document.createElement('span');
+    name.className = 'cat-row__name';
+    name.textContent = `${u.name || u.loginId}（${u.role === 'admin' ? '運営者' : '先生'}）`;
+    wrap.appendChild(name);
+
+    const input = document.createElement('input');
+    input.type = 'email';
+    input.value = u.email || '';
+    input.placeholder = '未登録';
+    input.className = 'cat-row__mail';
+    wrap.appendChild(input);
+
+    const save = document.createElement('button');
+    save.className = 'text-link text-link--slim';
+    save.textContent = '保存';
+    save.onclick = async () => {
+      $('acctEmailMsg').textContent = '';
+      try {
+        await Remote.setProfile(u.id, { email: input.value.trim() });
+        u.email = input.value.trim();
+        $('acctEmailMsg').textContent = u.email
+          ? `${u.name || u.loginId} の宛先を登録しました。`
+          : `${u.name || u.loginId} の宛先を消しました。`;
+        renderAcctEmails();
+      } catch (e) {
+        $('acctEmailMsg').textContent = e.message;
+      }
+    };
+    wrap.appendChild(save);
+    box.appendChild(wrap);
+
+    if (!u.email) {
+      const warn = el('p', 'note',
+        '　未登録です。このままだとご本人ではパスワードを再設定できません。');
+      warn.style.color = '#8f2f24';
+      box.appendChild(warn);
+    }
+  });
 }
 
 async function acctAction(act, id) {
@@ -1242,6 +1301,8 @@ document.querySelectorAll('#acctRole button').forEach((b) => {
     $('acctParentField').hidden = !isStudent;
     $('acctGradeField').hidden = !isStudent;
     $('acctJoinedField').hidden = !isStudent;
+    // 先生には本人の連絡先（パスワード再設定の宛先）を入れられます
+    $('acctEmailField').hidden = isStudent;
   };
 });
 
@@ -1265,9 +1326,11 @@ $('acctCreate').onclick = async () => {
       grade: $('acctGrade').value,
       joinedOn: $('acctJoined').value,
       parentEmail: $('acctParentEmail').value.trim(),
+      email: $('acctEmail').value.trim(),
     });
     showIssued(r, `${acctState.role === 'teacher' ? '先生' : '生徒'}のアカウントを発行しました`);
-    ['acctName', 'acctLoginId', 'acctParentEmail', 'acctJoined'].forEach((id) => { $(id).value = ''; });
+    ['acctName', 'acctLoginId', 'acctParentEmail', 'acctJoined', 'acctEmail']
+      .forEach((id) => { $(id).value = ''; });
     $('acctGrade').value = '';
     await renderAccounts();
   } catch (e) {

@@ -1563,3 +1563,13 @@ select {
   color: #8f2f24;
   font-weight: 700;
 }
+
+/* パスワード再設定の宛先。名前・入力欄・保存を1行に並べます */
+.cat-row__mail {
+  flex: 1 1 14em;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}

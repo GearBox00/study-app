@@ -17,6 +17,8 @@
    ============================================================ */
 declare(strict_types=1);
 require __DIR__ . '/../lib.php';
+// メールアドレスの形を確かめる valid_email() を使います
+require __DIR__ . '/../mail.php';
 
 $me = require_login();
 require_can($me, 'manageTeachers');
@@ -40,7 +42,8 @@ const GRADE_NEXT = [
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
     $st = db()->query(
         "SELECT u.id, u.login_id, u.role, u.name, u.grade, u.joined_on,
-                u.venue_id, u.enroll, u.app_access, u.can_post, u.parent_email, u.created_at,
+                u.venue_id, u.enroll, u.app_access, u.can_post, u.parent_email,
+                u.email, u.created_at,
                 v.name AS venue_name
            FROM users u LEFT JOIN venues v ON v.id = u.venue_id
           ORDER BY FIELD(u.role,'admin','teacher','student'), u.id");
@@ -58,6 +61,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
             'enroll'    => $u['enroll'],
             'appAccess' => (int)$u['app_access'] === 1,
             'canPost'   => (int)($u['can_post'] ?? 0) === 1,
+            'email'     => $u['email'] ?? '',
             'parentEmail' => $u['parent_email'],
             'createdAt' => $u['created_at'],
         ];
@@ -158,13 +162,24 @@ if ($do === 'create') {
     }
     if ($joined === '') $joined = null;
 
+    /*
+     * 先生の連絡先（2026-08-14 追加）。
+     * パスワードを忘れたときの宛先に使います。
+     * 生徒には持たせません。保護者のアドレスへ送るためです。
+     */
+    $email = trim((string)($in['email'] ?? ''));
+    if ($role === ROLE_STUDENT) $email = '';
+    if ($email !== '' && !valid_email($email)) {
+        fail(400, 'メールアドレスの形が正しくありません。');
+    }
+
     $password = make_password();
     $ins = db()->prepare(
         'INSERT INTO users (login_id, password_hash, role, name, grade, joined_on,
-                            venue_id, enroll, app_access, parent_email)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)');
+                            venue_id, enroll, app_access, parent_email, email)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)');
     $ins->execute([$loginId, password_hash($password, PASSWORD_DEFAULT),
-                   $role, $name, $grade, $joined, $venue, ENROLL_ACTIVE, $parentEmail]);
+                   $role, $name, $grade, $joined, $venue, ENROLL_ACTIVE, $parentEmail, $email]);
     $newId = (int)db()->lastInsertId();
 
     /* 保護者の連絡先も、新しい表へ入れておきます */
@@ -267,6 +282,22 @@ if ($do === 'setProfile') {
         }
         $sets[] = 'joined_on = ?';
         $args[] = ($joined === '' ? null : $joined);
+    }
+    /*
+     * 先生と運営者の連絡先。パスワードを忘れたときの宛先に使います。
+     * 生徒には持たせません。お子様は自分のメールをお持ちでない前提で、
+     * 生徒への連絡は保護者のアドレス（guardians）へ送るためです。
+     */
+    if (array_key_exists('email', $in)) {
+        $email = trim((string)$in['email']);
+        if ($u['role'] === ROLE_STUDENT && $email !== '') {
+            fail(400, '生徒には本人のメールアドレスを登録しません。保護者の連絡先をお使いください。');
+        }
+        if ($email !== '' && !valid_email($email)) {
+            fail(400, 'メールアドレスの形が正しくありません。');
+        }
+        $sets[] = 'email = ?';
+        $args[] = $email;
     }
     if (!$sets) fail(400, '変える項目がありません。');
 
