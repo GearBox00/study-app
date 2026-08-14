@@ -150,6 +150,9 @@ const Backend = {
       try {
         const res = await this.remote.pull() || {};
         this.rev = res.rev || 0;
+        // 読めたので、前に出ていた通信の失敗は消します
+        this.lastError = null;
+        this._notify();
         const fromServer = res.data;
 
         /*
@@ -201,8 +204,14 @@ const Backend = {
         }
         return merged;
       } catch (e) {
-        this.lastError = 'サーバーにつながらないため、この端末の記録で始めます。';
-        this._notify();
+        /*
+         * まだログインしていないだけのとき（401）は、何も出しません。
+         * 「つながらない」と出すと、通信の不具合と取り違えられるためです。
+         */
+        if (e && e.status !== 401) {
+          this.lastError = 'サーバーにつながらないため、この端末の記録で始めます。';
+          this._notify();
+        }
       }
     }
     return this.readLocal();

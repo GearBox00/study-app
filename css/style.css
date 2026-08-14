@@ -581,7 +581,12 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
 /* ---------- マイページ ---------- */
 .field { display: block; margin-bottom: 12px; }
 .field__label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 700; color: var(--ink-sub); }
-.field input, #csvInput {
+/*
+ * 入力欄は幅いっぱいに広げます。
+ * textarea と select は既定の幅のままだと、隣の入力欄より
+ * ずっと狭く出て、そろって見えません（2026-08-14 修正）。
+ */
+.field input, .field textarea, .field select, #csvInput {
   width: 100%;
   padding: 12px;
   border: 1.5px solid var(--line);
@@ -589,7 +594,7 @@ button, input, textarea { font-family: inherit; font-size: inherit; }
   background: #fff;
 }
 #csvInput { line-height: 1.7; resize: vertical; }
-.field input:focus, #csvInput:focus { outline: 2px solid var(--mint); outline-offset: 1px; }
+.field input:focus, .field textarea:focus, .field select:focus, #csvInput:focus { outline: 2px solid var(--mint); outline-offset: 1px; }
 
 .mypage-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .mypage-table th, .mypage-table td {
@@ -1522,4 +1527,28 @@ select {
   padding: 8px 0;
   border-bottom: 1px solid var(--line, #dfe8e4);
 }
-.cat-row__name { flex: 1; font-weight: 700; }
+.cat-row__name { flex: 1 1 auto; min-width: 5em; font-weight: 700; }
+/*
+ * この行の中のボタンは、幅いっぱいに広がる既定のままだと
+ * 分類名を押しつぶして縦書きのようになってしまいます。
+ * 中身の幅だけを取らせ、折り返さないようにします。
+ */
+.cat-row .text-link {
+  flex: 0 0 auto;
+  width: auto;
+  margin-top: 0;
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+/* チェックつきの選択肢。1つずつ行を分けます */
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.check input { flex: none; width: 18px; height: 18px; }
