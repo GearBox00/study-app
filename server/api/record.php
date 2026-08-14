@@ -16,13 +16,14 @@ $me = require_login();
 
 /* ---------- 取り出す ---------- */
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
-    $st = db()->prepare('SELECT payload FROM records WHERE user_id = ?');
+    $st = db()->prepare('SELECT payload, rev FROM records WHERE user_id = ?');
     $st->execute([$me['id']]);
     $row = $st->fetch();
-    if (!$row) ok(null);           // まだ無いときは null。アプリは端末の記録で始めます
+    // まだ無いときは中身を null で返します。アプリは端末の記録で始めます
+    if (!$row) ok(['data' => null, 'rev' => 0]);
 
     $data = json_decode($row['payload'], true);
-    ok(is_array($data) ? $data : null);
+    ok(['data' => is_array($data) ? $data : null, 'rev' => (int)$row['rev']]);
 }
 
 /* ---------- 預ける ---------- */
@@ -68,20 +69,60 @@ if (isset($data['daily']) && is_array($data['daily']) && $data['daily']) {
     if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $last)) $lastStudied = $last;
 }
 
-$st = db()->prepare(
-    'INSERT INTO records (user_id, payload, answered, correct, last_studied)
-          VALUES (:uid, :payload, :answered, :correct, :last)
+/* ============================================================
+   版番号の確認
+   ------------------------------------------------------------
+   アプリは「前に受け取った版番号」を一緒に送ってきます。
+   その間にサーバー側が別の端末から書き換わっていたら、
+   ここでは保存せず、409 と一緒にサーバーの記録を返します。
+   アプリ側（js/merge.js）が両方を突き合わせて送り直します。
+
+   取り出しから書き込みまでを1つのまとまりにしているのは、
+   ちょうど同じ瞬間に2台から届いたときに、
+   確認をすり抜けて両方が書き込んでしまわないようにするためです。
+   ============================================================ */
+$rev = isset($in['rev']) && is_numeric($in['rev']) ? (int)$in['rev'] : null;
+
+$pdo = db();
+$pdo->beginTransaction();
+
+$st = $pdo->prepare('SELECT payload, rev FROM records WHERE user_id = ? FOR UPDATE');
+$st->execute([$me['id']]);
+$cur = $st->fetch();
+$curRev = $cur ? (int)$cur['rev'] : 0;
+
+/*
+ * 版番号を送ってこない古いアプリからの保存は、これまでどおり通します。
+ * 途中で動かなくなるほうが困るためです。
+ */
+if ($rev !== null && $rev !== $curRev) {
+    $pdo->rollBack();
+    $theirs = $cur ? json_decode($cur['payload'], true) : null;
+    fail_with(409, 'ほかの端末で先に保存されています。', [
+        'data' => is_array($theirs) ? $theirs : null,
+        'rev'  => $curRev,
+    ]);
+}
+
+$newRev = $curRev + 1;
+$st = $pdo->prepare(
+    'INSERT INTO records (user_id, payload, answered, correct, last_studied, rev)
+          VALUES (:uid, :payload, :answered, :correct, :last, :rev)
      ON DUPLICATE KEY UPDATE
           payload = VALUES(payload),
           answered = VALUES(answered),
           correct = VALUES(correct),
-          last_studied = VALUES(last_studied)');
+          last_studied = VALUES(last_studied),
+          rev = VALUES(rev)');
 $st->execute([
     ':uid'      => $me['id'],
     ':payload'  => $json,
     ':answered' => $answered,
     ':correct'  => $correct,
     ':last'     => $lastStudied,
+    ':rev'      => $newRev,
 ]);
+$pdo->commit();
 
-ok(['answered' => $answered, 'correct' => $correct, 'lastStudied' => $lastStudied]);
+ok(['answered' => $answered, 'correct' => $correct,
+    'lastStudied' => $lastStudied, 'rev' => $newRev]);

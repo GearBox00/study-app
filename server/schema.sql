@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS records (
   answered     INT UNSIGNED NOT NULL DEFAULT 0,    -- のべ解答数
   correct      INT UNSIGNED NOT NULL DEFAULT 0,    -- 正解数
   last_studied DATE         NULL,                  -- 最後に学習した日
+  rev          INT UNSIGNED NOT NULL DEFAULT 0,    -- 版番号。保存のたびに1つ進みます
   updated_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_records_user FOREIGN KEY (user_id) REFERENCES users(id)
     ON DELETE CASCADE ON UPDATE CASCADE

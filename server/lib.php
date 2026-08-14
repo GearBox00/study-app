@@ -101,9 +101,19 @@ function ok($data = null): void
 
 function fail(int $status, string $msg): void
 {
+    fail_with($status, $msg, null);
+}
+
+/**
+ * 失敗を返すときに、あわせて中身も渡します。
+ * 記録の版番号が食い違ったとき（409）に、サーバー側の記録を
+ * そのまま返して、アプリ側で突き合わせてもらうために使います。
+ */
+function fail_with(int $status, string $msg, $data): void
+{
     http_response_code($status);
     send_headers();
-    echo json_encode(['ok' => false, 'error' => $msg],
+    echo json_encode(['ok' => false, 'error' => $msg, 'data' => $data],
         JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }

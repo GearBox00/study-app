@@ -36,6 +36,8 @@ const Remote = {
     if (!res.ok || !json || json.ok !== true) {
       const err = new Error((json && json.error) || `通信に失敗しました（${res.status}）`);
       err.status = res.status;
+      // 版番号が食い違ったとき（409）は、サーバー側の記録も付いてきます
+      err.data = json ? json.data : null;
       throw err;
     }
     return json.data;
@@ -55,8 +57,9 @@ const Remote = {
 
   recordStore() {
     return {
+      // どちらも { data, rev } の形で返します
       pull: () => this._call('record.php'),
-      push: (data) => this._call('record.php', { method: 'POST', body: { data } }),
+      push: (data, rev) => this._call('record.php', { method: 'POST', body: { data, rev } }),
       whoami: () => this._call('whoami.php'),
     };
   },

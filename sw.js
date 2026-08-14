@@ -8,11 +8,12 @@
      第2段階として別に設計が必要です）
    ============================================================ */
 
-const CACHE = "manabi-card-v45";
+const CACHE = "manabi-card-v46";
 const ASSETS = [
   './',
   './index.html',
   './css/style.css',
+  './js/merge.js',
   './js/storage.js',
   './js/auth.js',
   './js/roster.js',

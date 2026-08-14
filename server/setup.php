@@ -72,6 +72,13 @@ $added += (int)$addColumn($pdo, $dbName, 'users', 'joined_on',
  */
 $added += (int)$addColumn($pdo, $dbName, 'users', 'app_access',
     "`app_access` TINYINT(1) NOT NULL DEFAULT 1 AFTER `enroll`");
+/*
+ * 記録の版番号。保存のたびに1つ進みます。
+ * 2台で同時に使ったときに、あとから送ったほうで
+ * 丸ごと上書きしてしまうのを防ぐために使います（2026-08-14）。
+ */
+$added += (int)$addColumn($pdo, $dbName, 'records', 'rev',
+    "`rev` INT UNSIGNED NOT NULL DEFAULT 0 AFTER `last_studied`");
 echo $added ? "列を{$added}件足しました。\n" : "足す列はありませんでした。\n";
 
 /*

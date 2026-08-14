@@ -1322,6 +1322,21 @@ function renderSyncBar(unsent, error) {
 /* 保存の状況が変わるたびに呼ばれます */
 Backend.onstatus = renderSyncBar;
 
+/*
+ * ほかの端末で学習していた分と突き合わせたときに呼ばれます。
+ * 手元の記録が入れ替わるので、画面の数字も出し直します。
+ *
+ * 学習の最中に画面を作り直すと解答の途中が飛んでしまうため、
+ * トップにいるときだけ描き直します。学習中でも記録そのものは
+ * 入れ替わっているので、次にトップへ戻れば新しい数字になります。
+ */
+Backend.onmerged = (data) => {
+  Store.data = data;
+  invalidateSearchIndex();
+  const home = document.getElementById('screen-home');
+  if (home && !home.hidden) renderHome();
+};
+
 /* ============================================================
    11. 保護者の連絡先（運営者だけ／2026-08-12 追加）
    ------------------------------------------------------------

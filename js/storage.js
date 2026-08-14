@@ -24,6 +24,14 @@ const Backend = {
   key: 'manabi-card-v2',
 
   /*
+   * 「前にサーバーと一致していた時点」の控えと、その版番号。
+   * 2台で使ったときに記録を突き合わせるために持ちます（js/merge.js）。
+   * 控えは数だけなので、記録そのものより ずっと小さくなります。
+   */
+  baseKey: 'manabi-card-v2:base',
+  rev: 0,
+
+  /*
    * サーバーとやりとりする係。第2段階でここに入れます。
    * 次の3つを持つオブジェクトを想定しています（すべて Promise を返す）。
    *   pull()      … サーバーにある記録を取ってくる。無ければ null
@@ -38,6 +46,11 @@ const Backend = {
   lastError: null,
   /* 保存の状況が変わったときに呼ばれる。画面側で差しかえます */
   onstatus: null,
+  /*
+   * ほかの端末の記録と突き合わせた結果、いま持っている記録が
+   * 変わったときに呼ばれます。画面側で読み直してもらうためです。
+   */
+  onmerged: null,
 
   _timer: null,
   _sending: false,
@@ -66,6 +79,31 @@ const Backend = {
 
   clearLocal() {
     try { localStorage.removeItem(this.key); } catch (e) { /* 消せなくても続行 */ }
+    this.clearBase();
+  },
+
+  /* ---------- 突き合わせ用の控え ---------- */
+
+  readBase() {
+    try {
+      return JSON.parse(localStorage.getItem(this.baseKey));
+    } catch (e) {
+      return null;   // 壊れていたら「無い」ものとして扱う（足さずに大きいほうを採ります）
+    }
+  },
+
+  /** サーバーと一致した直後に呼びます。ここが次の突き合わせの基準になります */
+  writeBase(data) {
+    try {
+      localStorage.setItem(this.baseKey, JSON.stringify(Merge.base(data)));
+    } catch (e) {
+      // 控えが残せなくても学習は続けられます。次は「大きいほう」を採ります
+      this.clearBase();
+    }
+  },
+
+  clearBase() {
+    try { localStorage.removeItem(this.baseKey); } catch (e) { /* 消せなくても続行 */ }
   },
 
   /* ---------- 読み込み ---------- */
@@ -78,11 +116,39 @@ const Backend = {
   async read() {
     if (this.remote) {
       try {
-        const fromServer = await this.remote.pull();
-        if (fromServer) {
-          this.writeLocal(fromServer);   // 次に通信できないときのために控えを残す
-          return fromServer;
+        const res = await this.remote.pull() || {};
+        this.rev = res.rev || 0;
+        const fromServer = res.data;
+
+        /*
+         * この端末に、まだ送れていない学習が残っていることがあります
+         * （通信が切れたまま使ったあと、別の端末で学習した場合など）。
+         * そのまま上書きすると消えてしまうので、ここでも突き合わせます。
+         */
+        const mine = this.readLocal();
+        if (!fromServer) return mine;              // サーバーにはまだ何も無い
+
+        const merged = mine ? Merge.merge(mine, fromServer, this.readBase()) : fromServer;
+        this.writeLocal(merged);                   // 通信できないときのために控えを残す
+
+        /*
+         * 控えは「いま受け取ったサーバーの記録」にします。
+         * 突き合わせたあとの手元の記録は
+         *   （サーバーの記録）＋（この端末だけの分）
+         * になっているので、次に突き合わせるときの基準は
+         * サーバーの記録のほうです。
+         * ここを合わせた結果にしてしまうと、次の突き合わせで
+         * 相手の分をもう一度足してしまいます。
+         */
+        this.writeBase(fromServer);
+
+        if (JSON.stringify(merged) !== JSON.stringify(fromServer)) {
+          // 端末にだけ残っていたぶんがあります。あらためて送ります
+          this.unsent = true;
+          this._notify();
+          this._schedule();
         }
+        return merged;
       } catch (e) {
         this.lastError = 'サーバーにつながらないため、この端末の記録で始めます。';
         this._notify();
@@ -105,25 +171,61 @@ const Backend = {
 
     this.unsent = true;
     this._notify();
-    this._schedule(data);
+    this._schedule();
     return ok;
   },
 
-  /* 短い間に何度も保存されたときは、まとめて1回だけ送ります */
-  _schedule(data) {
+  /*
+   * 短い間に何度も保存されたときは、まとめて1回だけ送ります。
+   *
+   * 送る中身をここで取っておかず、送る直前に端末から読み直します。
+   * 待っているあいだに、ほかの端末の記録と突き合わせて中身が
+   * 入れ替わることがあり、古いほうを送るとせっかく合わせた結果を
+   * 上書きしてしまうためです。
+   */
+  _schedule() {
     clearTimeout(this._timer);
-    this._timer = setTimeout(() => this.flush(data), 1200);
+    this._timer = setTimeout(() => this.flush(), 1200);
   },
 
   /**
    * ためている変更をサーバーへ送ります。
    * 失敗しても端末には残っているので、記録が消えることはありません。
    */
-  async flush(data) {
+  async flush() {
     if (!this.remote || this._sending) return;
     this._sending = true;
     try {
-      await this.remote.push(data || this.readLocal());
+      let payload = this.readLocal();
+      let base = this.readBase();
+
+      /*
+       * ほかの端末が先に保存していると 409 が返ります。
+       * そのときはサーバーの記録と突き合わせてから送り直します。
+       * 送り直しのあいだにさらに別の端末が保存することもあるので、
+       * 数回まで繰り返します。
+       */
+      for (let i = 0; ; i++) {
+        try {
+          const res = await this.remote.push(payload, this.rev);
+          if (res && typeof res.rev === 'number') this.rev = res.rev;
+          break;
+        } catch (e) {
+          if (e.status !== 409 || i >= 3 || !e.data) throw e;
+          this.rev = e.data.rev || 0;
+          payload = Merge.merge(payload, e.data.data, base);
+          /*
+           * 次にもう一度断られたときのために、基準を
+           * 「いま突き合わせた相手」に進めます。
+           * ここを進めないと、相手の分を二度足してしまいます。
+           */
+          base = Merge.base(e.data.data);
+          this.writeLocal(payload);
+          this._merged(payload);
+        }
+      }
+
+      this.writeBase(payload);
       this.unsent = false;
       this.lastError = null;
     } catch (e) {
@@ -132,6 +234,13 @@ const Backend = {
     } finally {
       this._sending = false;
       this._notify();
+    }
+  },
+
+  /* 突き合わせで記録が変わったことを画面側へ知らせます */
+  _merged(data) {
+    if (typeof this.onmerged === 'function') {
+      try { this.onmerged(data); } catch (e) { /* 画面側の都合で落とさない */ }
     }
   },
 
