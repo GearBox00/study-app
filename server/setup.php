@@ -108,8 +108,8 @@ $vs = $pdo->prepare('INSERT INTO venues (id, name) VALUES (?, ?)');
 foreach ($venues as $v) $vs->execute($v);
 
 $ins = $pdo->prepare(
-    'INSERT INTO users (login_id, password_hash, role, name, venue_id, enroll, parent_email)
-     VALUES (?, ?, ?, ?, ?, ?, ?)');
+    'INSERT INTO users (login_id, password_hash, role, name, venue_id, enroll, app_access, parent_email)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
 
 /*
  * 見本のパスワードです。手元で試すためだけのものなので、
@@ -117,9 +117,9 @@ $ins = $pdo->prepare(
  */
 $pw = static fn(string $p): string => password_hash($p, PASSWORD_DEFAULT);
 
-$ins->execute(['admin',    $pw('admin-pass'),   'admin',   '佐藤 潤',   null,     'active', '']);
-$ins->execute(['sensei-k', $pw('sensei-pass'),  'teacher', '北教場の先生', 'kita',   'active', '']);
-$ins->execute(['sensei-m', $pw('sensei-pass'),  'teacher', '南教場の先生', 'minami', 'active', '']);
+$ins->execute(['admin',    $pw('admin-pass'),   'admin',   '佐藤 潤',   null,     'active', 1, '']);
+$ins->execute(['sensei-k', $pw('sensei-pass'),  'teacher', '北教場の先生', 'kita',   'active', 1, '']);
+$ins->execute(['sensei-m', $pw('sensei-pass'),  'teacher', '南教場の先生', 'minami', 'active', 1, '']);
 
 $sei = ['佐藤', '鈴木', '高橋', '田中', '伊藤', '渡辺', '山本', '中村', '小林', '加藤'];
 $mei = ['はると', 'ゆい', 'そうた', 'あおい', 'れん', 'ひまり', 'ゆうと', 'いちか',
@@ -128,13 +128,16 @@ $vids = ['main', 'kita', 'minami'];
 $enr  = ['active', 'active', 'active', 'active', 'paused', 'left'];
 
 for ($i = 0; $i < 24; $i++) {
+    $enroll = $enr[$i % count($enr)];
     $ins->execute([
         'seito' . ($i + 1),
         $pw('seito-pass'),
         'student',
         $sei[$i % count($sei)] . ' ' . $mei[$i % count($mei)],
         $vids[$i % 3],
-        $enr[$i % count($enr)],
+        $enroll,
+        // 退塾の生徒はアプリも使えない状態にそろえます
+        $enroll === 'left' ? 0 : 1,
         'hogosha' . ($i + 1) . '@example.com',
     ]);
 }

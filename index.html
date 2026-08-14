@@ -815,6 +815,14 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
         <span class="field__label">教場</span>
         <select id="acctVenue"></select>
       </label>
+      <label class="field" id="acctGradeField">
+        <span class="field__label">学年</span>
+        <select id="acctGrade"></select>
+      </label>
+      <label class="field" id="acctJoinedField">
+        <span class="field__label">入塾日</span>
+        <input type="date" id="acctJoined">
+      </label>
       <label class="field" id="acctParentField">
         <span class="field__label">保護者のメールアドレス（任意）</span>
         <input type="email" id="acctParentEmail" placeholder="例）hogosha@example.com">
@@ -822,6 +830,20 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
       </label>
       <button class="btn btn--primary" id="acctCreate">この内容で発行する</button>
       <p class="note" id="acctMsg"></p>
+    </div>
+
+    <div class="card">
+      <h3 class="card__title">進級（学年をひとつ繰り上げる）</h3>
+      <p class="note">
+        年度が変わったときに、生徒さん全員の学年をひとつ上げます。<br>
+        <b>いきなり変わることはありません。</b>まず「これから変わる内容を見る」で
+        確かめてから実行してください。<br>
+        高3とその他の生徒さんは上がりません。
+      </p>
+      <button class="btn btn--ghost" id="promotePreview">これから変わる内容を見る</button>
+      <div id="promoteList"></div>
+      <button class="btn btn--primary" id="promoteRun" hidden>この内容で繰り上げる</button>
+      <p class="note" id="promoteMsg"></p>
     </div>
 
     <div class="card">

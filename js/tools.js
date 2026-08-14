@@ -1134,6 +1134,8 @@ function acctRow(u) {
       <div class="roster-row__stats">
         <span>ID <b>${escapeHtml(u.loginId)}</b></span>
         <span>教場 <b>${escapeHtml(u.venueName || u.venue || '—')}</b></span>
+        ${u.grade ? `<span>学年 <b>${escapeHtml(u.grade)}</b></span>` : ''}
+        ${u.joinedOn ? `<span>入塾 <b>${escapeHtml(u.joinedOn)}</b></span>` : ''}
         <span>状態 <b>${off ? '停止中' : '有効'}</b></span>
       </div>
       ${buttons}
@@ -1187,6 +1189,7 @@ async function renderAccounts() {
     acctState.users = r.users;
     acctState.venues = r.venues;
     renderAcctVenues();
+    renderGradeOptions(r.grades);
     renderAcctList();
   } catch (e) {
     $('acctListMsg').textContent = e.message || '読み込めませんでした。';
@@ -1218,8 +1221,11 @@ document.querySelectorAll('#acctRole button').forEach((b) => {
     acctState.role = b.dataset.role;
     document.querySelectorAll('#acctRole button').forEach((x) =>
       x.classList.toggle('is-on', x === b));
-    // 先生には保護者の欄は要りません
-    $('acctParentField').hidden = acctState.role !== 'student';
+    // 先生には保護者・学年・入塾日の欄は要りません
+    const isStudent = acctState.role === 'student';
+    $('acctParentField').hidden = !isStudent;
+    $('acctGradeField').hidden = !isStudent;
+    $('acctJoinedField').hidden = !isStudent;
   };
 });
 
@@ -1240,10 +1246,13 @@ $('acctCreate').onclick = async () => {
       name: $('acctName').value.trim(),
       loginId: $('acctLoginId').value.trim(),
       venue: $('acctVenue').value,
+      grade: $('acctGrade').value,
+      joinedOn: $('acctJoined').value,
       parentEmail: $('acctParentEmail').value.trim(),
     });
     showIssued(r, `${acctState.role === 'teacher' ? '先生' : '生徒'}のアカウントを発行しました`);
-    ['acctName', 'acctLoginId', 'acctParentEmail'].forEach((id) => { $(id).value = ''; });
+    ['acctName', 'acctLoginId', 'acctParentEmail', 'acctJoined'].forEach((id) => { $(id).value = ''; });
+    $('acctGrade').value = '';
     await renderAccounts();
   } catch (e) {
     // 断られた理由（IDが重複、など）をそのまま出します
@@ -1525,4 +1534,76 @@ $('messageLink').onclick = async () => {
     + Roster.venues().map((v) => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
   if (msgState.mode === 'one') renderMsgStudents();
   await renderMsgHistory();
+};
+
+/* ============================================================
+   13. 学年と進級（運営者だけ／2026-08-12 追加）
+   ------------------------------------------------------------
+   学年は決まった文字から選びます。自由に入力できるようにすると
+   「小5」「５年」「5年生」と表記がばらつき、繰り上げができなくなるためです。
+   ============================================================ */
+
+/** 学年の選択肢を作ります。サーバーから受け取った一覧を使います */
+function renderGradeOptions(grades) {
+  const list = grades && grades.length ? grades : [];
+  $('acctGrade').innerHTML = '<option value="">（未設定）</option>'
+    + list.map((g) => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');
+}
+
+/* ---------- 進級 ---------- */
+
+let promotePlan = null;   // 下見の結果。実行するまで持っておきます
+
+$('promotePreview').onclick = async () => {
+  $('promoteMsg').textContent = '';
+  $('promoteRun').hidden = true;
+  try {
+    const r = await Remote.promotePreview();
+    promotePlan = r;
+
+    const changes = r.changes.map((c) => `
+      <label class="switch">
+        <input type="checkbox" data-keep="${c.id}">
+        <span>${escapeHtml(c.name)}　<b>${escapeHtml(c.from)} → ${escapeHtml(c.to)}</b></span>
+      </label>`).join('');
+
+    const stay = r.stay.length
+      ? '<p class="note"><b>上がらない生徒さん</b>（' + r.stay.length + '名）</p>'
+        + r.stay.map((c) => `<p class="note">${escapeHtml(c.name)}　`
+            + `${escapeHtml(c.from)}　${escapeHtml(c.reason)}</p>`).join('')
+      : '';
+
+    $('promoteList').innerHTML = r.changes.length
+      ? `<p class="note"><b>${r.changes.length}名の学年が変わります。</b>`
+        + '　繰り上げたくない生徒さんは、チェックを入れて外してください。</p>'
+        + changes + stay
+      : '<p class="note">変わる生徒さんはいません。</p>' + stay;
+
+    $('promoteRun').hidden = r.changes.length === 0;
+  } catch (e) {
+    $('promoteMsg').textContent = e.message || '確かめられませんでした。';
+  }
+};
+
+$('promoteRun').onclick = async () => {
+  if (!promotePlan) return;
+  const exclude = [...document.querySelectorAll('#promoteList input[data-keep]:checked')]
+    .map((el) => Number(el.dataset.keep));
+  const n = promotePlan.changes.length - exclude.length;
+  if (!confirm(`${n}名の学年をひとつ繰り上げます。よろしいですか？`)) return;
+
+  try {
+    const r = await Remote.promote(exclude);
+    $('promoteList').innerHTML = '';
+    $('promoteRun').hidden = true;
+    promotePlan = null;
+    $('promoteMsg').textContent =
+      `${r.promoted}名を繰り上げました。`
+      + (r.excluded ? `　${r.excluded}名は外しました。` : '')
+      + (r.stayed ? `　${r.stayed}名はもともと上がりません。` : '');
+    toast(`${r.promoted}名を繰り上げました`);
+    await renderAccounts();
+  } catch (e) {
+    $('promoteMsg').textContent = e.message || '繰り上げられませんでした。';
+  }
 };
