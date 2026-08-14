@@ -1552,3 +1552,14 @@ select {
   cursor: pointer;
 }
 .check input { flex: none; width: 18px; height: 18px; }
+
+/* エラーの案内。色だけでなく、枠と背景でも分かるようにします */
+.note--error {
+  padding: 10px 12px;
+  border: 1px solid #e3b7b1;
+  border-left: 4px solid var(--coral, #e05c4b);
+  border-radius: 8px;
+  background: #fdecea;
+  color: #8f2f24;
+  font-weight: 700;
+}

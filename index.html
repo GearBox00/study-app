@@ -655,6 +655,8 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
     <button class="text-link text-link--slim" id="messageLink" hidden>保護者へご連絡する</button>
     <button class="text-link text-link--slim" id="mailLink" hidden>保護者へのお知らせメールの設定</button>
     <button class="text-link text-link--slim" id="roleLink">役割を切り替える（第2段階の作りこみ中）</button>
+    <p class="note" id="loginWho" hidden></p>
+    <button class="text-link text-link--slim" id="logoutLink" hidden>ログアウトする</button>
   </section>
 
   <!-- ========== 保護者の連絡先（運営者だけ） ========== -->
@@ -773,6 +775,90 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
     <div class="card">
       <h3 class="card__title">送った控え</h3>
       <div id="msgHistory"></div>
+    </div>
+  </section>
+
+  <!-- ========== ログイン（2026-08-14 追加） ========== -->
+  <section class="screen" id="screen-login" hidden>
+    <div class="card">
+      <h2 class="section-title">ログイン</h2>
+      <p class="note">
+        教室からお渡ししたログインIDとパスワードを入れてください。
+      </p>
+
+      <label class="field">
+        <span class="field__label">ログインID</span>
+        <input type="text" id="loginId" autocomplete="username"
+               autocapitalize="off" autocorrect="off" spellcheck="false">
+      </label>
+      <label class="field">
+        <span class="field__label">パスワード</span>
+        <input type="password" id="loginPw" autocomplete="current-password">
+      </label>
+      <label class="check">
+        <input type="checkbox" id="loginShow">
+        <span>パスワードを表示する</span>
+      </label>
+
+      <p class="note note--error" id="loginError" hidden></p>
+      <button class="btn btn--primary" id="loginGo">ログインする</button>
+      <button class="text-link text-link--slim" id="loginForgot">パスワードを忘れたとき</button>
+    </div>
+  </section>
+
+  <!-- ========== パスワードを忘れたとき ========== -->
+  <section class="screen" id="screen-forgot" hidden>
+    <div class="card">
+      <h2 class="section-title">パスワードを忘れたとき</h2>
+      <p class="note">
+        ログインIDを入れて送ると、<b>ご登録のメールアドレス宛に</b>
+        再設定のご案内をお送りします。<br>
+        生徒さんの場合は<b>保護者の方のアドレス</b>へお送りします。
+      </p>
+
+      <label class="field">
+        <span class="field__label">ログインID</span>
+        <input type="text" id="forgotId" autocapitalize="off" autocorrect="off" spellcheck="false">
+      </label>
+
+      <button class="btn btn--primary" id="forgotGo">再設定のご案内を送る</button>
+      <p class="note" id="forgotResult" hidden></p>
+      <button class="text-link text-link--slim" id="forgotBack">ログイン画面へ戻る</button>
+
+      <p class="note">
+        メールが登録されていない場合は、ご案内をお送りできません。
+        その場合は<b>教室へお申し出ください。</b>
+        運営者がパスワードを作り直してお渡しします。
+      </p>
+    </div>
+  </section>
+
+  <!-- ========== 新しいパスワードを決める ========== -->
+  <section class="screen" id="screen-newpw" hidden>
+    <div class="card">
+      <h2 class="section-title">新しいパスワード</h2>
+      <p class="note" id="newpwWho"></p>
+
+      <label class="field">
+        <span class="field__label">新しいパスワード</span>
+        <input type="password" id="newPw1" autocomplete="new-password">
+      </label>
+      <label class="field">
+        <span class="field__label">もう一度</span>
+        <input type="password" id="newPw2" autocomplete="new-password">
+      </label>
+      <label class="check">
+        <input type="checkbox" id="newPwShow">
+        <span>パスワードを表示する</span>
+      </label>
+
+      <p class="note">
+        <b>8文字以上</b>で、<b>英字と数字の両方</b>を入れてください。<br>
+        半角の英数字と記号が使えます。
+      </p>
+
+      <p class="note note--error" id="newpwError" hidden></p>
+      <button class="btn btn--primary" id="newpwGo">このパスワードにする</button>
     </div>
   </section>
 
@@ -1358,6 +1444,7 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
 <script src="js/stroke.js"></script>
 <script src="js/tools.js"></script>
 <script src="js/posts.js"></script>
+<script src="js/login.js"></script>
 <script src="js/boot.js"></script>
 </body>
 </html>

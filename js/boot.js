@@ -11,6 +11,22 @@
   // 書かれていなければ、これまでどおり端末の中だけで動きます
   if (typeof Remote === 'object') Remote.install();
 
+  /*
+   * メールのリンク（?reset=…）から開かれたときは、
+   * 何よりも先に「新しいパスワード」の画面を出します。
+   */
+  if (typeof openResetFromUrl === 'function' && await openResetFromUrl()) return;
+
+  /*
+   * サーバーを使う設定で、まだ入っていなければログイン画面を出します。
+   * 誰の記録かが決まらないまま学習が溜まるのを防ぐためです。
+   * 通信できないときは出しません（オフラインでも使えることを優先）。
+   */
+  if (typeof Login === 'object' && await Login.check()) {
+    Login.show('');
+    return;
+  }
+
   // 記録の読み込み。サーバーを使うようになると通信が入るので待ちます
   await Store.load();
 

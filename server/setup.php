@@ -86,6 +86,12 @@ $added += (int)$addColumn($pdo, $dbName, 'records', 'rev',
  */
 $added += (int)$addColumn($pdo, $dbName, 'users', 'can_post',
     "`can_post` TINYINT(1) NOT NULL DEFAULT 0 AFTER `app_access`");
+/*
+ * 本人の連絡先。先生と運営者が、パスワードを忘れたときの宛先に使います。
+ * 生徒は保護者のメール（guardians）へ送るので、ここは空のままです。
+ */
+$added += (int)$addColumn($pdo, $dbName, 'users', 'email',
+    "`email` VARCHAR(255) NOT NULL DEFAULT '' AFTER `kana`");
 echo $added ? "列を{$added}件足しました。\n" : "足す列はありませんでした。\n";
 
 /*

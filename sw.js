@@ -8,7 +8,7 @@
      第2段階として別に設計が必要です）
    ============================================================ */
 
-const CACHE = "manabi-card-v49";
+const CACHE = "manabi-card-v51";
 const ASSETS = [
   './',
   './index.html',
@@ -26,6 +26,7 @@ const ASSETS = [
   './js/stroke.js',
   './js/tools.js',
   './js/posts.js',
+  './js/login.js',
   './js/boot.js',
   './vendor/jsqr.js',
   './vendor/qrcode.js',

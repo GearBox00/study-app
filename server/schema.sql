@@ -167,3 +167,20 @@ CREATE TABLE IF NOT EXISTS posts (
   CONSTRAINT fk_post_category FOREIGN KEY (category_id) REFERENCES post_categories(id)
     ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------- パスワードの再設定 ----------
+-- 「パスワードを忘れたとき」に発行する、使い捨ての合言葉です。
+-- 合言葉そのものは残さず、ハッシュだけを持ちます。
+-- 万一この表が漏れても、そこから再設定はできません。
+CREATE TABLE IF NOT EXISTS password_resets (
+  id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id    INT UNSIGNED NOT NULL,
+  token_hash CHAR(64)     NOT NULL,          -- sha256。合言葉そのものは保存しません
+  expires_at DATETIME     NOT NULL,
+  used_at    DATETIME     NULL,              -- 一度使ったら二度目は通しません
+  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_token (token_hash),
+  KEY idx_user_time (user_id, created_at),   -- 短時間に何度も申請されていないかを見ます
+  CONSTRAINT fk_reset_user FOREIGN KEY (user_id) REFERENCES users(id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

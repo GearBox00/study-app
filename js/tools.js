@@ -825,6 +825,20 @@ function applyRole() {
   $('accountsLink').hidden = !(Auth.enforcing && Auth.can('manageTeachers'));
   // お知らせ・コラムの入口（サーバーにつないでいるときだけ）
   if (typeof renderPostsCta === 'function') renderPostsCta();
+
+  /*
+   * ログインの状態。
+   * サーバーにつないでいるときは、仮の役割切り替えは出しません。
+   * 役割はログインしたアカウントで決まるためです。
+   */
+  const online = typeof Remote === 'object' && Remote.enabled;
+  $('roleLink').hidden = online;
+  $('logoutLink').hidden = !online;
+  const who = $('loginWho');
+  who.hidden = !online;
+  if (online) {
+    who.textContent = `${Auth.me.name || ''}（${ROLE_LABEL[Auth.me.role] || ''}）として入っています`;
+  }
   // マイページの先生用カード
   renderTeacher();
   renderRole();

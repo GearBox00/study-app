@@ -53,6 +53,21 @@ const Remote = {
     return this._call('logout.php', { method: 'POST' });
   },
 
+  /* ---------- パスワードを忘れたとき（2026-08-14 追加） ---------- */
+
+  resetRequest(loginId) {
+    return this._call('reset.php', { method: 'POST', body: { do: 'request', loginId } });
+  },
+  resetCheck(token) {
+    return this._call('reset.php', { method: 'POST', body: { do: 'check', token } });
+  },
+  resetCommit(token, password) {
+    return this._call('reset.php', { method: 'POST', body: { do: 'commit', token, password } });
+  },
+
+  /** いま誰としてログインしているか。ログイン画面を出すかの判定に使います */
+  whoami() { return this._call('whoami.php'); },
+
   /* ---------- js/storage.js から呼ばれます ---------- */
 
   recordStore() {
