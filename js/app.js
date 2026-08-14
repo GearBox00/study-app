@@ -602,6 +602,15 @@ function show(name, title) {
   if (name === 'home') navStack = [];
   else navStack.push(name);
   $('backBtn').hidden = (name === 'home');
+
+  /*
+   * ログインする前と、保護者の方が開く画面では
+   * 「マイページ」を出しません。押しても入れないうえ、
+   * 保護者の方はアプリの利用者ではないためです。
+   */
+  const NO_MYPAGE = ['login', 'forgot', 'newpw', 'unsub'];
+  $('mypageBtn').hidden = NO_MYPAGE.indexOf(name) !== -1;
+
   window.scrollTo(0, 0);
   current.screen = name;
 }
