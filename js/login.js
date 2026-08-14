@@ -230,3 +230,110 @@ $('newpwGo').onclick = async () => {
     btn.textContent = 'このパスワードにする';
   }
 };
+
+/* ---------- パスワードを変える（ログイン中の本人） ---------- */
+
+$('changePwLink').onclick = () => {
+  ['curPw', 'chgPw1', 'chgPw2'].forEach((id) => { $(id).value = ''; });
+  $('chgPwError').hidden = true;
+  $('chgPwDone').hidden = true;
+  show('changepw', 'パスワードを変える');
+};
+
+$('chgPwShow').onchange = () => {
+  const t = $('chgPwShow').checked ? 'text' : 'password';
+  ['curPw', 'chgPw1', 'chgPw2'].forEach((id) => { $(id).type = t; });
+};
+
+$('chgPwGo').onclick = async () => {
+  const now = $('curPw').value;
+  const a = $('chgPw1').value;
+  const b = $('chgPw2').value;
+  const err = $('chgPwError');
+  const done = $('chgPwDone');
+  const btn = $('chgPwGo');
+
+  err.hidden = true;
+  done.hidden = true;
+
+  if (a !== b) {
+    err.hidden = false;
+    err.textContent = '新しいパスワードの2つの欄が同じではありません。';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '変えています…';
+  try {
+    const r = await Remote.changePassword(now, a);
+    ['curPw', 'chgPw1', 'chgPw2'].forEach((id) => { $(id).value = ''; });
+    done.hidden = false;
+    done.textContent = r.message;
+    toast('パスワードを変えました');
+  } catch (e) {
+    err.hidden = false;
+    err.textContent = e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'このパスワードにする';
+  }
+};
+
+/* ============================================================
+   入退室のお知らせを止める（保護者ご自身）
+   ------------------------------------------------------------
+   お知らせメールの末尾のリンクから開かれます。
+   ログインは要りません。保護者の方はアプリのアカウントを
+   お持ちでないためです。
+   ============================================================ */
+
+let unsubToken = '';
+
+function renderUnsub(notified) {
+  $('unsubOn').hidden = !notified;
+  $('unsubOff').hidden = notified;
+}
+
+/** アドレスの ?unsub=… から開きます */
+async function openUnsubFromUrl() {
+  const token = new URLSearchParams(location.search).get('unsub');
+  if (!token || !Remote.enabled) return false;
+
+  /* アドレス欄から合言葉を消します。履歴や共有から漏れないようにします */
+  history.replaceState(null, '', location.pathname);
+
+  try {
+    const r = await Remote.unsubCheck(token);
+    unsubToken = token;
+    $('unsubWho').textContent = `${r.email} 宛の設定です。`;
+    $('unsubResult').hidden = true;
+    renderUnsub(r.notified);
+    show('unsub', '入退室のお知らせ');
+    $('backBtn').hidden = true;
+  } catch (e) {
+    // 使えないリンクのときも、この画面で理由をお伝えします
+    $('unsubWho').textContent = e.message;
+    $('unsubOn').hidden = true;
+    $('unsubOff').hidden = true;
+    $('unsubResult').hidden = true;
+    show('unsub', '入退室のお知らせ');
+    $('backBtn').hidden = true;
+  }
+  return true;
+}
+
+async function unsubSet(on) {
+  const box = $('unsubResult');
+  try {
+    const r = await Remote.unsubSet(unsubToken, on);
+    renderUnsub(r.notified);
+    box.hidden = false;
+    box.textContent = r.message;
+  } catch (e) {
+    box.hidden = false;
+    box.textContent = e.message;
+  }
+}
+
+$('unsubStop').onclick = () => unsubSet(false);
+$('unsubResume').onclick = () => unsubSet(true);

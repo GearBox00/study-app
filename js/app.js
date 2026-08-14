@@ -585,7 +585,7 @@ const SCREENS = ['home', 'sets', 'mode', 'card', 'quiz', 'type', 'dict', 'result
   'search', 'add', 'stamp', 'venue', 'print', 'manage', 'summary', 'stroke',
   'role', 'roster', 'mail', 'accounts', 'guardians', 'message',
   'posts', 'post', 'postEdit',
-  'login', 'forgot', 'newpw'];
+  'login', 'forgot', 'newpw', 'changepw', 'unsub'];
 const $ = (id) => document.getElementById(id);
 let navStack = [];
 

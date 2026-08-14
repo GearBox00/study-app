@@ -18,6 +18,12 @@
   if (typeof openResetFromUrl === 'function' && await openResetFromUrl()) return;
 
   /*
+   * 保護者の方がお知らせメールのリンク（?unsub=…）から開いたときは、
+   * ログインを求めずに、その設定の画面だけをお見せします。
+   */
+  if (typeof openUnsubFromUrl === 'function' && await openUnsubFromUrl()) return;
+
+  /*
    * サーバーを使う設定で、まだ入っていなければログイン画面を出します。
    * 誰の記録かが決まらないまま学習が溜まるのを防ぐためです。
    * 通信できないときは出しません（オフラインでも使えることを優先）。

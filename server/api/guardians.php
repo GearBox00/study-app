@@ -84,10 +84,15 @@ if ($do === 'add') {
     $st->execute([$userId, $email]);
     if ($st->fetch()) fail(409, 'そのメールアドレスは、すでに登録されています。');
 
+    /*
+     * 配信を止めるための合言葉も、このときに作ります。
+     * お知らせメールの末尾のリンクに入れて、保護者ご自身が
+     * 教室に申し出なくても止められるようにするためです。
+     */
     $ins = db()->prepare(
-        'INSERT INTO guardians (user_id, name, relation, email, notify_attendance)
-         VALUES (?, ?, ?, ?, ?)');
-    $ins->execute([$userId, $name, $relation, $email, $notify]);
+        'INSERT INTO guardians (user_id, name, relation, email, notify_attendance, unsub_token)
+         VALUES (?, ?, ?, ?, ?, ?)');
+    $ins->execute([$userId, $name, $relation, $email, $notify, bin2hex(random_bytes(32))]);
     $newId = (int)db()->lastInsertId();
 
     sync_primary_email($userId);

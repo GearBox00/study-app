@@ -120,6 +120,8 @@ CREATE TABLE IF NOT EXISTS guardians (
   email      VARCHAR(255) NOT NULL,
   -- 入退室のお知らせも送るか。祖母には大事な連絡だけ、という使い分けのため
   notify_attendance TINYINT(1) NOT NULL DEFAULT 1,
+  -- 配信を止めるための合言葉。お知らせメールの末尾のリンクに入れます
+  unsub_token CHAR(64) NOT NULL DEFAULT '',
   created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_user (user_id),
   CONSTRAINT fk_guardian_user FOREIGN KEY (user_id) REFERENCES users(id)

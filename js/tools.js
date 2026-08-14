@@ -834,6 +834,7 @@ function applyRole() {
   const online = typeof Remote === 'object' && Remote.enabled;
   $('roleLink').hidden = online;
   $('logoutLink').hidden = !online;
+  $('changePwLink').hidden = !online;
   const who = $('loginWho');
   who.hidden = !online;
   if (online) {

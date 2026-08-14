@@ -92,6 +92,13 @@ $added += (int)$addColumn($pdo, $dbName, 'users', 'can_post',
  */
 $added += (int)$addColumn($pdo, $dbName, 'users', 'email',
     "`email` VARCHAR(255) NOT NULL DEFAULT '' AFTER `kana`");
+/*
+ * 保護者ごとの、配信を止めるための合言葉。
+ * 入退室のお知らせメールの末尾に、この合言葉つきのリンクを載せます。
+ * 保護者の方が、教室に申し出なくてもご自分で止められるようにするためです。
+ */
+$added += (int)$addColumn($pdo, $dbName, 'guardians', 'unsub_token',
+    "`unsub_token` CHAR(64) NOT NULL DEFAULT '' AFTER `notify_attendance`");
 echo $added ? "列を{$added}件足しました。\n" : "足す列はありませんでした。\n";
 
 /*
@@ -120,6 +127,18 @@ $moved = $pdo->exec(
                          WHERE g.user_id = u.id AND g.email = u.parent_email)");
 if ($moved) echo "保護者の連絡先を{$moved}件、新しい表へ移しました。\n";
 
+/*
+ * まだ合言葉が入っていない保護者に、割り当てます。
+ * すでに入っているものは変えません（前に配ったリンクが使えなくなるため）。
+ */
+$rows = $pdo->query("SELECT id FROM guardians WHERE unsub_token = ''")->fetchAll(PDO::FETCH_COLUMN);
+if ($rows) {
+    $up = $pdo->prepare('UPDATE guardians SET unsub_token = ? WHERE id = ?');
+    foreach ($rows as $gid) $up->execute([bin2hex(random_bytes(32)), $gid]);
+    echo '保護者の配信停止用の合言葉を' . count($rows) . "件つくりました。
+";
+}
+
 /* 退塾している生徒は、アプリも使えない状態にそろえます */
 $pdo->exec("UPDATE users SET app_access = 0 WHERE role = 'student' AND enroll = 'left'");
 
@@ -135,6 +154,14 @@ $pdo->exec('TRUNCATE TABLE records');
 $pdo->exec('TRUNCATE TABLE users');
 $pdo->exec('TRUNCATE TABLE venues');
 $pdo->exec('TRUNCATE TABLE posts');
+/*
+ * 保護者と、再設定の合言葉も消します。
+ * 利用者を作り直すと番号が1から振り直されるため、消さずにおくと
+ * 古い行が新しい利用者のものとして残り、
+ * 「受け取らない」にした設定などが引き継がれてしまいます。
+ */
+$pdo->exec('TRUNCATE TABLE guardians');
+$pdo->exec('TRUNCATE TABLE password_resets');
 $pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
 
 $venues = [['main', '本部教場'], ['kita', '北教場'], ['minami', '南教場']];
@@ -175,6 +202,22 @@ for ($i = 0; $i < 24; $i++) {
         'hogosha' . ($i + 1) . '@example.com',
     ]);
 }
+
+/*
+ * 見本の保護者。上で表を空にしているので、ここで作り直します。
+ * 配信を止めるための合言葉も、このときに割り当てます。
+ */
+$g = $pdo->prepare(
+    'INSERT INTO guardians (user_id, relation, email, notify_attendance, unsub_token)
+     VALUES (?, ?, ?, 1, ?)');
+$made = 0;
+foreach ($pdo->query("SELECT id, parent_email FROM users
+                       WHERE role='student' AND parent_email <> ''") as $row) {
+    $g->execute([$row['id'], '保護者', $row['parent_email'], bin2hex(random_bytes(32))]);
+    $made++;
+}
+echo "見本の保護者を{$made}件入れました。
+";
 
 /* 一覧の見え方を確かめるため、学習の記録も少し入れます */
 $rec = $pdo->prepare(

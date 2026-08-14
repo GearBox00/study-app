@@ -656,6 +656,7 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
     <button class="text-link text-link--slim" id="mailLink" hidden>保護者へのお知らせメールの設定</button>
     <button class="text-link text-link--slim" id="roleLink">役割を切り替える（第2段階の作りこみ中）</button>
     <p class="note" id="loginWho" hidden></p>
+    <button class="text-link text-link--slim" id="changePwLink" hidden>パスワードを変える</button>
     <button class="text-link text-link--slim" id="logoutLink" hidden>ログアウトする</button>
   </section>
 
@@ -803,6 +804,73 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
       <p class="note note--error" id="loginError" hidden></p>
       <button class="btn btn--primary" id="loginGo">ログインする</button>
       <button class="text-link text-link--slim" id="loginForgot">パスワードを忘れたとき</button>
+    </div>
+  </section>
+
+  <!-- ========== 入退室のお知らせを止める（保護者ご自身） ========== -->
+  <section class="screen" id="screen-unsub" hidden>
+    <div class="card">
+      <h2 class="section-title">入退室のお知らせ</h2>
+      <p class="note" id="unsubWho"></p>
+
+      <div id="unsubOn">
+        <p class="note">
+          いま、<b>入退室のお知らせをお送りしています。</b><br>
+          不要な場合は、下のボタンで止められます。
+        </p>
+        <button class="btn btn--primary" id="unsubStop">お知らせを止める</button>
+      </div>
+
+      <div id="unsubOff" hidden>
+        <p class="note">
+          いま、<b>入退室のお知らせは止まっています。</b>
+        </p>
+        <button class="btn btn--ghost" id="unsubResume">お知らせをまた受け取る</button>
+      </div>
+
+      <p class="note" id="unsubResult" hidden></p>
+
+      <p class="note">
+        止められるのは<b>入退室のお知らせだけ</b>です。<br>
+        教室からの大事なご連絡は、止めても届きます。
+      </p>
+    </div>
+  </section>
+
+  <!-- ========== パスワードを変える（ログイン中の本人） ========== -->
+  <section class="screen" id="screen-changepw" hidden>
+    <div class="card">
+      <h2 class="section-title">パスワードを変える</h2>
+      <p class="note">
+        いまのパスワードを確かめたうえで、新しいものに変えます。<br>
+        変えたあとも、そのままお使いいただけます。入り直す必要はありません。
+      </p>
+
+      <label class="field">
+        <span class="field__label">いまのパスワード</span>
+        <input type="password" id="curPw" autocomplete="current-password">
+      </label>
+      <label class="field">
+        <span class="field__label">新しいパスワード</span>
+        <input type="password" id="chgPw1" autocomplete="new-password">
+      </label>
+      <label class="field">
+        <span class="field__label">もう一度</span>
+        <input type="password" id="chgPw2" autocomplete="new-password">
+      </label>
+      <label class="check">
+        <input type="checkbox" id="chgPwShow">
+        <span>パスワードを表示する</span>
+      </label>
+
+      <p class="note">
+        <b>8文字以上</b>で、<b>英字と数字の両方</b>を入れてください。<br>
+        半角の英数字と記号が使えます。
+      </p>
+
+      <p class="note note--error" id="chgPwError" hidden></p>
+      <p class="note" id="chgPwDone" hidden></p>
+      <button class="btn btn--primary" id="chgPwGo">このパスワードにする</button>
     </div>
   </section>
 

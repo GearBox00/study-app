@@ -158,6 +158,31 @@ function send_mail(string $to, string $subject, string $body, string &$error = '
  *   ・その生徒に保護者のメールが登録されていない
  *   ・直前に同じ知らせを送ったばかり（連投を防ぐため）
  */
+/**
+ * お知らせメールの末尾に付ける、配信を止めるためのご案内。
+ *
+ * 止められるのは「入退室のお知らせ」だけです。
+ * 教室からの大事なご連絡まで止まってしまうと困るためで、
+ * そのことも文面に書いておきます。
+ */
+function unsub_footer(string $token): string
+{
+    if ($token === '') return '';
+    $base = rtrim((string)(config()['app_url'] ?? ''), '/');
+    if ($base === '') return '';
+    return "
+
+"
+         . "----------------------------------------
+"
+         . "入退室のお知らせが不要な場合は、下のリンクから止められます。
+"
+         . $base . "/index.html?unsub=" . $token . "
+"
+         . "※ 教室からの大事なご連絡は、止めても届きます。
+";
+}
+
 function notify_guardian(array $student, string $kind, ?int $minutes, string &$error = ''): string
 {
     if (mail_setting('mail_enabled') !== '1') return 'skipped';
@@ -167,11 +192,11 @@ function notify_guardian(array $student, string $kind, ?int $minutes, string &$e
      * 入退室のお知らせを受け取らない設定の方（お祖母様など）は外します。
      */
     $st = db()->prepare(
-        'SELECT email FROM guardians WHERE user_id = ? AND notify_attendance = 1');
+        'SELECT email, unsub_token FROM guardians WHERE user_id = ? AND notify_attendance = 1');
     $st->execute([$student['id']]);
     $tos = [];
     foreach ($st->fetchAll() as $g) {
-        if (valid_email($g['email'])) $tos[] = $g['email'];
+        if (valid_email($g['email'])) $tos[] = $g;
     }
     if (!$tos) return 'skipped';
 
@@ -204,9 +229,10 @@ function notify_guardian(array $student, string $kind, ?int $minutes, string &$e
      */
     $sent = 0;
     $lastError = '';
-    foreach ($tos as $to) {
+    foreach ($tos as $g) {
         $e = '';
-        if (send_mail($to, $subject, $body, $e)) $sent++;
+        // 止めるためのリンクは、宛先ごとに違います
+        if (send_mail($g['email'], $subject, $body . unsub_footer($g['unsub_token']), $e)) $sent++;
         else $lastError = $e;
     }
     if ($sent > 0) return 'sent';

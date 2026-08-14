@@ -65,6 +65,20 @@ const Remote = {
     return this._call('reset.php', { method: 'POST', body: { do: 'commit', token, password } });
   },
 
+  /* ---------- 入退室のお知らせを止める（保護者ご自身。ログイン不要） ---------- */
+
+  unsubCheck(token) {
+    return this._call('unsub.php', { method: 'POST', body: { do: 'check', token } });
+  },
+  unsubSet(token, on) {
+    return this._call('unsub.php', { method: 'POST', body: { do: on ? 'resume' : 'stop', token } });
+  },
+
+  /** ログインしている本人が、自分のパスワードを変えます */
+  changePassword(current, password) {
+    return this._call('password.php', { method: 'POST', body: { current, password } });
+  },
+
   /** いま誰としてログインしているか。ログイン画面を出すかの判定に使います */
   whoami() { return this._call('whoami.php'); },
 
