@@ -40,7 +40,7 @@ const GRADE_NEXT = [
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
     $st = db()->query(
         "SELECT u.id, u.login_id, u.role, u.name, u.grade, u.joined_on,
-                u.venue_id, u.enroll, u.app_access, u.parent_email, u.created_at,
+                u.venue_id, u.enroll, u.app_access, u.can_post, u.parent_email, u.created_at,
                 v.name AS venue_name
            FROM users u LEFT JOIN venues v ON v.id = u.venue_id
           ORDER BY FIELD(u.role,'admin','teacher','student'), u.id");
@@ -57,6 +57,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
             'venueName' => $u['venue_name'],
             'enroll'    => $u['enroll'],
             'appAccess' => (int)$u['app_access'] === 1,
+            'canPost'   => (int)($u['can_post'] ?? 0) === 1,
             'parentEmail' => $u['parent_email'],
             'createdAt' => $u['created_at'],
         ];

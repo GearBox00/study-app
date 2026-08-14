@@ -79,7 +79,27 @@ $added += (int)$addColumn($pdo, $dbName, 'users', 'app_access',
  */
 $added += (int)$addColumn($pdo, $dbName, 'records', 'rev',
     "`rev` INT UNSIGNED NOT NULL DEFAULT 0 AFTER `last_studied`");
+/*
+ * お知らせ・コラムを書けるかどうか。
+ * 先生ごとに運営者が決めます（2026-08-14 ご発注分）。
+ * 運営者は列の値によらず、いつでも書けます。
+ */
+$added += (int)$addColumn($pdo, $dbName, 'users', 'can_post',
+    "`can_post` TINYINT(1) NOT NULL DEFAULT 0 AFTER `app_access`");
 echo $added ? "列を{$added}件足しました。\n" : "足す列はありませんでした。\n";
+
+/*
+ * お知らせの分類のはじめの4つ。
+ * まだ1件も無いときだけ入れます。運営者が消したものを
+ * 実行のたびに復活させないためです。
+ */
+if ((int)$pdo->query('SELECT COUNT(*) FROM post_categories')->fetchColumn() === 0) {
+    $st = $pdo->prepare('INSERT INTO post_categories (name, sort_order) VALUES (?, ?)');
+    foreach (['重要', '事務連絡', '勉強', 'メッセージ'] as $i => $name) {
+        $st->execute([$name, ($i + 1) * 10]);
+    }
+    echo "お知らせの分類を4件入れました。\n";
+}
 
 /*
  * すでに登録されている保護者のメールを、新しい表へ移します。
@@ -108,6 +128,7 @@ $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
 $pdo->exec('TRUNCATE TABLE records');
 $pdo->exec('TRUNCATE TABLE users');
 $pdo->exec('TRUNCATE TABLE venues');
+$pdo->exec('TRUNCATE TABLE posts');
 $pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
 
 $venues = [['main', '本部教場'], ['kita', '北教場'], ['minami', '南教場']];
@@ -175,6 +196,35 @@ $set->execute(['mail_dry_run', '1']);
 $set->execute(['mail_enabled', '0']);
 $set->execute(['mail_from', 'info@example.com']);
 
+/* ---------- 見本のお知らせ ---------- */
+/* 北教場の先生には、書ける権限を付けた状態にしておきます */
+$pdo->exec("UPDATE users SET can_post = 1 WHERE login_id = 'sensei-k'");
+
+$adminId  = (int)$pdo->query("SELECT id FROM users WHERE login_id='admin'")->fetchColumn();
+$senseiId = (int)$pdo->query("SELECT id FROM users WHERE login_id='sensei-k'")->fetchColumn();
+$cat = [];
+foreach ($pdo->query('SELECT id, name FROM post_categories') as $r) $cat[$r['name']] = (int)$r['id'];
+
+$ps = $pdo->prepare(
+    'INSERT INTO posts (title, bodytext, category_id, venue_id, author_id, author_name, pinned, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+$ps->execute(['お盆期間の休講について',
+    "8月13日（木）から8月16日（日）までお休みをいただきます。\n\n"
+    . "この間もアプリはお使いいただけます。\n宿題のセットを入れてありますので、進めておいてください。",
+    $cat['重要'] ?? null, null, $adminId, '佐藤 潤', 1, '2026-08-10 09:00:00']);
+$ps->execute(['夏期講習の残り日程',
+    "8月20日以降の空きがわずかとなりました。\nご希望の方はお早めにお申し出ください。",
+    $cat['事務連絡'] ?? null, null, $adminId, '佐藤 潤', 0, '2026-08-12 14:30:00']);
+$ps->execute(['漢字は「読み」から覚えると速くなります',
+    "書き取りから入ると手が止まりがちです。\n"
+    . "まず読みだけを一周してから書き取りに進むと、覚えるまでの回数が減ります。\n\n"
+    . "アプリでも、同じセットを「読み」→「書き取り」の順に回せます。",
+    $cat['勉強'] ?? null, null, $senseiId, '北教場の先生', 0, '2026-08-13 18:00:00']);
+$ps->execute(['北教場：教室の移動について',
+    "9月から2階の教室に移ります。1階の入口からお入りください。",
+    $cat['事務連絡'] ?? null, 'kita', $senseiId, '北教場の先生', 0, '2026-08-14 10:00:00']);
+
+echo "見本のお知らせを4件入れました。\n";
 echo "見本の利用者を入れました。\n";
 echo "  運営者 … admin / admin-pass\n";
 echo "  先生   … sensei-k, sensei-m / sensei-pass\n";

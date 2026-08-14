@@ -77,6 +77,15 @@
       <span class="review-cta__arrow">›</span>
     </button>
 
+    <button class="review-cta" id="postsCta" hidden>
+      <span class="review-cta__icon">📣</span>
+      <span class="review-cta__body">
+        <span class="review-cta__title">お知らせ・コラム <b id="postsCtaBadge" hidden></b></span>
+        <span class="review-cta__sub" id="postsCtaSub">教室からのお知らせを読めます</span>
+      </span>
+      <span class="review-cta__arrow">›</span>
+    </button>
+
     <button class="review-cta" id="reviewCta">
       <span class="review-cta__icon">🔁</span>
       <span class="review-cta__body">
@@ -767,6 +776,88 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
     </div>
   </section>
 
+  <!-- ========== お知らせ・コラム（2026-08-14 追加） ========== -->
+  <section class="screen" id="screen-posts" hidden>
+    <h2 class="section-title">お知らせ・コラム</h2>
+
+    <div class="field" id="postFilterWrap">
+      <span class="field__label">分類でしぼる</span>
+      <div class="segmented__btns" id="postFilter"></div>
+    </div>
+
+    <button class="btn btn--primary" id="postNew" hidden>お知らせを書く</button>
+    <button class="text-link text-link--slim" id="postManageLink" hidden>分類と、書ける先生の設定</button>
+
+    <div id="postList"></div>
+    <p class="note" id="postEmpty" hidden>まだお知らせはありません。</p>
+
+    <!-- 分類と書き手の管理（運営者だけ） -->
+    <div class="card" id="postManageCard" hidden>
+      <h3 class="card__title">分類</h3>
+      <div id="postCatList"></div>
+      <label class="field">
+        <span class="field__label">分類を足す</span>
+        <input type="text" id="postCatNew" maxlength="20" placeholder="例）進路">
+      </label>
+      <button class="btn btn--ghost" id="postCatAdd">この分類を足す</button>
+      <p class="note">
+        分類を消しても、記事は消えません。その記事の分類が「なし」になります。
+      </p>
+
+      <h3 class="card__title" style="margin-top:18px">お知らせを書ける先生</h3>
+      <div id="postWriterList"></div>
+      <p class="note">
+        運営者（佐藤様）は、この設定にかかわらず、いつでも書けます。
+      </p>
+    </div>
+  </section>
+
+  <!-- ========== お知らせの本文 ========== -->
+  <section class="screen" id="screen-post" hidden>
+    <div class="card">
+      <p class="note" id="postOneMeta"></p>
+      <h2 class="section-title" id="postOneTitle" style="margin-top:4px"></h2>
+      <div class="post-body" id="postOneBody"></div>
+    </div>
+    <button class="btn btn--ghost" id="postEditThis" hidden>この記事を直す</button>
+  </section>
+
+  <!-- ========== お知らせを書く・直す ========== -->
+  <section class="screen" id="screen-postEdit" hidden>
+    <h2 class="section-title" id="postEditTitle">お知らせを書く</h2>
+
+    <div class="card">
+      <label class="field">
+        <span class="field__label">題名</span>
+        <input type="text" id="postTitle" maxlength="120" placeholder="例）お盆期間の休講について">
+      </label>
+      <label class="field">
+        <span class="field__label">本文</span>
+        <textarea id="postBody" rows="12" placeholder="いつもお世話になっております。"></textarea>
+      </label>
+      <label class="field">
+        <span class="field__label">分類</span>
+        <select id="postCategory"></select>
+      </label>
+      <label class="field">
+        <span class="field__label">出す先</span>
+        <select id="postVenue"></select>
+      </label>
+      <label class="check">
+        <input type="checkbox" id="postPinned">
+        <span>一番上に固定する（大事なお知らせ）</span>
+      </label>
+      <label class="check">
+        <input type="checkbox" id="postPublished" checked>
+        <span>公開する（外すと下書きになり、自分にしか見えません）</span>
+      </label>
+    </div>
+
+    <button class="btn btn--primary" id="postSave">保存する</button>
+    <button class="text-link text-link--slim" id="postDelete" hidden>この記事を消す</button>
+    <p class="note" id="postEditResult"></p>
+  </section>
+
   <!-- ========== アカウントの発行（運営者だけ） ========== -->
   <section class="screen" id="screen-accounts" hidden>
     <h2 class="section-title">アカウントの発行</h2>
@@ -1266,6 +1357,7 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
 <script src="js/dictation.js"></script>
 <script src="js/stroke.js"></script>
 <script src="js/tools.js"></script>
+<script src="js/posts.js"></script>
 <script src="js/boot.js"></script>
 </body>
 </html>

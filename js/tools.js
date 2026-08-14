@@ -823,6 +823,8 @@ function applyRole() {
   $('messageLink').hidden = !(Auth.enforcing && Auth.can('manageMail'));
   // アカウントの発行は運営者だけ（D・F）
   $('accountsLink').hidden = !(Auth.enforcing && Auth.can('manageTeachers'));
+  // お知らせ・コラムの入口（サーバーにつないでいるときだけ）
+  if (typeof renderPostsCta === 'function') renderPostsCta();
   // マイページの先生用カード
   renderTeacher();
   renderRole();

@@ -112,6 +112,8 @@ const Merge = {
     out.customSets = byId(m.customSets, t.customSets);
     out.badges = union(m.badges, t.badges);
     out.loadedSubjects = union(m.loadedSubjects, t.loadedSubjects);
+    // 片方の端末で読んだお知らせは、もう片方でも既読にします
+    out.readPosts = union(m.readPosts, t.readPosts);
 
     const mf = m.flags || {};
     const tf = t.flags || {};

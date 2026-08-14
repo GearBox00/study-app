@@ -77,6 +77,25 @@ const Remote = {
     });
   },
 
+  /* ---------- お知らせ・コラム（2026-08-14 追加） ---------- */
+
+  posts() { return this._call('posts.php'); },
+  savePost(v) { return this._call('posts.php', { method: 'POST', body: { do: 'save', ...v } }); },
+  deletePost(id) { return this._call('posts.php', { method: 'POST', body: { do: 'delete', id } }); },
+  pinPost(id, on) { return this._call('posts.php', { method: 'POST', body: { do: 'pin', id, on } }); },
+  addPostCategory(name) {
+    return this._call('posts.php', { method: 'POST', body: { do: 'addCategory', name } });
+  },
+  renamePostCategory(id, name) {
+    return this._call('posts.php', { method: 'POST', body: { do: 'renameCategory', id, name } });
+  },
+  deletePostCategory(id) {
+    return this._call('posts.php', { method: 'POST', body: { do: 'deleteCategory', id } });
+  },
+  setPostWriter(id, on) {
+    return this._call('posts.php', { method: 'POST', body: { do: 'setWriter', id, on } });
+  },
+
   /* ---------- アカウントの発行（運営者だけ） ---------- */
 
   accounts() { return this._call('accounts.php'); },

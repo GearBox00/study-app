@@ -38,6 +38,8 @@ $PERMISSIONS = [
     'manageTeachers'   => [ROLE_ADMIN],
     'viewAllVenues'    => [ROLE_ADMIN],
     'manageMail'       => [ROLE_ADMIN],
+    'writePost'        => [ROLE_TEACHER, ROLE_ADMIN],
+    'managePosts'      => [ROLE_ADMIN],
 ];
 
 /* ---------- 設定と接続 ---------- */
@@ -153,7 +155,7 @@ function current_user(): ?array
     if ($u === null) {
         $st = db()->prepare(
             'SELECT id, login_id, role, name, kana, grade, joined_on,
-                    venue_id, enroll, app_access, parent_email
+                    venue_id, enroll, app_access, can_post, parent_email
                FROM users WHERE id = ?');
         $st->execute([$_SESSION['uid']]);
         $u = $st->fetch() ?: null;

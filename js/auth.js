@@ -77,6 +77,14 @@ const PERMISSIONS = {
   viewAllVenues:    [ROLE.ADMIN],
   /* 保護者へのメール送信の設定 */
   manageMail:       [ROLE.ADMIN],
+  /*
+   * お知らせ・コラムを書く。
+   * 先生は、運営者から許可された人だけです（canPost で判定）。
+   * ここは「役割として書きうるか」だけを見ています。
+   */
+  writePost:        [ROLE.TEACHER, ROLE.ADMIN],
+  /* お知らせの分類を作る・直す。書ける先生を決める */
+  managePosts:      [ROLE.ADMIN],
 };
 
 const Auth = {

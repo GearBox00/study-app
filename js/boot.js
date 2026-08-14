@@ -29,6 +29,17 @@
   // 退室のスキャンを忘れたままの記録を締めておく
   if (typeof closeStaleSessions === 'function') closeStaleSessions();
 
+  /*
+   * お知らせ・コラム。
+   * 通信できなければ端末の控えのままにします。
+   * 待たずに進めたいところですが、ホームの「未読◯件」を
+   * 出すために読み終わってから描き直します。
+   */
+  if (typeof Posts === 'object') {
+    await Posts.load();
+    if (typeof renderPostsCta === 'function') renderPostsCta();
+  }
+
   goHome();
 })();
 

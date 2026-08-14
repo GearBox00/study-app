@@ -20,10 +20,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
     $st->execute([$me['id']]);
     $row = $st->fetch();
     // まだ無いときは中身を null で返します。アプリは端末の記録で始めます
-    if (!$row) ok(['data' => null, 'rev' => 0]);
+    if (!$row) ok(['data' => null, 'rev' => 0, 'userId' => (int)$me['id']]);
 
     $data = json_decode($row['payload'], true);
-    ok(['data' => is_array($data) ? $data : null, 'rev' => (int)$row['rev']]);
+    ok(['data' => is_array($data) ? $data : null, 'rev' => (int)$row['rev'],
+        'userId' => (int)$me['id']]);
 }
 
 /* ---------- 預ける ---------- */

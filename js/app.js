@@ -90,6 +90,8 @@ const Store = {
       venue: 'main',       // 拠点の合言葉
       session: null,       // 学習の途中経過（中断したときの続きに使います）
       badges: [],
+      // 読んだお知らせのID。新しい記事の印を出すために使います
+      readPosts: [],
       flags: { perfect: false, clean: false },
     };
   },
@@ -581,7 +583,8 @@ const Speech = {
    ============================================================ */
 const SCREENS = ['home', 'sets', 'mode', 'card', 'quiz', 'type', 'dict', 'result', 'mypage',
   'search', 'add', 'stamp', 'venue', 'print', 'manage', 'summary', 'stroke',
-  'role', 'roster', 'mail', 'accounts', 'guardians', 'message'];
+  'role', 'roster', 'mail', 'accounts', 'guardians', 'message',
+  'posts', 'post', 'postEdit'];
 const $ = (id) => document.getElementById(id);
 let navStack = [];
 

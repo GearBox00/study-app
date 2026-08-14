@@ -32,6 +32,15 @@ const Backend = {
   rev: 0,
 
   /*
+   * いま端末に入っている記録が「誰のものか」。
+   * 教場のタブレットを何人かで使い回すと、前の人の記録が
+   * 端末に残ったまま次の人がログインします。そのまま続けると
+   * 前の人の学習が、次の人の記録に混ざってしまいます。
+   * ログインした人と食い違ったら、端末の記録は捨てます。
+   */
+  ownerKey: 'manabi-card-v2:owner',
+
+  /*
    * サーバーとやりとりする係。第2段階でここに入れます。
    * 次の3つを持つオブジェクトを想定しています（すべて Promise を返す）。
    *   pull()      … サーバーにある記録を取ってくる。無ければ null
@@ -51,6 +60,12 @@ const Backend = {
    * 変わったときに呼ばれます。画面側で読み直してもらうためです。
    */
   onmerged: null,
+  /*
+   * 前に使っていた人と違う人がログインしたときに呼ばれます。
+   * 学習の記録のほかにも端末に控えているもの（お知らせなど）を
+   * 捨ててもらうためです。
+   */
+  onuserchange: null,
 
   _timer: null,
   _sending: false,
@@ -106,6 +121,23 @@ const Backend = {
     try { localStorage.removeItem(this.baseKey); } catch (e) { /* 消せなくても続行 */ }
   },
 
+  /* ---------- 誰の記録か ---------- */
+
+  readOwner() {
+    try {
+      const v = localStorage.getItem(this.ownerKey);
+      return v ? Number(v) : null;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  writeOwner(id) {
+    try {
+      if (id) localStorage.setItem(this.ownerKey, String(id));
+    } catch (e) { /* 残せなくても続行 */ }
+  },
+
   /* ---------- 読み込み ---------- */
 
   /**
@@ -119,6 +151,25 @@ const Backend = {
         const res = await this.remote.pull() || {};
         this.rev = res.rev || 0;
         const fromServer = res.data;
+
+        /*
+         * 前に使った人と違う人がログインしたら、
+         * 端末に残っている記録は捨てます。
+         * 教場のタブレットを持ち回っても、記録が混ざりません。
+         *
+         * 通信できないときはここを通らないので、
+         * 誰のものか確かめられないまま端末の記録で始まります。
+         * その状態で学習した分は、次にログインした人の記録に
+         * 混ざらないよう、送る前にここで捨てられます。
+         */
+        const owner = this.readOwner();
+        if (res.userId && owner && owner !== res.userId) {
+          this.clearLocal();
+          if (typeof this.onuserchange === 'function') {
+            try { this.onuserchange(); } catch (e) { /* 画面側の都合で落とさない */ }
+          }
+        }
+        this.writeOwner(res.userId);
 
         /*
          * この端末に、まだ送れていない学習が残っていることがあります

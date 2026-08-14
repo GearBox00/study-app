@@ -138,3 +138,32 @@ CREATE TABLE IF NOT EXISTS messages (
   created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------- お知らせ・コラムの分類 ----------
+-- 「重要」「事務連絡」などの区分です。運営者が追加・変更・削除できます。
+CREATE TABLE IF NOT EXISTS post_categories (
+  id         INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name       VARCHAR(40)  NOT NULL,
+  sort_order INT          NOT NULL DEFAULT 0,     -- 一覧での並び順
+  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------- お知らせ・コラムの記事 ----------
+CREATE TABLE IF NOT EXISTS posts (
+  id          INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  title       VARCHAR(120) NOT NULL,
+  bodytext    TEXT         NOT NULL,
+  category_id INT UNSIGNED NULL,                  -- 分類。消された分類は NULL になります
+  -- どの教場に出すか。NULL なら全体向けです
+  venue_id    VARCHAR(32)  NULL,
+  author_id   INT UNSIGNED NULL,                  -- 書いた人
+  author_name VARCHAR(100) NOT NULL DEFAULT '',   -- 書いた人が消えても表示できるよう控えます
+  pinned      TINYINT(1)   NOT NULL DEFAULT 0,    -- 一番上に固定するか
+  published   TINYINT(1)   NOT NULL DEFAULT 1,    -- 下書きのあいだは 0
+  created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_list (published, pinned, created_at),
+  KEY idx_venue (venue_id),
+  CONSTRAINT fk_post_category FOREIGN KEY (category_id) REFERENCES post_categories(id)
+    ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
