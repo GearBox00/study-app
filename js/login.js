@@ -87,6 +87,23 @@ async function doLogin() {
     await Store.load();
     if (typeof Posts === 'object') await Posts.clearCache();
     if (typeof Posts === 'object') await Posts.load();
+
+    /*
+     * 教材（questions/index.json）を読み込みます。
+     *
+     * ★ ここで呼ぶ理由
+     *   js/boot.js は、ログイン画面を出す時点で return します。
+     *   そのため、その先にある教材の読み込みまで進んでいません。
+     *   ここで呼ばないと、ログインした直後は内蔵の見本だけが並び、
+     *   CSVの教材は「再読み込みするまで出てこない」状態になります。
+     *   （2026-08-18 本番で発見。読み込み済みなら何もしないので、
+     *     二重に呼んでも問題ありません）
+     */
+    if (typeof loadExternalQuestions === 'function') {
+      try { await loadExternalQuestions(); } catch (e) { /* 失敗しても入れます */ }
+      if (typeof invalidateSearchIndex === 'function') invalidateSearchIndex();
+    }
+
     applyRole();
     goHome();
     toast('ログインしました');

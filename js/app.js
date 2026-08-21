@@ -85,6 +85,9 @@ const Store = {
         choicePool: 'level', // 4択の誤答をどこから作るか（set=セット内 / level=レベル全体）
       },
       loadedSubjects: [],  // 一度開いた科目（次回から起動時に読み込みます）
+      // 教材ごとの読み上げの入り切り（2026-08-21 追加）
+      //   { '教材のID:セットのID': 'on' | 'off' }。無い教材は英語だけ読み上げます
+      levelSpeak: {},
       // 出席スタンプ（QR読み取り）
       attendance: { cards: 0, stamps: 0, totalDays: 0, totalMinutes: 0, logs: {} },
       venue: 'main',       // 拠点の合言葉
@@ -749,6 +752,7 @@ async function openSubject(id) {
     block.appendChild(grid);
     block.appendChild(buildRangeRow(sub, lv));
     block.appendChild(buildLevelLimitRow(sub, lv));
+    block.appendChild(buildLevelSpeakRow(sub, lv));
     wrap.appendChild(block);
   });
 
@@ -819,10 +823,85 @@ const LIMIT_MODES = [
   { key: 'type', name: 'タイピング', base: 15 },
 ];
 
+/**
+ * 先生用の欄を出してよい画面か。
+ * ログインして役割が決まっているときは役割で、
+ * 決まっていないとき（第1段階の使い方）は合言葉で判断します。
+ * ここを1か所にまとめておかないと、先生でログインしているのに
+ * 教材ごとの設定だけ出てこない、という食い違いが起きます。
+ */
+function isTeacherView() {
+  if (typeof Auth === 'object' && Auth.enforcing) return Auth.can('manageQuestions');
+  return !!Store.data.flags.teacher;
+}
+
+/* ------------------------------------------------------------
+   教材（セット）ごとの読み上げの入り切り（2026-08-21 追加）
+   ------------------------------------------------------------
+   英語は読み上げてほしいが、理科では邪魔になる、というご要望への対応です。
+   何も選ばなければ、これまでどおり英語の教材だけ自動で読み上げます。
+   ------------------------------------------------------------ */
+
+/** その教材が英語かどうか。index.json の lang を見ます */
+function isEnglishSubject(sub) {
+  if (!sub) return false;
+  if (sub.id === 'english') return true;              // 内蔵の英語
+  return String(sub.lang || '').slice(0, 2) === 'en';
+}
+
+/** 出題中に自動で読み上げるか（'on' / 'off' / 未設定＝教材まかせ） */
+function speakAutoOn(sub, levelKey) {
+  const m = Store.data.levelSpeak || {};
+  const v = levelKey ? m[levelKey] : '';
+  if (v === 'on') return true;
+  if (v === 'off') return false;
+  return isEnglishSubject(sub);
+}
+
+function buildLevelSpeakRow(sub, lv) {
+  const row = document.createElement('div');
+  row.className = 'range-row range-row--teacher';
+  row.hidden = !isTeacherView();
+
+  const label = document.createElement('span');
+  label.className = 'range-row__label';
+  label.textContent = '🔑 先生用：この教材の読み上げ';
+  row.appendChild(label);
+
+  const key = levelKeyOf(sub, lv);
+  if (!Store.data.levelSpeak) Store.data.levelSpeak = {};
+
+  const line = document.createElement('label');
+  line.className = 'waits__item';
+  const sel = document.createElement('select');
+  [['', 'おまかせ（英語だけ読み上げ）'],
+   ['on', '読み上げる'],
+   ['off', '読み上げない']].forEach(([v, t]) => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = t;
+    sel.appendChild(o);
+  });
+  sel.value = Store.data.levelSpeak[key] || '';
+  sel.onchange = () => {
+    if (sel.value) Store.data.levelSpeak[key] = sel.value;
+    else delete Store.data.levelSpeak[key];
+    Store.save();
+  };
+  line.appendChild(sel);
+  row.appendChild(line);
+
+  const note = document.createElement('p');
+  note.className = 'note';
+  note.textContent = '「おまかせ」のときは、英語の教材だけが自動で読み上げられます。'
+    + 'どの教材でも、発音ボタンを押せば読み上げは聞けます。';
+  row.appendChild(note);
+  return row;
+}
+
 function buildLevelLimitRow(sub, lv) {
   const row = document.createElement('div');
   row.className = 'range-row range-row--teacher';
-  row.hidden = !Store.data.flags.teacher;
+  row.hidden = !isTeacherView();
 
   const label = document.createElement('span');
   label.className = 'range-row__label';
@@ -950,7 +1029,7 @@ function drawCard() {
   $('cardCounter').textContent = `${s.idx + 1} / ${s.items.length}`;
   $('cardProgress').style.width = `${(s.idx / s.items.length) * 100}%`;
   $('cardSpeak').hidden = !Speech.supported;
-  if (sub && sub.id === 'english') Speech.speak(sub, item);
+  if (speakAutoOn(sub, current.levelKey)) Speech.speak(sub, item);
 }
 
 function setExample(el, item) {
@@ -1102,7 +1181,7 @@ function drawQuiz() {
     box.appendChild(b);
   });
 
-  if (quiz.listen || (sub && sub.id === 'english')) Speech.speak(sub, item);
+  if (quiz.listen || speakAutoOn(sub, current.levelKey)) Speech.speak(sub, item);
   quiz.startAt = Date.now();
   rememberSession('quiz');
   startTimer(item);

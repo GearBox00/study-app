@@ -809,6 +809,16 @@ function renderRole() {
   }).join('');
 }
 
+/* 開発用の切り替えボタン（2026-08-21 追加） */
+document.querySelectorAll('#viewAsBtns button').forEach((b) => {
+  b.onclick = () => {
+    Auth.setViewAs(b.dataset.view);
+    applyRole();
+    goHome();
+    toast(`${ROLE_LABEL[Auth.shownRole]}の見え方にしました`);
+  };
+});
+
 /** 役割が変わったときに、画面全体を出し分け直します */
 function applyRole() {
   // ホームの入り口
@@ -835,10 +845,31 @@ function applyRole() {
   $('roleLink').hidden = online;
   $('logoutLink').hidden = !online;
   $('changePwLink').hidden = !online;
+  /*
+   * アカウントの欄そのもの（マイページ）。
+   * サーバーにつないでいないときは中身が全部隠れるので、
+   * 空の枠だけが残らないように、枠ごと隠します。
+   */
+  $('accountCard').hidden = !online;
+  $('logoutNote').hidden = !online;
+  // 名簿の「作りこみ中」の但し書き。つないでいるときは本物が並ぶので出しません
+  $('rosterWip').hidden = online;
   const who = $('loginWho');
   who.hidden = !online;
   if (online) {
-    who.textContent = `${Auth.me.name || ''}（${ROLE_LABEL[Auth.me.role] || ''}）として入っています`;
+    const real = ROLE_LABEL[Auth.me.role] || '';
+    who.textContent = Auth.viewAs
+      ? `${Auth.me.name || ''}（${real}）として入っています／いまは「${ROLE_LABEL[Auth.viewAs]}」の見え方です`
+      : `${Auth.me.name || ''}（${real}）として入っています`;
+  }
+
+  /* 開発用の切り替え。運営者で入っているときだけ出します */
+  const canSwitch = online && Auth.canSwitchView;
+  $('viewAsCard').hidden = !canSwitch;
+  if (canSwitch) {
+    document.querySelectorAll('#viewAsBtns button').forEach((b) => {
+      b.classList.toggle('is-on', b.dataset.view === Auth.shownRole);
+    });
   }
   // マイページの先生用カード
   renderTeacher();

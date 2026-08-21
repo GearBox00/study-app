@@ -1,0 +1,37 @@
+# ★最重要★ Xサーバーのnginxキャッシュを止めます。
+# これが無いと、下の Header の指定が nginx 側で上書きされ、
+# .js が7日間ブラウザに残り続けます。
+# （gearbox-app-origin.net の filedrop / アンケートで確認済みの書き方）
+SetEnvIf Request_URI ".*" Ngx_Cache_NoCacheMode=on
+UnsetEnv Ngx_Cache_AllCacheMode
+
+# ============================================================
+#  このフォルダ（アプリを置いた場所）だけの設定です。
+#  ホームページ本体には影響しません。
+# ------------------------------------------------------------
+#  ■ なぜ要るか
+#    サーバーの既定では .js や .css が7日間ブラウザに残ります。
+#    そのままだと、一度アプリを開いた端末は、こちらが直しても
+#    最大1週間、古いプログラムを使い続けます。
+#    （2026-08-18、本番で実際に起きたため追加しました）
+#
+#    ここでは「毎回サーバーに確かめる」形にします。
+#    中身が変わっていなければ 304 が返るだけなので、
+#    通信量はほとんど増えません。
+#
+#    漢字の書き順（.svg）は変わらないので、長いままにします。
+# ============================================================
+
+<IfModule mod_headers.c>
+  # プログラムと見た目、問題データ … 毎回確かめる
+  <FilesMatch "\.(js|css|json|csv)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+    Header unset Expires
+  </FilesMatch>
+
+  # サービスワーカー … ここが古いと、更新そのものが届きません
+  <FilesMatch "^sw\.js$">
+    Header set Cache-Control "no-cache, must-revalidate"
+    Header unset Expires
+  </FilesMatch>
+</IfModule>

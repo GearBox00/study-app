@@ -1,7 +1,7 @@
 {
   "name": "SJ式",
   "short_name": "SJ式",
-  "description": "SUPER JISHUREN STYLE｜フラッシュカードと4択テストで覚える学習アプリ",
+  "description": "SINCERE JISHUREN STYLE｜フラッシュカードと4択テストで覚える学習アプリ",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

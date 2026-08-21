@@ -28,6 +28,12 @@
 
   <!-- ========== ホーム ========== -->
   <section class="screen" id="screen-home">
+    <!--
+      ロゴ（2026-08-21 追加）。
+      上部のバーは緑地のため、白地のロゴを置くと四角く浮いてしまいます。
+      毎回かならず目に入る場所として、ホームの先頭に置きました。
+    -->
+    <p class="home-logo"><img src="logo.png" alt="SJ式 SINCERE JISHUREN STYLE" width="480" height="442"></p>
     <div class="hero">
       <div class="hero__top">
         <p class="hero__hello" id="heroHello">こんにちは</p>
@@ -71,7 +77,7 @@
     <button class="review-cta stamp-cta" id="stampCta">
       <span class="review-cta__icon">💮</span>
       <span class="review-cta__body">
-        <span class="review-cta__title">出席スタンプ <b id="stampCtaCount">0 / 25</b></span>
+        <span class="review-cta__title">出席スタンプ <b id="stampCtaCount">0 / 50</b></span>
         <span class="review-cta__sub" id="stampCtaSub">QRを読み取って今日のスタンプをもらおう</span>
       </span>
       <span class="review-cta__arrow">›</span>
@@ -388,6 +394,44 @@
   <section class="screen" id="screen-mypage" hidden>
     <h2 class="section-title">マイページ</h2>
 
+    <!--
+      アカウントの欄。
+      ★ 2026-08-18 まで、ログアウトとパスワードの変更は
+        「問題を追加する」の画面に置いてありました。そこは先生と運営者
+        だけが開ける画面なので、生徒はログアウトできませんでした。
+        教場の共用タブレットでは、次の方が前の方のまま使うことになるため、
+        誰でも開けるこの画面へ移しました。
+    -->
+    <div class="card" id="accountCard" hidden>
+      <h3 class="card__title">アカウント</h3>
+      <p class="note" id="loginWho" hidden></p>
+      <button class="btn btn--primary" id="changePwLink" hidden>パスワードを変える</button>
+      <button class="btn" id="logoutLink" hidden>ログアウトする</button>
+      <p class="note" id="logoutNote" hidden>
+        教場のタブレットなど、みんなで使う端末では、
+        終わったら必ずログアウトしてください。
+      </p>
+    </div>
+
+    <!-- 開発用：見え方の切り替え（2026-08-21 追加）。運営者にだけ出ます -->
+    <div class="card" id="viewAsCard" hidden>
+      <h3 class="card__title">🛠 開発用：見え方を切り替える</h3>
+      <p class="note">
+        先生や生徒さんに、どの入口が見えているかを確かめられます。
+      </p>
+      <div class="role-switch" id="viewAsBtns">
+        <button data-view="admin">運営者</button>
+        <button data-view="teacher">先生</button>
+        <button data-view="student">生徒</button>
+      </div>
+      <p class="note note--caution">
+        変わるのは<b>画面の出し分けだけ</b>です。<br>
+        サーバー側は本来の役割（運営者）で判断しますので、
+        出てくる名簿や記録の範囲までは、本物の先生と同じにはなりません。
+        範囲までお確かめになるときは、先生用・生徒用のアカウントでログインしてください。
+      </p>
+    </div>
+
     <div class="card">
       <h3 class="card__title">設定</h3>
       <label class="field">
@@ -563,10 +607,16 @@
           漢字の書き順データ。作：Ulrich Apel 氏<br>
           クリエイティブ・コモンズ 表示-継承 3.0
         </dd>
+        <dt>CEFR-J Wordlist Version 1.6</dt>
+        <dd>
+          英単語を選ぶときの目安に使わせていただきました。<br>
+          東京外国語大学 投野由紀夫研究室<br>
+          意味・解説・例文は、すべて SJ式で書き起こしたものです。
+        </dd>
       </dl>
       <p class="note">
         くわしい一覧は <a href="THIRD-PARTY-NOTICES.md">THIRD-PARTY-NOTICES.md</a> にあります。<br>
-        これら3点をのぞくアプリ本体・問題データの著作権は、SJ式にあります。
+        これら4点をのぞくアプリ本体・問題データの著作権は、SJ式にあります。
       </p>
     </div>
   </section>
@@ -605,7 +655,12 @@
       <label class="field">
         <span class="field__label">画像（任意）</span>
         <input type="text" id="myImage" placeholder="例）chizu-01.jpg">
-        <p class="note">questions/images/ に置いた画像のファイル名を書きます。</p>
+        <p class="note">
+          questions/images/ に置いた画像のファイル名を書きます。<br>
+          画像ファイルをサーバーへ置く作業はGearBoxで行いますので、
+          お使いになりたい画像はお送りください。<br>
+          https:// で始まるアドレスも使えますが、通信がないと出ません。
+        </p>
       </label>
       <button class="btn btn--primary" id="myAddBtn">マイ単語帳に追加</button>
       <p class="note" id="myMsg"></p>
@@ -614,8 +669,15 @@
     <div class="card" id="csvCard" hidden>
       <h3 class="card__title">📥 CSVでまとめて追加</h3>
       <p class="note">
-        1行につき「問題,答え,解説,例文,制限時間,読み,誤答1,誤答2,誤答3,セット」の順にカンマ区切りで入力します。<br>
-        AIで作った問題をそのまま貼り付けるだけで、4択もタイマーも自動で組み立てられます。10列目に「セット」を書くと、単元ごとに分けて登録できます。
+        1行につき「問題,答え,解説,例文,制限時間,読み,誤答1,誤答2,誤答3,セット,画像」の順にカンマ区切りで入力します。<br>
+        エクセルからコピーして貼り付けることもできます。4択もタイマーも自動で組み立てられます。10列目に「セット」を書くと、単元ごとに分けて登録できます。
+      </p>
+      <p class="note note--caution">
+        <b>取り込んだ問題は、取り込んだご本人の画面にだけ出ます。</b><br>
+        ほかの先生にお渡しする場合は、「問題を作る・直す・配る」→「自分で追加した問題」から
+        CSVに書き出して、そのファイルを渡してください。<br>
+        生徒さんを含む全員の教材にしたい場合は、書き出したCSVをGearBoxへお送りください。
+        正式な教材として登録いたします。
       </p>
       <textarea id="csvInput" rows="7" placeholder="curious,好奇心の強い,be curious about 〜 で「〜に興味がある」,He is curious about science.
 fluent,流ちょうな,speak fluent English のように使います,She is fluent in three languages."></textarea>
@@ -655,9 +717,6 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
     <button class="text-link text-link--slim" id="messageLink" hidden>保護者へご連絡する</button>
     <button class="text-link text-link--slim" id="mailLink" hidden>保護者へのお知らせメールの設定</button>
     <button class="text-link text-link--slim" id="roleLink">役割を切り替える（第2段階の作りこみ中）</button>
-    <p class="note" id="loginWho" hidden></p>
-    <button class="text-link text-link--slim" id="changePwLink" hidden>パスワードを変える</button>
-    <button class="text-link text-link--slim" id="logoutLink" hidden>ログアウトする</button>
   </section>
 
   <!-- ========== 保護者の連絡先（運営者だけ） ========== -->
@@ -781,6 +840,8 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
 
   <!-- ========== ログイン（2026-08-14 追加） ========== -->
   <section class="screen" id="screen-login" hidden>
+    <!-- ロゴ（2026-08-21 追加）。縦横はそのままに、幅だけ合わせています -->
+    <p class="login-logo"><img src="logo.png" alt="SJ式 SINCERE JISHUREN STYLE" width="480" height="442"></p>
     <div class="card">
       <h2 class="section-title">ログイン</h2>
       <p class="note">
@@ -1230,7 +1291,14 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
   <section class="screen" id="screen-roster" hidden>
     <h2 class="section-title">生徒の名簿</h2>
 
-    <div class="card card--wip">
+    <!--
+      ★ この但し書きは、サーバーにつないでいないときだけ出します。
+        つないでいるときは本物の生徒が並ぶので、出したままだと
+        「まだ本物ではない」と誤解されます（2026-08-18）。
+        お試し用の公開版（サーバー無し）では、いまも見本の生徒が
+        並ぶため、そちらでは引き続き必要です。
+    -->
+    <div class="card card--wip" id="rosterWip">
       <h3 class="card__title">⚠ これは作りこみ中の画面です</h3>
       <p class="note">
         いま出ているのは<b>見本の生徒</b>で、本物の記録ではありません。<br>
@@ -1355,7 +1423,7 @@ fluent,流ちょうな,speak fluent English のように使います,She is flue
     <div class="card">
       <div class="stamp-head">
         <h3 class="card__title">スタンプカード <span class="stamp-no"><b id="stampCardNo">1</b>枚目</span></h3>
-        <span class="stamp-count" id="stampCount">0 / 25</span>
+        <span class="stamp-count" id="stampCount">0 / 50</span>
       </div>
       <div class="stamp-grid" id="stampGrid"></div>
       <p class="stamp-today" id="stampToday">今日はまだ読み取っていません</p>
