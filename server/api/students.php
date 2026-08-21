@@ -59,13 +59,16 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
         $orderSql = 'r.last_studied IS NULL DESC, r.last_studied ASC, u.id ASC';
     }
 
+    /* GearBox用のアカウントは、教室側の名簿には出しません（2026-08-21） */
+    $devHide = dev_hidden_sql($me);
+
     $sql = 'SELECT u.id, u.name, u.kana, u.grade, u.joined_on,
                    u.venue_id, u.enroll, u.app_access, u.parent_email, u.note,
                    r.answered, r.correct, r.last_studied,
                    (SELECT COUNT(*) FROM guardians g WHERE g.user_id = u.id) AS guardian_count
               FROM users u
               LEFT JOIN records r ON r.user_id = u.id
-             WHERE ' . implode(' AND ', $where) . '
+             WHERE ' . implode(' AND ', $where) . $devHide . '
              ORDER BY ' . $orderSql;
     $st = db()->prepare($sql);
     $st->execute($args);

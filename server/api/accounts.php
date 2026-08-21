@@ -46,6 +46,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
                 u.email, u.created_at,
                 v.name AS venue_name
            FROM users u LEFT JOIN venues v ON v.id = u.venue_id
+          WHERE 1 = 1 " . dev_hidden_sql($me) . "
           ORDER BY FIELD(u.role,'admin','teacher','student'), u.id");
     $rows = [];
     foreach ($st->fetchAll() as $u) {

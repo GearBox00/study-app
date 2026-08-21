@@ -121,12 +121,53 @@ const Auth = {
     return !!Backend.remote || !!this._readMock();
   },
 
+  /* ------------------------------------------------------------
+     開発用：見え方を切り替える（2026-08-21 追加）
+     ------------------------------------------------------------
+     GearBoxが、先生や生徒さんにどう見えているかを確かめるためのものです。
+     運営者で入っているときだけ働き、権限を「下げる」ことしかできません。
+     生徒として見ているあいだに運営者の画面へ上がる、ということはありません。
+
+     ★ここで変わるのは画面の出し分けだけです。
+       サーバー側は本来の役割（運営者）で判断しますので、
+       出てくるデータの範囲までは本物の先生と同じにはなりません。
+     ------------------------------------------------------------ */
+  viewKey: 'manabi-card:view-as',
+
+  _readViewAs() {
+    try { return localStorage.getItem(this.viewKey) || ''; } catch (e) { return ''; }
+  },
+
+  /** 切り替えてよい人か（運営者だけ） */
+  get canSwitchView() {
+    return this.enforcing && this.me.role === ROLE.ADMIN;
+  },
+
+  /** いま何として見ているか。切り替えていなければ本来の役割です */
+  get viewAs() {
+    const v = this._readViewAs();
+    return (v && this.canSwitchView) ? v : '';
+  },
+
+  /** 画面の出し分けに使う役割 */
+  get shownRole() {
+    return this.viewAs || this.me.role;
+  },
+
+  setViewAs(role) {
+    try {
+      if (role && role !== this.me.role) localStorage.setItem(this.viewKey, role);
+      else localStorage.removeItem(this.viewKey);
+    } catch (e) { /* 保存できなくても続けます */ }
+    this._notify();
+  },
+
   /** その操作をしてよいか。画面の出し分けはすべてこれで判断します */
   can(action) {
     const allowed = PERMISSIONS[action];
     if (!allowed) return false;      // 知らない操作は許さない
     if (!this.enforcing) return true;  // 役割を選ぶ前は、これまでどおり
-    return allowed.indexOf(this.me.role) !== -1;
+    return allowed.indexOf(this.shownRole) !== -1;
   },
 
   /**
