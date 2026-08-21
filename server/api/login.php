@@ -12,6 +12,17 @@ if ($loginId === '' || $password === '') {
     fail(400, 'ログインIDとパスワードを入れてください。');
 }
 
+/*
+ * 続けてまちがえていないかを、先に見ます（2026-08-21 追加）。
+ * 止まっているあいだは、パスワードが合っていても通しません。
+ * 8桁の数字のような短いパスワードを、総当たりで破られないようにするためです。
+ */
+if (login_locked($loginId)) {
+    audit(null, 'login_locked', $loginId);
+    fail(429, 'ログインを続けてまちがえたため、しばらくお待ちいただく設定になっています。'
+            . LOGIN_FAIL_MINUTES . '分ほどたってから、もう一度お試しください。');
+}
+
 $st = db()->prepare('SELECT id, login_id, password_hash, role, name, venue_id, enroll, app_access
                        FROM users WHERE login_id = ?');
 $st->execute([$loginId]);
@@ -43,6 +54,9 @@ if (password_needs_rehash($u['password_hash'], PASSWORD_DEFAULT)) {
     $up = db()->prepare('UPDATE users SET password_hash = ? WHERE id = ?');
     $up->execute([password_hash($password, PASSWORD_DEFAULT), $u['id']]);
 }
+
+/* 入れたので、ここまでの失敗は数えないことにします（2026-08-21 追加） */
+login_fail_clear($loginId);
 
 start_session();
 // 別人の席を乗っ取られないよう、ログインのたびに席の番号を取り直します

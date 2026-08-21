@@ -281,6 +281,68 @@ function audit(?array $me, string $action, string $target = '', string $detail =
     }
 }
 
+/* ============================================================
+   ログインの試行回数の制限（2026-08-21 追加）
+   ------------------------------------------------------------
+   同じログインIDで続けて LOGIN_FAIL_MAX 回まちがえると、
+   そのIDは LOGIN_FAIL_MINUTES 分のあいだ受け付けません。
+   時間がたてば自動でもとに戻ります。
+
+   ■ なぜ「ログインIDごと」に数えるか
+     端末やIPごとに数えると、教場の生徒さんは同じ回線をお使いのため、
+     ひとりの打ち間違いで教室ごと締め出されてしまいます。
+
+   ■ なぜ表を増やさないか
+     もともと audit_log に login_failed を残しています。
+     本番のデータベースを作りかえずに足せるよう、これを数えます。
+
+   ■ 入れたときは、直前の失敗を数から外します
+     消さずに action を login_failed_ok に書きかえるだけなので、
+     「まちがえたが、そのあと本人が入れた」という跡は残ります。
+
+   ■ IDが無い場合も同じように数えます
+     存在するIDのときだけ止めると、止まったかどうかで
+     「そのIDはある」と分かってしまうためです。
+   ============================================================ */
+const LOGIN_FAIL_MAX = 3;
+const LOGIN_FAIL_MINUTES = 10;
+
+/** そのログインIDが、いま何回続けてまちがえているか */
+function login_fail_count(string $loginId): int
+{
+    try {
+        $st = db()->prepare(
+            'SELECT COUNT(*) FROM audit_log
+              WHERE action = ? AND target = ?
+                AND created_at > DATE_SUB(NOW(), INTERVAL ' . LOGIN_FAIL_MINUTES . ' MINUTE)');
+        $st->execute(['login_failed', $loginId]);
+        return (int)$st->fetchColumn();
+    } catch (Throwable $e) {
+        // 数えられないときは、締め出さない側に倒します
+        return 0;
+    }
+}
+
+/** いま止めるべきか */
+function login_locked(string $loginId): bool
+{
+    return login_fail_count($loginId) >= LOGIN_FAIL_MAX;
+}
+
+/** 入れたので、直前までの失敗を数から外します */
+function login_fail_clear(string $loginId): void
+{
+    try {
+        $st = db()->prepare(
+            'UPDATE audit_log SET action = ?
+              WHERE action = ? AND target = ?
+                AND created_at > DATE_SUB(NOW(), INTERVAL ' . LOGIN_FAIL_MINUTES . ' MINUTE)');
+        $st->execute(['login_failed_ok', 'login_failed', $loginId]);
+    } catch (Throwable $e) {
+        // 外せなくても、入れたこと自体は妨げません
+    }
+}
+
 /** POST 以外で呼ばれたら断ります（うっかりリンクで実行されるのを防ぎます） */
 function require_post(): void
 {
