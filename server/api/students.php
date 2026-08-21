@@ -59,8 +59,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
         $orderSql = 'r.last_studied IS NULL DESC, r.last_studied ASC, u.id ASC';
     }
 
-    /* GearBox用のアカウントは、教室側の名簿には出しません（2026-08-21） */
-    $devHide = dev_hidden_sql($me);
+    /* 保守用のアカウントは、教室側の名簿には出しません（2026-08-21） */
+    [$devHide, $devArgs] = dev_hidden_clause($me);
 
     $sql = 'SELECT u.id, u.name, u.kana, u.grade, u.joined_on,
                    u.venue_id, u.enroll, u.app_access, u.parent_email, u.note,
@@ -71,7 +71,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
              WHERE ' . implode(' AND ', $where) . $devHide . '
              ORDER BY ' . $orderSql;
     $st = db()->prepare($sql);
-    $st->execute($args);
+    // 除外するIDは、WHERE のいちばん後ろに足しているので、値もそのあとに並べます
+    $st->execute(array_merge($args, $devArgs));
 
     $rows = [];
     foreach ($st->fetchAll() as $s) {

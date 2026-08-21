@@ -40,14 +40,18 @@ const GRADE_NEXT = [
 
 /* ---------- 一覧 ---------- */
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
-    $st = db()->query(
+    /* 保守用のアカウントは、教室側の一覧には出しません（2026-08-21） */
+    [$devHide, $devArgs] = dev_hidden_clause($me);
+
+    $st = db()->prepare(
         "SELECT u.id, u.login_id, u.role, u.name, u.grade, u.joined_on,
                 u.venue_id, u.enroll, u.app_access, u.can_post, u.parent_email,
                 u.email, u.created_at,
                 v.name AS venue_name
            FROM users u LEFT JOIN venues v ON v.id = u.venue_id
-          WHERE 1 = 1 " . dev_hidden_sql($me) . "
+          WHERE 1 = 1 " . $devHide . "
           ORDER BY FIELD(u.role,'admin','teacher','student'), u.id");
+    $st->execute($devArgs);
     $rows = [];
     foreach ($st->fetchAll() as $u) {
         $rows[] = [

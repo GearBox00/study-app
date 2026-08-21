@@ -146,31 +146,55 @@ function start_session(): void
 }
 
 /* ============================================================
-   GearBox（開発元）用のアカウント（2026-08-21 追加）
+   保守用のアカウント（2026-08-21 追加、08-21 に置き場所を変更）
    ------------------------------------------------------------
    動作の確認と保守のために使うものです。
    教室側の画面（名簿・アカウントの一覧）には出しません。
-   数が少なく、あとから消しやすいよう、ここに名前を並べています。
 
-   ★消すときは、この配列を空にして、DBから該当の利用者を消してください。
+   ■ ログインIDは config.php に書きます
+     このファイルは公開のリポジトリに入るため、ここには書きません。
+     IDが分かると、あとはパスワードだけが守りになってしまいます。
+
+         'dev_login_ids' => ['xxxx', 'yyyy'],
+
+   ■ 書いていなければ、何も隠しません
+     公開しているお試し版のように保守用アカウントが無い場所では、
+     設定を書かなければ、そのまま全員が表示されます。
+
+   ★消すときは、config.php のこの欄を空にして、
+     データベースから該当の利用者を消してください。
    ============================================================ */
-const DEV_LOGIN_IDS = [];
 
-/** その人はGearBox用のアカウントか */
+/** 保守用アカウントのログインID。設定していなければ空 */
+function dev_login_ids(): array
+{
+    static $ids = null;
+    if ($ids === null) {
+        $v = config()['dev_login_ids'] ?? [];
+        // 文字列だけを通します。設定を書き誤っても、変な値が混ざらないように
+        $ids = is_array($v) ? array_values(array_filter(array_map('strval', $v), 'strlen')) : [];
+    }
+    return $ids;
+}
+
+/** その人は保守用のアカウントか */
 function is_dev_user(?array $u): bool
 {
-    return $u !== null && in_array((string)($u['login_id'] ?? ''), DEV_LOGIN_IDS, true);
+    return $u !== null && in_array((string)($u['login_id'] ?? ''), dev_login_ids(), true);
 }
 
 /**
- * 一覧から隠すための条件。GearBox用で見ているときは隠しません。
- * 名前は上の配列にしかありませんので、外から入ってくる値は混ざりません。
+ * 一覧から隠すための条件。保守用で見ているときは隠しません。
+ *
+ * 値は設定ファイルから来ますが、念のため文字列として組み立てず、
+ * 「?」で並べて渡せるようにした条件と、そこへ入れる値を返します。
  */
-function dev_hidden_sql(?array $me, string $alias = 'u'): string
+function dev_hidden_clause(?array $me, string $alias = 'u'): array
 {
-    if (is_dev_user($me) || !DEV_LOGIN_IDS) return '';
-    $list = implode(',', array_map(static fn($v) => "'" . $v . "'", DEV_LOGIN_IDS));
-    return " AND {$alias}.login_id NOT IN ({$list}) ";
+    $ids = dev_login_ids();
+    if (is_dev_user($me) || !$ids) return ['', []];
+    $marks = implode(',', array_fill(0, count($ids), '?'));
+    return [" AND {$alias}.login_id NOT IN ({$marks}) ", $ids];
 }
 
 /** いまログインしている人。していなければ null */
