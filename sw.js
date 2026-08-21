@@ -9,7 +9,7 @@
      js/merge.js がサーバーの分と足し合わせます：2026-08-14）
    ============================================================ */
 
-const CACHE = "manabi-card-v73";
+const CACHE = "manabi-card-v74";
 const ASSETS = [
   './',
   './index.html',
@@ -378,6 +378,19 @@ const ASSETS = [
   './questions/hsch-95.csv',
   './questions/hsch-96.csv',
   './questions/hsch-97.csv',
+  './questions/shakai-1.csv',
+  './questions/shakai-2.csv',
+  './questions/shakai-3.csv',
+  './questions/shakai-4.csv',
+  './questions/shakai-5.csv',
+  './questions/shakai-6.csv',
+  './questions/shakai-7.csv',
+  './questions/images/map-hokkaido-tohoku.png',
+  './questions/images/map-kanto.png',
+  './questions/images/map-chubu.png',
+  './questions/images/map-kinki.png',
+  './questions/images/map-chugoku-shikoku.png',
+  './questions/images/map-kyushu-okinawa.png',
   /* ★問題ファイル ここまで */
   './manifest.json',
   './kanji/list.json',

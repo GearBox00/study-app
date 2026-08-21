@@ -1,2180 +1,2231 @@
 {
-  "_comment": "ここに科目とCSVファイルを書くと、起動時に目次だけ読み込まれ、科目を開いたときに中身を読み込みます。列は 問題,答え,解説,例文,制限時間(秒),読み の順です。問題文の [ ] は書き取りの空欄になります。count は一覧に出す件数の目安です。",
-  "subjects": [
+ "_comment": "ここに科目とCSVファイルを書くと、起動時に目次だけ読み込まれ、科目を開いたときに中身を読み込みます。列は 問題,答え,解説,例文,制限時間(秒),読み の順です。問題文の [ ] は書き取りの空欄になります。count は一覧に出す件数の目安です。",
+ "subjects": [
+  {
+   "id": "eng-g7",
+   "name": "中学1年の英単語",
+   "icon": "🔤",
+   "lang": "en-US",
+   "speakField": "front",
+   "levels": [
     {
-      "id": "eng-g7",
-      "name": "中学1年の英単語",
-      "icon": "🔤",
-      "lang": "en-US",
-      "speakField": "front",
-      "levels": [
-        {
-          "id": "e7-1",
-          "name": "学校のことば",
-          "file": "eng-g7-1.csv",
-          "count": 20
-        },
-        {
-          "id": "e7-2",
-          "name": "家と家族",
-          "file": "eng-g7-2.csv",
-          "count": 20
-        },
-        {
-          "id": "e7-3",
-          "name": "毎日の動作",
-          "file": "eng-g7-3.csv",
-          "count": 20
-        },
-        {
-          "id": "e7-4",
-          "name": "食べものと身の回り",
-          "file": "eng-g7-4.csv",
-          "count": 20
-        },
-        {
-          "id": "e7-5",
-          "name": "ようすを表すことば",
-          "file": "eng-g7-5.csv",
-          "count": 20
-        },
-        {
-          "id": "e7-6",
-          "name": "数と時と場所",
-          "file": "eng-g7-6.csv",
-          "count": 20
-        }
-      ]
+     "id": "e7-1",
+     "name": "学校のことば",
+     "file": "eng-g7-1.csv",
+     "count": 20
     },
     {
-      "id": "kanji-grade",
-      "name": "学年の漢字",
-      "icon": "🈳",
-      "lang": "ja-JP",
-      "speakField": "reading",
-      "levels": [
-        {
-          "id": "kg-1",
-          "name": "小学1年生の漢字（80字）",
-          "file": "kanji-g1.csv",
-          "count": 80
-        },
-        {
-          "id": "kg-2",
-          "name": "小学2年生の漢字（160字）",
-          "file": "kanji-g2.csv",
-          "count": 160
-        },
-        {
-          "id": "kg-3",
-          "name": "小学3年生の漢字（200字）",
-          "file": "kanji-g3.csv",
-          "count": 200
-        },
-        {
-          "id": "kg-4",
-          "name": "小学4年生の漢字（202字）",
-          "file": "kanji-g4.csv",
-          "count": 202
-        },
-        {
-          "id": "kg-5",
-          "name": "小学5年生の漢字（193字）",
-          "file": "kanji-g5.csv",
-          "count": 193
-        },
-        {
-          "id": "kg-6",
-          "name": "小学6年生の漢字（191字）",
-          "file": "kanji-g6.csv",
-          "count": 191
-        }
-      ]
+     "id": "e7-2",
+     "name": "家と家族",
+     "file": "eng-g7-2.csv",
+     "count": 20
     },
     {
-      "id": "science",
-      "name": "理科",
-      "icon": "🔬",
-      "lang": "ja-JP",
-      "speakField": "reading",
-      "levels": [
-        {
-          "id": "sc-1",
-          "name": "レベル1 中学理科",
-          "file": "science-1.csv",
-          "count": 9
-        }
-      ]
+     "id": "e7-3",
+     "name": "毎日の動作",
+     "file": "eng-g7-3.csv",
+     "count": 20
     },
     {
-      "id": "endict",
-      "name": "英語の書き取り",
-      "icon": "✍️",
-      "lang": "en-US",
-      "speakField": "front",
-      "levels": [
-        {
-          "id": "ed-1",
-          "name": "中学初級レベル（英語検定4級クラス）",
-          "file": "english-dictation.csv",
-          "count": 9
-        }
-      ]
+     "id": "e7-4",
+     "name": "食べものと身の回り",
+     "file": "eng-g7-4.csv",
+     "count": 20
     },
     {
-      "id": "jadict",
-      "name": "漢字の書き取り",
-      "icon": "🖌️",
-      "lang": "ja-JP",
-      "speakField": "front",
-      "levels": [
-        {
-          "id": "jd-1",
-          "name": "中学レベル",
-          "file": "japanese-dictation.csv",
-          "count": 9
-        }
-      ]
+     "id": "e7-5",
+     "name": "ようすを表すことば",
+     "file": "eng-g7-5.csv",
+     "count": 20
     },
     {
-      "id": "eiken5",
-      "name": "英検5級の英単語",
-      "icon": "🔤",
-      "lang": "en-US",
-      "speakField": "front",
-      "levels": [
-        {
-          "id": "eiken5-1",
-          "name": "あいさつと基本のことば",
-          "file": "eiken5-1.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-2",
-          "name": "家と家族",
-          "file": "eiken5-2.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-3",
-          "name": "毎日の動作",
-          "file": "eiken5-3.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-4",
-          "name": "食べものと飲みもの",
-          "file": "eiken5-4.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-5",
-          "name": "学校で使うもの",
-          "file": "eiken5-5.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-6",
-          "name": "ようすを表すことば",
-          "file": "eiken5-6.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-7",
-          "name": "数と時",
-          "file": "eiken5-7.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-8",
-          "name": "町とお出かけ",
-          "file": "eiken5-8.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-9",
-          "name": "スポーツと遊び",
-          "file": "eiken5-9.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-10",
-          "name": "生きものと自然",
-          "file": "eiken5-10.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-11",
-          "name": "体と身の回り",
-          "file": "eiken5-11.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-12",
-          "name": "人と仕事",
-          "file": "eiken5-12.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-13",
-          "name": "気持ちと性格",
-          "file": "eiken5-13.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-14",
-          "name": "位置と方向",
-          "file": "eiken5-14.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-15",
-          "name": "よく使う動作（2）",
-          "file": "eiken5-15.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-16",
-          "name": "教室で使う言い方",
-          "file": "eiken5-16.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-17",
-          "name": "数と順番（2）",
-          "file": "eiken5-17.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-18",
-          "name": "時をあらわすことば",
-          "file": "eiken5-18.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-19",
-          "name": "家の中と道具",
-          "file": "eiken5-19.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-20",
-          "name": "できること・してよいこと",
-          "file": "eiken5-20.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken5-21",
-          "name": "国と身の回りのことば",
-          "file": "eiken5-21.csv",
-          "count": 20
-        }
-      ]
-    },
-    {
-      "id": "eiken4",
-      "name": "英検4級の英単語",
-      "icon": "🔡",
-      "lang": "en-US",
-      "speakField": "front",
-      "levels": [
-        {
-          "id": "eiken4-1",
-          "name": "学校生活",
-          "file": "eiken4-1.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-2",
-          "name": "過去のできごと",
-          "file": "eiken4-2.csv",
-          "count": 18
-        },
-        {
-          "id": "eiken4-3",
-          "name": "街と買いもの",
-          "file": "eiken4-3.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-4",
-          "name": "旅行と乗りもの",
-          "file": "eiken4-4.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-5",
-          "name": "体調と健康",
-          "file": "eiken4-5.csv",
-          "count": 18
-        },
-        {
-          "id": "eiken4-6",
-          "name": "気持ちを表すことば（2）",
-          "file": "eiken4-6.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-7",
-          "name": "動作を表すことば（3）",
-          "file": "eiken4-7.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-8",
-          "name": "くらべる言い方",
-          "file": "eiken4-8.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-9",
-          "name": "しごとと社会",
-          "file": "eiken4-9.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-10",
-          "name": "自然と環境",
-          "file": "eiken4-10.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-11",
-          "name": "家事と暮らし",
-          "file": "eiken4-11.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-12",
-          "name": "会話でよく使う言い方",
-          "file": "eiken4-12.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-13",
-          "name": "たずねる言い方",
-          "file": "eiken4-13.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-14",
-          "name": "時と予定",
-          "file": "eiken4-14.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-15",
-          "name": "食事と料理（2）",
-          "file": "eiken4-15.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-16",
-          "name": "天気と行事",
-          "file": "eiken4-16.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken4-17",
-          "name": "スポーツと体育",
-          "file": "eiken4-17.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-18",
-          "name": "音楽と芸術",
-          "file": "eiken4-18.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-19",
-          "name": "形と量",
-          "file": "eiken4-19.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken4-20",
-          "name": "道案内と場所",
-          "file": "eiken4-20.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-21",
-          "name": "やりとりと連絡",
-          "file": "eiken4-21.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-22",
-          "name": "コンピューターと機械",
-          "file": "eiken4-22.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken4-23",
-          "name": "国と世界",
-          "file": "eiken4-23.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken4-24",
-          "name": "動作を表すことば（4）",
-          "file": "eiken4-24.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken4-25",
-          "name": "ようすを表すことば（3）",
-          "file": "eiken4-25.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken4-26",
-          "name": "つなぐことば",
-          "file": "eiken4-26.csv",
-          "count": 16
-        }
-      ]
-    },
-    {
-      "id": "eiken3",
-      "name": "英検3級の英単語",
-      "icon": "🔠",
-      "lang": "en-US",
-      "speakField": "front",
-      "levels": [
-        {
-          "id": "eiken3-1",
-          "name": "学校と進路",
-          "file": "eiken3-1.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken3-2",
-          "name": "社会と地域",
-          "file": "eiken3-2.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken3-3",
-          "name": "科学と技術",
-          "file": "eiken3-3.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken3-4",
-          "name": "健康と医療",
-          "file": "eiken3-4.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken3-5",
-          "name": "考えと意見",
-          "file": "eiken3-5.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken3-6",
-          "name": "経済とお金",
-          "file": "eiken3-6.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken3-7",
-          "name": "環境と災害",
-          "file": "eiken3-7.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken3-8",
-          "name": "人のようす",
-          "file": "eiken3-8.csv",
-          "count": 18
-        },
-        {
-          "id": "eiken3-9",
-          "name": "できごとと変化",
-          "file": "eiken3-9.csv",
-          "count": 14
-        },
-        {
-          "id": "eiken3-10",
-          "name": "文をつなぐ言い方（2）",
-          "file": "eiken3-10.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken3-11",
-          "name": "仕事の場面",
-          "file": "eiken3-11.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken3-12",
-          "name": "文化と歴史",
-          "file": "eiken3-12.csv",
-          "count": 18
-        },
-        {
-          "id": "eiken3-13",
-          "name": "動作を表すことば（5）",
-          "file": "eiken3-13.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken3-14",
-          "name": "ようすを表すことば（4）",
-          "file": "eiken3-14.csv",
-          "count": 18
-        },
-        {
-          "id": "eiken3-15",
-          "name": "数と程度",
-          "file": "eiken3-15.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken3-16",
-          "name": "交通と移動",
-          "file": "eiken3-16.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken3-17",
-          "name": "家と住まい",
-          "file": "eiken3-17.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken3-18",
-          "name": "食事と店",
-          "file": "eiken3-18.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken3-19",
-          "name": "感情と反応",
-          "file": "eiken3-19.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken3-20",
-          "name": "学習とことば",
-          "file": "eiken3-20.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken3-21",
-          "name": "趣味と余暇",
-          "file": "eiken3-21.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken3-22",
-          "name": "店とサービス",
-          "file": "eiken3-22.csv",
-          "count": 18
-        },
-        {
-          "id": "eiken3-23",
-          "name": "身のまわりの問題",
-          "file": "eiken3-23.csv",
-          "count": 18
-        },
-        {
-          "id": "eiken3-24",
-          "name": "体の動きと感覚",
-          "file": "eiken3-24.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken3-25",
-          "name": "よく使う言い回し",
-          "file": "eiken3-25.csv",
-          "count": 20
-        }
-      ]
-    },
-    {
-      "id": "eiken2j",
-      "name": "英検準2級の英単語",
-      "icon": "📘",
-      "lang": "en-US",
-      "speakField": "front",
-      "levels": [
-        {
-          "id": "eiken2j-1",
-          "name": "抽象的な名詞（1）",
-          "file": "eiken2j-1.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-2",
-          "name": "抽象的な名詞（2）",
-          "file": "eiken2j-2.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-3",
-          "name": "動詞（かたい言い方）（1）",
-          "file": "eiken2j-3.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-4",
-          "name": "動詞（かたい言い方）（2）",
-          "file": "eiken2j-4.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken2j-5",
-          "name": "形容詞（かたい言い方）（1）",
-          "file": "eiken2j-5.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-6",
-          "name": "形容詞（かたい言い方）（2）",
-          "file": "eiken2j-6.csv",
-          "count": 18
-        },
-        {
-          "id": "eiken2j-7",
-          "name": "社会と制度（2）",
-          "file": "eiken2j-7.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-8",
-          "name": "心と行動",
-          "file": "eiken2j-8.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken2j-9",
-          "name": "人間関係",
-          "file": "eiken2j-9.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken2j-10",
-          "name": "メディアと情報",
-          "file": "eiken2j-10.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken2j-11",
-          "name": "技術と情報機器",
-          "file": "eiken2j-11.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken2j-12",
-          "name": "健康と福祉（2）",
-          "file": "eiken2j-12.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken2j-13",
-          "name": "環境と資源（2）",
-          "file": "eiken2j-13.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-14",
-          "name": "副詞とつなぎ",
-          "file": "eiken2j-14.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-15",
-          "name": "学問と研究",
-          "file": "eiken2j-15.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-16",
-          "name": "経済と企業",
-          "file": "eiken2j-16.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-17",
-          "name": "法と権利",
-          "file": "eiken2j-17.csv",
-          "count": 18
-        },
-        {
-          "id": "eiken2j-18",
-          "name": "国際と外交",
-          "file": "eiken2j-18.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-19",
-          "name": "動詞（かたい言い方）（3）",
-          "file": "eiken2j-19.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-20",
-          "name": "日常のかたい言い方",
-          "file": "eiken2j-20.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-21",
-          "name": "農業と食料",
-          "file": "eiken2j-21.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-22",
-          "name": "都市と暮らし",
-          "file": "eiken2j-22.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-23",
-          "name": "気象と地理",
-          "file": "eiken2j-23.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-24",
-          "name": "スポーツと健康（3）",
-          "file": "eiken2j-24.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-25",
-          "name": "芸術と表現",
-          "file": "eiken2j-25.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-26",
-          "name": "教育と指導",
-          "file": "eiken2j-26.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-27",
-          "name": "動詞（かたい言い方）（4）",
-          "file": "eiken2j-27.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-28",
-          "name": "動詞（かたい言い方）（5）",
-          "file": "eiken2j-28.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-29",
-          "name": "動詞（かたい言い方）（6）",
-          "file": "eiken2j-29.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-30",
-          "name": "動詞（かたい言い方）（7）",
-          "file": "eiken2j-30.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-31",
-          "name": "形容詞（かたい言い方）（3）",
-          "file": "eiken2j-31.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-32",
-          "name": "形容詞（かたい言い方）（4）",
-          "file": "eiken2j-32.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-33",
-          "name": "名詞（かたい言い方）（3）",
-          "file": "eiken2j-33.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-34",
-          "name": "名詞（かたい言い方）（4）",
-          "file": "eiken2j-34.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-35",
-          "name": "言い回し（かたい言い方）",
-          "file": "eiken2j-35.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2j-36",
-          "name": "自然と生きもの（3）",
-          "file": "eiken2j-36.csv",
-          "count": 20
-        }
-      ]
-    },
-    {
-      "id": "eiken2",
-      "name": "英検2級の英単語",
-      "icon": "📕",
-      "lang": "en-US",
-      "speakField": "front",
-      "levels": [
-        {
-          "id": "eiken2-1",
-          "name": "社会問題（1）",
-          "file": "eiken2-1.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-2",
-          "name": "社会問題（2）",
-          "file": "eiken2-2.csv",
-          "count": 19
-        },
-        {
-          "id": "eiken2-3",
-          "name": "科学と医療（2）",
-          "file": "eiken2-3.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-4",
-          "name": "技術と情報（2）",
-          "file": "eiken2-4.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-5",
-          "name": "動詞（上級）（1）",
-          "file": "eiken2-5.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-6",
-          "name": "動詞（上級）（2）",
-          "file": "eiken2-6.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-7",
-          "name": "動詞（上級）（3）",
-          "file": "eiken2-7.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-8",
-          "name": "形容詞（上級）（1）",
-          "file": "eiken2-8.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-9",
-          "name": "形容詞（上級）（2）",
-          "file": "eiken2-9.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-10",
-          "name": "名詞（上級）（1）",
-          "file": "eiken2-10.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-11",
-          "name": "名詞（上級）（2）",
-          "file": "eiken2-11.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-12",
-          "name": "政治と行政（2）",
-          "file": "eiken2-12.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-13",
-          "name": "経済と金融（2）",
-          "file": "eiken2-13.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-14",
-          "name": "教育と心理",
-          "file": "eiken2-14.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-15",
-          "name": "メディアと表現（2）",
-          "file": "eiken2-15.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-16",
-          "name": "環境と気候（3）",
-          "file": "eiken2-16.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-17",
-          "name": "国際と紛争",
-          "file": "eiken2-17.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-18",
-          "name": "法と司法（2）",
-          "file": "eiken2-18.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-19",
-          "name": "医療と生命倫理",
-          "file": "eiken2-19.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-20",
-          "name": "言語と論理",
-          "file": "eiken2-20.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-21",
-          "name": "仕事と組織（2）",
-          "file": "eiken2-21.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-22",
-          "name": "都市と社会基盤",
-          "file": "eiken2-22.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-23",
-          "name": "歴史と思想",
-          "file": "eiken2-23.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-24",
-          "name": "副詞と接続（上級）",
-          "file": "eiken2-24.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-25",
-          "name": "日常の上級表現",
-          "file": "eiken2-25.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-26",
-          "name": "名詞（上級）（3）",
-          "file": "eiken2-26.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-27",
-          "name": "名詞（上級）（4）",
-          "file": "eiken2-27.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-28",
-          "name": "動詞（上級）（4）",
-          "file": "eiken2-28.csv",
-          "count": 20
-        },
-        {
-          "id": "eiken2-29",
-          "name": "動詞（上級）（5）",
-          "file": "eiken2-29.csv",
-          "count": 20
-        }
-      ]
-    },
-    {
-      "id": "esch",
-      "name": "小学校の英単語",
-      "icon": "🎒",
-      "lang": "en-US",
-      "speakField": "front",
-      "levels": [
-        {
-          "id": "esch-1",
-          "name": "曜日",
-          "file": "esch-1.csv",
-          "count": 19
-        },
-        {
-          "id": "esch-2",
-          "name": "色",
-          "file": "esch-2.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-3",
-          "name": "生きもの（1）",
-          "file": "esch-3.csv",
-          "count": 19
-        },
-        {
-          "id": "esch-4",
-          "name": "果物と野菜",
-          "file": "esch-4.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-5",
-          "name": "教科と時間割",
-          "file": "esch-5.csv",
-          "count": 19
-        },
-        {
-          "id": "esch-6",
-          "name": "文房具と教室",
-          "file": "esch-6.csv",
-          "count": 19
-        },
-        {
-          "id": "esch-7",
-          "name": "学校の行事",
-          "file": "esch-7.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-8",
-          "name": "遊びと放課後",
-          "file": "esch-8.csv",
-          "count": 19
-        },
-        {
-          "id": "esch-9",
-          "name": "身の回りのもの",
-          "file": "esch-9.csv",
-          "count": 19
-        },
-        {
-          "id": "esch-10",
-          "name": "数と量（小学校）",
-          "file": "esch-10.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-11",
-          "name": "気持ちと反応（小学校）",
-          "file": "esch-11.csv",
-          "count": 18
-        },
-        {
-          "id": "esch-12",
-          "name": "基本の代名詞",
-          "file": "esch-12.csv",
-          "count": 19
-        },
-        {
-          "id": "esch-13",
-          "name": "基本の動詞（穴埋め1）",
-          "file": "esch-13.csv",
-          "count": 18
-        },
-        {
-          "id": "esch-14",
-          "name": "基本の名詞（穴埋め1）",
-          "file": "esch-14.csv",
-          "count": 19
-        },
-        {
-          "id": "esch-15",
-          "name": "基本の形容詞（穴埋め1）",
-          "file": "esch-15.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-16",
-          "name": "学校生活の語（穴埋め）",
-          "file": "esch-16.csv",
-          "count": 17
-        },
-        {
-          "id": "esch-17",
-          "name": "A1の語（1）",
-          "file": "esch-17.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-18",
-          "name": "A1の語（2）",
-          "file": "esch-18.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-19",
-          "name": "A1の語（3）",
-          "file": "esch-19.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-20",
-          "name": "A1の語（4）",
-          "file": "esch-20.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-21",
-          "name": "A1の語（5）",
-          "file": "esch-21.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-22",
-          "name": "A1の語（6）",
-          "file": "esch-22.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-23",
-          "name": "A1の語（7）",
-          "file": "esch-23.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-24",
-          "name": "A1の語（8）",
-          "file": "esch-24.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-25",
-          "name": "A1の語（9）",
-          "file": "esch-25.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-26",
-          "name": "A1の語（10）",
-          "file": "esch-26.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-27",
-          "name": "A1の語（11）",
-          "file": "esch-27.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-28",
-          "name": "A1の語（12）",
-          "file": "esch-28.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-29",
-          "name": "A1の語（13）",
-          "file": "esch-29.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-30",
-          "name": "A1の語（14）",
-          "file": "esch-30.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-31",
-          "name": "A1の語（15）",
-          "file": "esch-31.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-32",
-          "name": "A1の語（16）",
-          "file": "esch-32.csv",
-          "count": 20
-        },
-        {
-          "id": "esch-33",
-          "name": "A1の語（17）",
-          "file": "esch-33.csv",
-          "count": 20
-        }
-      ]
-    },
-    {
-      "id": "jsch",
-      "name": "中学校の英単語",
-      "icon": "🏫",
-      "lang": "en-US",
-      "speakField": "front",
-      "levels": [
-        {
-          "id": "jsch-1",
-          "name": "理科（1）",
-          "file": "jsch-1.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-2",
-          "name": "理科（2）",
-          "file": "jsch-2.csv",
-          "count": 19
-        },
-        {
-          "id": "jsch-3",
-          "name": "数学",
-          "file": "jsch-3.csv",
-          "count": 19
-        },
-        {
-          "id": "jsch-4",
-          "name": "社会科",
-          "file": "jsch-4.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-5",
-          "name": "音楽・美術・技術家庭",
-          "file": "jsch-5.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-6",
-          "name": "英語の授業で使う語",
-          "file": "jsch-6.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-7",
-          "name": "保健体育",
-          "file": "jsch-7.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-8",
-          "name": "技術と情報",
-          "file": "jsch-8.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-9",
-          "name": "国語と読み書き",
-          "file": "jsch-9.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-10",
-          "name": "防災と安全",
-          "file": "jsch-10.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-11",
-          "name": "職業と進路",
-          "file": "jsch-11.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-12",
-          "name": "地域と社会のしくみ",
-          "file": "jsch-12.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-13",
-          "name": "食と暮らし",
-          "file": "jsch-13.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-14",
-          "name": "環境と地域学習",
-          "file": "jsch-14.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-15",
-          "name": "話す・聞くの授業",
-          "file": "jsch-15.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-16",
-          "name": "基本の動詞（穴埋め2）",
-          "file": "jsch-16.csv",
-          "count": 10
-        },
-        {
-          "id": "jsch-17",
-          "name": "基本の名詞（穴埋め2）",
-          "file": "jsch-17.csv",
-          "count": 15
-        },
-        {
-          "id": "jsch-18",
-          "name": "基本の形容詞（穴埋め2）",
-          "file": "jsch-18.csv",
-          "count": 14
-        },
-        {
-          "id": "jsch-19",
-          "name": "数量と程度（穴埋め）",
-          "file": "jsch-19.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-20",
-          "name": "学習と情報（穴埋め）",
-          "file": "jsch-20.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-21",
-          "name": "よく出る名詞（1）",
-          "file": "jsch-21.csv",
-          "count": 5
-        },
-        {
-          "id": "jsch-22",
-          "name": "よく出る名詞（2）",
-          "file": "jsch-22.csv",
-          "count": 11
-        },
-        {
-          "id": "jsch-23",
-          "name": "よく出る動詞（穴埋め）",
-          "file": "jsch-23.csv",
-          "count": 7
-        },
-        {
-          "id": "jsch-24",
-          "name": "よく出る形容詞（穴埋め）",
-          "file": "jsch-24.csv",
-          "count": 14
-        },
-        {
-          "id": "jsch-25",
-          "name": "A2の語（1）",
-          "file": "jsch-25.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-26",
-          "name": "A2の語（2）",
-          "file": "jsch-26.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-27",
-          "name": "A2の語（3）",
-          "file": "jsch-27.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-28",
-          "name": "A2の語（4）",
-          "file": "jsch-28.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-29",
-          "name": "A2の語（5）",
-          "file": "jsch-29.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-30",
-          "name": "A2の語（6）",
-          "file": "jsch-30.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-31",
-          "name": "A2の語（7）",
-          "file": "jsch-31.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-32",
-          "name": "A2の語（8）",
-          "file": "jsch-32.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-33",
-          "name": "A2の語（9）",
-          "file": "jsch-33.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-34",
-          "name": "A2の語（10）",
-          "file": "jsch-34.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-35",
-          "name": "A2の語（11）",
-          "file": "jsch-35.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-36",
-          "name": "A2の語（12）",
-          "file": "jsch-36.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-37",
-          "name": "A2の語（13）",
-          "file": "jsch-37.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-38",
-          "name": "A2の語（14）",
-          "file": "jsch-38.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-39",
-          "name": "A2の語（15）",
-          "file": "jsch-39.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-40",
-          "name": "A2の語（16）",
-          "file": "jsch-40.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-41",
-          "name": "A2の語（17）",
-          "file": "jsch-41.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-42",
-          "name": "A2の語（18）",
-          "file": "jsch-42.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-43",
-          "name": "A2の語（19）",
-          "file": "jsch-43.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-44",
-          "name": "A2の語（20）",
-          "file": "jsch-44.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-45",
-          "name": "A2の語（21）",
-          "file": "jsch-45.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-46",
-          "name": "A2の語（22）",
-          "file": "jsch-46.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-47",
-          "name": "A2の語（23）",
-          "file": "jsch-47.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-48",
-          "name": "A2の語（24）",
-          "file": "jsch-48.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-49",
-          "name": "A2の語（25）",
-          "file": "jsch-49.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-50",
-          "name": "A2の語（26）",
-          "file": "jsch-50.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-51",
-          "name": "A2の語（27）",
-          "file": "jsch-51.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-52",
-          "name": "A2の語（28）",
-          "file": "jsch-52.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-53",
-          "name": "A2の語（29）",
-          "file": "jsch-53.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-54",
-          "name": "A2の語（30）",
-          "file": "jsch-54.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-55",
-          "name": "A2の語（31）",
-          "file": "jsch-55.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-56",
-          "name": "A2の語（32）",
-          "file": "jsch-56.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-57",
-          "name": "A2の語（33）",
-          "file": "jsch-57.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-58",
-          "name": "A2の語（34）",
-          "file": "jsch-58.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-59",
-          "name": "A2の語（35）",
-          "file": "jsch-59.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-60",
-          "name": "A2の語（36）",
-          "file": "jsch-60.csv",
-          "count": 20
-        },
-        {
-          "id": "jsch-61",
-          "name": "A2の語（37）",
-          "file": "jsch-61.csv",
-          "count": 19
-        }
-      ]
-    },
-    {
-      "id": "hsch",
-      "name": "高校の英単語",
-      "icon": "🎓",
-      "lang": "en-US",
-      "speakField": "front",
-      "levels": [
-        {
-          "id": "hsch-1",
-          "name": "物理と化学",
-          "file": "hsch-1.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-2",
-          "name": "生物と地学",
-          "file": "hsch-2.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-3",
-          "name": "数学（高校）",
-          "file": "hsch-3.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-4",
-          "name": "現代社会と公民",
-          "file": "hsch-4.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-5",
-          "name": "読解でよく出る語",
-          "file": "hsch-5.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-6",
-          "name": "世界史",
-          "file": "hsch-6.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-7",
-          "name": "地理",
-          "file": "hsch-7.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-8",
-          "name": "倫理と哲学",
-          "file": "hsch-8.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-9",
-          "name": "情報とデータ",
-          "file": "hsch-9.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-10",
-          "name": "探究と論述",
-          "file": "hsch-10.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-11",
-          "name": "入試読解の動詞",
-          "file": "hsch-11.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-12",
-          "name": "入試読解の名詞",
-          "file": "hsch-12.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-13",
-          "name": "入試読解の形容詞と副詞",
-          "file": "hsch-13.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-14",
-          "name": "芸術と表現（高校）",
-          "file": "hsch-14.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-15",
-          "name": "抽象名詞（穴埋め1）",
-          "file": "hsch-15.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-16",
-          "name": "抽象名詞（穴埋め2）",
-          "file": "hsch-16.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-17",
-          "name": "動詞（穴埋め・高校）",
-          "file": "hsch-17.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-18",
-          "name": "形容詞と副詞（穴埋め・高校）",
-          "file": "hsch-18.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-19",
-          "name": "B1の語（1）",
-          "file": "hsch-19.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-20",
-          "name": "B1の語（2）",
-          "file": "hsch-20.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-21",
-          "name": "B1の語（3）",
-          "file": "hsch-21.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-22",
-          "name": "B1の語（4）",
-          "file": "hsch-22.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-23",
-          "name": "B1の語（5）",
-          "file": "hsch-23.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-24",
-          "name": "B1の語（6）",
-          "file": "hsch-24.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-25",
-          "name": "B1の語（7）",
-          "file": "hsch-25.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-26",
-          "name": "B1の語（8）",
-          "file": "hsch-26.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-27",
-          "name": "B1の語（9）",
-          "file": "hsch-27.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-28",
-          "name": "B1の語（10）",
-          "file": "hsch-28.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-29",
-          "name": "B1の語（11）",
-          "file": "hsch-29.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-30",
-          "name": "B1の語（12）",
-          "file": "hsch-30.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-31",
-          "name": "B1の語（13）",
-          "file": "hsch-31.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-32",
-          "name": "B1の語（14）",
-          "file": "hsch-32.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-33",
-          "name": "B1の語（15）",
-          "file": "hsch-33.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-34",
-          "name": "B1の語（16）",
-          "file": "hsch-34.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-35",
-          "name": "B1の語（17）",
-          "file": "hsch-35.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-36",
-          "name": "B1の語（18）",
-          "file": "hsch-36.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-37",
-          "name": "B1の語（19）",
-          "file": "hsch-37.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-38",
-          "name": "B1の語（20）",
-          "file": "hsch-38.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-39",
-          "name": "B1の語（21）",
-          "file": "hsch-39.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-40",
-          "name": "B1の語（22）",
-          "file": "hsch-40.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-41",
-          "name": "B1の語（23）",
-          "file": "hsch-41.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-42",
-          "name": "B1の語（24）",
-          "file": "hsch-42.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-43",
-          "name": "B1の語（25）",
-          "file": "hsch-43.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-44",
-          "name": "B1の語（26）",
-          "file": "hsch-44.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-45",
-          "name": "B1の語（27）",
-          "file": "hsch-45.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-46",
-          "name": "B1の語（28）",
-          "file": "hsch-46.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-47",
-          "name": "B1の語（29）",
-          "file": "hsch-47.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-48",
-          "name": "B1の語（30）",
-          "file": "hsch-48.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-49",
-          "name": "B1の語（31）",
-          "file": "hsch-49.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-50",
-          "name": "B1の語（32）",
-          "file": "hsch-50.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-51",
-          "name": "B1の語（33）",
-          "file": "hsch-51.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-52",
-          "name": "B1の語（34）",
-          "file": "hsch-52.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-53",
-          "name": "B1の語（35）",
-          "file": "hsch-53.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-54",
-          "name": "B1の語（36）",
-          "file": "hsch-54.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-55",
-          "name": "B1の語（37）",
-          "file": "hsch-55.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-56",
-          "name": "B1の語（38）",
-          "file": "hsch-56.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-57",
-          "name": "B1の語（39）",
-          "file": "hsch-57.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-58",
-          "name": "B1の語（40）",
-          "file": "hsch-58.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-59",
-          "name": "B1の語（41）",
-          "file": "hsch-59.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-60",
-          "name": "B1の語（42）",
-          "file": "hsch-60.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-61",
-          "name": "B1の語（43）",
-          "file": "hsch-61.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-62",
-          "name": "B1の語（44）",
-          "file": "hsch-62.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-63",
-          "name": "B1の語（45）",
-          "file": "hsch-63.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-64",
-          "name": "B1の語（46）",
-          "file": "hsch-64.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-65",
-          "name": "B1の語（47）",
-          "file": "hsch-65.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-66",
-          "name": "B1の語（48）",
-          "file": "hsch-66.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-67",
-          "name": "B1の語（49）",
-          "file": "hsch-67.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-68",
-          "name": "B1の語（50）",
-          "file": "hsch-68.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-69",
-          "name": "B1の語（51）",
-          "file": "hsch-69.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-70",
-          "name": "B1の語（52）",
-          "file": "hsch-70.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-71",
-          "name": "B1の語（53）",
-          "file": "hsch-71.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-72",
-          "name": "B1の語（54）",
-          "file": "hsch-72.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-73",
-          "name": "B1の語（55）",
-          "file": "hsch-73.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-74",
-          "name": "B1の語（56）",
-          "file": "hsch-74.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-75",
-          "name": "B1の語（57）",
-          "file": "hsch-75.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-76",
-          "name": "B1の語（58）",
-          "file": "hsch-76.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-77",
-          "name": "B1の語（59）",
-          "file": "hsch-77.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-78",
-          "name": "B1の語（60）",
-          "file": "hsch-78.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-79",
-          "name": "B1の語（61）",
-          "file": "hsch-79.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-80",
-          "name": "B1の語（62）",
-          "file": "hsch-80.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-81",
-          "name": "B1の語（63）",
-          "file": "hsch-81.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-82",
-          "name": "B1の語（64）",
-          "file": "hsch-82.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-83",
-          "name": "B1の語（65）",
-          "file": "hsch-83.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-84",
-          "name": "B1の語（66）",
-          "file": "hsch-84.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-85",
-          "name": "B1の語（67）",
-          "file": "hsch-85.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-86",
-          "name": "B1の語（68）",
-          "file": "hsch-86.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-87",
-          "name": "B1の語（69）",
-          "file": "hsch-87.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-88",
-          "name": "B1の語（70）",
-          "file": "hsch-88.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-89",
-          "name": "B1の語（71）",
-          "file": "hsch-89.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-90",
-          "name": "B1の語（72）",
-          "file": "hsch-90.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-91",
-          "name": "B1の語（73）",
-          "file": "hsch-91.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-92",
-          "name": "B1の語（74）",
-          "file": "hsch-92.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-93",
-          "name": "B1の語（75）",
-          "file": "hsch-93.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-94",
-          "name": "B1の語（76）",
-          "file": "hsch-94.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-95",
-          "name": "B1の語（77）",
-          "file": "hsch-95.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-96",
-          "name": "B1の語（78）",
-          "file": "hsch-96.csv",
-          "count": 20
-        },
-        {
-          "id": "hsch-97",
-          "name": "B1の語（79）",
-          "file": "hsch-97.csv",
-          "count": 13
-        }
-      ]
+     "id": "e7-6",
+     "name": "数と時と場所",
+     "file": "eng-g7-6.csv",
+     "count": 20
     }
-  ]
+   ]
+  },
+  {
+   "id": "kanji-grade",
+   "name": "学年の漢字",
+   "icon": "🈳",
+   "lang": "ja-JP",
+   "speakField": "reading",
+   "levels": [
+    {
+     "id": "kg-1",
+     "name": "小学1年生の漢字（80字）",
+     "file": "kanji-g1.csv",
+     "count": 80
+    },
+    {
+     "id": "kg-2",
+     "name": "小学2年生の漢字（160字）",
+     "file": "kanji-g2.csv",
+     "count": 160
+    },
+    {
+     "id": "kg-3",
+     "name": "小学3年生の漢字（200字）",
+     "file": "kanji-g3.csv",
+     "count": 200
+    },
+    {
+     "id": "kg-4",
+     "name": "小学4年生の漢字（202字）",
+     "file": "kanji-g4.csv",
+     "count": 202
+    },
+    {
+     "id": "kg-5",
+     "name": "小学5年生の漢字（193字）",
+     "file": "kanji-g5.csv",
+     "count": 193
+    },
+    {
+     "id": "kg-6",
+     "name": "小学6年生の漢字（191字）",
+     "file": "kanji-g6.csv",
+     "count": 191
+    }
+   ]
+  },
+  {
+   "id": "science",
+   "name": "理科",
+   "icon": "🔬",
+   "lang": "ja-JP",
+   "speakField": "reading",
+   "levels": [
+    {
+     "id": "sc-1",
+     "name": "レベル1 中学理科",
+     "file": "science-1.csv",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "id": "endict",
+   "name": "英語の書き取り",
+   "icon": "✍️",
+   "lang": "en-US",
+   "speakField": "front",
+   "levels": [
+    {
+     "id": "ed-1",
+     "name": "中学初級レベル（英語検定4級クラス）",
+     "file": "english-dictation.csv",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "id": "jadict",
+   "name": "漢字の書き取り",
+   "icon": "🖌️",
+   "lang": "ja-JP",
+   "speakField": "front",
+   "levels": [
+    {
+     "id": "jd-1",
+     "name": "中学レベル",
+     "file": "japanese-dictation.csv",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "id": "eiken5",
+   "name": "英検5級の英単語",
+   "icon": "🔤",
+   "lang": "en-US",
+   "speakField": "front",
+   "levels": [
+    {
+     "id": "eiken5-1",
+     "name": "あいさつと基本のことば",
+     "file": "eiken5-1.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-2",
+     "name": "家と家族",
+     "file": "eiken5-2.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-3",
+     "name": "毎日の動作",
+     "file": "eiken5-3.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-4",
+     "name": "食べものと飲みもの",
+     "file": "eiken5-4.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-5",
+     "name": "学校で使うもの",
+     "file": "eiken5-5.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-6",
+     "name": "ようすを表すことば",
+     "file": "eiken5-6.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-7",
+     "name": "数と時",
+     "file": "eiken5-7.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-8",
+     "name": "町とお出かけ",
+     "file": "eiken5-8.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-9",
+     "name": "スポーツと遊び",
+     "file": "eiken5-9.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-10",
+     "name": "生きものと自然",
+     "file": "eiken5-10.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-11",
+     "name": "体と身の回り",
+     "file": "eiken5-11.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-12",
+     "name": "人と仕事",
+     "file": "eiken5-12.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-13",
+     "name": "気持ちと性格",
+     "file": "eiken5-13.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-14",
+     "name": "位置と方向",
+     "file": "eiken5-14.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-15",
+     "name": "よく使う動作（2）",
+     "file": "eiken5-15.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-16",
+     "name": "教室で使う言い方",
+     "file": "eiken5-16.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-17",
+     "name": "数と順番（2）",
+     "file": "eiken5-17.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-18",
+     "name": "時をあらわすことば",
+     "file": "eiken5-18.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-19",
+     "name": "家の中と道具",
+     "file": "eiken5-19.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-20",
+     "name": "できること・してよいこと",
+     "file": "eiken5-20.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken5-21",
+     "name": "国と身の回りのことば",
+     "file": "eiken5-21.csv",
+     "count": 20
+    }
+   ]
+  },
+  {
+   "id": "eiken4",
+   "name": "英検4級の英単語",
+   "icon": "🔡",
+   "lang": "en-US",
+   "speakField": "front",
+   "levels": [
+    {
+     "id": "eiken4-1",
+     "name": "学校生活",
+     "file": "eiken4-1.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-2",
+     "name": "過去のできごと",
+     "file": "eiken4-2.csv",
+     "count": 18
+    },
+    {
+     "id": "eiken4-3",
+     "name": "街と買いもの",
+     "file": "eiken4-3.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-4",
+     "name": "旅行と乗りもの",
+     "file": "eiken4-4.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-5",
+     "name": "体調と健康",
+     "file": "eiken4-5.csv",
+     "count": 18
+    },
+    {
+     "id": "eiken4-6",
+     "name": "気持ちを表すことば（2）",
+     "file": "eiken4-6.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-7",
+     "name": "動作を表すことば（3）",
+     "file": "eiken4-7.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-8",
+     "name": "くらべる言い方",
+     "file": "eiken4-8.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-9",
+     "name": "しごとと社会",
+     "file": "eiken4-9.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-10",
+     "name": "自然と環境",
+     "file": "eiken4-10.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-11",
+     "name": "家事と暮らし",
+     "file": "eiken4-11.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-12",
+     "name": "会話でよく使う言い方",
+     "file": "eiken4-12.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-13",
+     "name": "たずねる言い方",
+     "file": "eiken4-13.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-14",
+     "name": "時と予定",
+     "file": "eiken4-14.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-15",
+     "name": "食事と料理（2）",
+     "file": "eiken4-15.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-16",
+     "name": "天気と行事",
+     "file": "eiken4-16.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken4-17",
+     "name": "スポーツと体育",
+     "file": "eiken4-17.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-18",
+     "name": "音楽と芸術",
+     "file": "eiken4-18.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-19",
+     "name": "形と量",
+     "file": "eiken4-19.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken4-20",
+     "name": "道案内と場所",
+     "file": "eiken4-20.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-21",
+     "name": "やりとりと連絡",
+     "file": "eiken4-21.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-22",
+     "name": "コンピューターと機械",
+     "file": "eiken4-22.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken4-23",
+     "name": "国と世界",
+     "file": "eiken4-23.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken4-24",
+     "name": "動作を表すことば（4）",
+     "file": "eiken4-24.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken4-25",
+     "name": "ようすを表すことば（3）",
+     "file": "eiken4-25.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken4-26",
+     "name": "つなぐことば",
+     "file": "eiken4-26.csv",
+     "count": 16
+    }
+   ]
+  },
+  {
+   "id": "eiken3",
+   "name": "英検3級の英単語",
+   "icon": "🔠",
+   "lang": "en-US",
+   "speakField": "front",
+   "levels": [
+    {
+     "id": "eiken3-1",
+     "name": "学校と進路",
+     "file": "eiken3-1.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken3-2",
+     "name": "社会と地域",
+     "file": "eiken3-2.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken3-3",
+     "name": "科学と技術",
+     "file": "eiken3-3.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken3-4",
+     "name": "健康と医療",
+     "file": "eiken3-4.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken3-5",
+     "name": "考えと意見",
+     "file": "eiken3-5.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken3-6",
+     "name": "経済とお金",
+     "file": "eiken3-6.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken3-7",
+     "name": "環境と災害",
+     "file": "eiken3-7.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken3-8",
+     "name": "人のようす",
+     "file": "eiken3-8.csv",
+     "count": 18
+    },
+    {
+     "id": "eiken3-9",
+     "name": "できごとと変化",
+     "file": "eiken3-9.csv",
+     "count": 14
+    },
+    {
+     "id": "eiken3-10",
+     "name": "文をつなぐ言い方（2）",
+     "file": "eiken3-10.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken3-11",
+     "name": "仕事の場面",
+     "file": "eiken3-11.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken3-12",
+     "name": "文化と歴史",
+     "file": "eiken3-12.csv",
+     "count": 18
+    },
+    {
+     "id": "eiken3-13",
+     "name": "動作を表すことば（5）",
+     "file": "eiken3-13.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken3-14",
+     "name": "ようすを表すことば（4）",
+     "file": "eiken3-14.csv",
+     "count": 18
+    },
+    {
+     "id": "eiken3-15",
+     "name": "数と程度",
+     "file": "eiken3-15.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken3-16",
+     "name": "交通と移動",
+     "file": "eiken3-16.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken3-17",
+     "name": "家と住まい",
+     "file": "eiken3-17.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken3-18",
+     "name": "食事と店",
+     "file": "eiken3-18.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken3-19",
+     "name": "感情と反応",
+     "file": "eiken3-19.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken3-20",
+     "name": "学習とことば",
+     "file": "eiken3-20.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken3-21",
+     "name": "趣味と余暇",
+     "file": "eiken3-21.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken3-22",
+     "name": "店とサービス",
+     "file": "eiken3-22.csv",
+     "count": 18
+    },
+    {
+     "id": "eiken3-23",
+     "name": "身のまわりの問題",
+     "file": "eiken3-23.csv",
+     "count": 18
+    },
+    {
+     "id": "eiken3-24",
+     "name": "体の動きと感覚",
+     "file": "eiken3-24.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken3-25",
+     "name": "よく使う言い回し",
+     "file": "eiken3-25.csv",
+     "count": 20
+    }
+   ]
+  },
+  {
+   "id": "eiken2j",
+   "name": "英検準2級の英単語",
+   "icon": "📘",
+   "lang": "en-US",
+   "speakField": "front",
+   "levels": [
+    {
+     "id": "eiken2j-1",
+     "name": "抽象的な名詞（1）",
+     "file": "eiken2j-1.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-2",
+     "name": "抽象的な名詞（2）",
+     "file": "eiken2j-2.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-3",
+     "name": "動詞（かたい言い方）（1）",
+     "file": "eiken2j-3.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-4",
+     "name": "動詞（かたい言い方）（2）",
+     "file": "eiken2j-4.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken2j-5",
+     "name": "形容詞（かたい言い方）（1）",
+     "file": "eiken2j-5.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-6",
+     "name": "形容詞（かたい言い方）（2）",
+     "file": "eiken2j-6.csv",
+     "count": 18
+    },
+    {
+     "id": "eiken2j-7",
+     "name": "社会と制度（2）",
+     "file": "eiken2j-7.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-8",
+     "name": "心と行動",
+     "file": "eiken2j-8.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken2j-9",
+     "name": "人間関係",
+     "file": "eiken2j-9.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken2j-10",
+     "name": "メディアと情報",
+     "file": "eiken2j-10.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken2j-11",
+     "name": "技術と情報機器",
+     "file": "eiken2j-11.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken2j-12",
+     "name": "健康と福祉（2）",
+     "file": "eiken2j-12.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken2j-13",
+     "name": "環境と資源（2）",
+     "file": "eiken2j-13.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-14",
+     "name": "副詞とつなぎ",
+     "file": "eiken2j-14.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-15",
+     "name": "学問と研究",
+     "file": "eiken2j-15.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-16",
+     "name": "経済と企業",
+     "file": "eiken2j-16.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-17",
+     "name": "法と権利",
+     "file": "eiken2j-17.csv",
+     "count": 18
+    },
+    {
+     "id": "eiken2j-18",
+     "name": "国際と外交",
+     "file": "eiken2j-18.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-19",
+     "name": "動詞（かたい言い方）（3）",
+     "file": "eiken2j-19.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-20",
+     "name": "日常のかたい言い方",
+     "file": "eiken2j-20.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-21",
+     "name": "農業と食料",
+     "file": "eiken2j-21.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-22",
+     "name": "都市と暮らし",
+     "file": "eiken2j-22.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-23",
+     "name": "気象と地理",
+     "file": "eiken2j-23.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-24",
+     "name": "スポーツと健康（3）",
+     "file": "eiken2j-24.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-25",
+     "name": "芸術と表現",
+     "file": "eiken2j-25.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-26",
+     "name": "教育と指導",
+     "file": "eiken2j-26.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-27",
+     "name": "動詞（かたい言い方）（4）",
+     "file": "eiken2j-27.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-28",
+     "name": "動詞（かたい言い方）（5）",
+     "file": "eiken2j-28.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-29",
+     "name": "動詞（かたい言い方）（6）",
+     "file": "eiken2j-29.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-30",
+     "name": "動詞（かたい言い方）（7）",
+     "file": "eiken2j-30.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-31",
+     "name": "形容詞（かたい言い方）（3）",
+     "file": "eiken2j-31.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-32",
+     "name": "形容詞（かたい言い方）（4）",
+     "file": "eiken2j-32.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-33",
+     "name": "名詞（かたい言い方）（3）",
+     "file": "eiken2j-33.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-34",
+     "name": "名詞（かたい言い方）（4）",
+     "file": "eiken2j-34.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-35",
+     "name": "言い回し（かたい言い方）",
+     "file": "eiken2j-35.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2j-36",
+     "name": "自然と生きもの（3）",
+     "file": "eiken2j-36.csv",
+     "count": 20
+    }
+   ]
+  },
+  {
+   "id": "eiken2",
+   "name": "英検2級の英単語",
+   "icon": "📕",
+   "lang": "en-US",
+   "speakField": "front",
+   "levels": [
+    {
+     "id": "eiken2-1",
+     "name": "社会問題（1）",
+     "file": "eiken2-1.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-2",
+     "name": "社会問題（2）",
+     "file": "eiken2-2.csv",
+     "count": 19
+    },
+    {
+     "id": "eiken2-3",
+     "name": "科学と医療（2）",
+     "file": "eiken2-3.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-4",
+     "name": "技術と情報（2）",
+     "file": "eiken2-4.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-5",
+     "name": "動詞（上級）（1）",
+     "file": "eiken2-5.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-6",
+     "name": "動詞（上級）（2）",
+     "file": "eiken2-6.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-7",
+     "name": "動詞（上級）（3）",
+     "file": "eiken2-7.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-8",
+     "name": "形容詞（上級）（1）",
+     "file": "eiken2-8.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-9",
+     "name": "形容詞（上級）（2）",
+     "file": "eiken2-9.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-10",
+     "name": "名詞（上級）（1）",
+     "file": "eiken2-10.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-11",
+     "name": "名詞（上級）（2）",
+     "file": "eiken2-11.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-12",
+     "name": "政治と行政（2）",
+     "file": "eiken2-12.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-13",
+     "name": "経済と金融（2）",
+     "file": "eiken2-13.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-14",
+     "name": "教育と心理",
+     "file": "eiken2-14.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-15",
+     "name": "メディアと表現（2）",
+     "file": "eiken2-15.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-16",
+     "name": "環境と気候（3）",
+     "file": "eiken2-16.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-17",
+     "name": "国際と紛争",
+     "file": "eiken2-17.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-18",
+     "name": "法と司法（2）",
+     "file": "eiken2-18.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-19",
+     "name": "医療と生命倫理",
+     "file": "eiken2-19.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-20",
+     "name": "言語と論理",
+     "file": "eiken2-20.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-21",
+     "name": "仕事と組織（2）",
+     "file": "eiken2-21.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-22",
+     "name": "都市と社会基盤",
+     "file": "eiken2-22.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-23",
+     "name": "歴史と思想",
+     "file": "eiken2-23.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-24",
+     "name": "副詞と接続（上級）",
+     "file": "eiken2-24.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-25",
+     "name": "日常の上級表現",
+     "file": "eiken2-25.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-26",
+     "name": "名詞（上級）（3）",
+     "file": "eiken2-26.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-27",
+     "name": "名詞（上級）（4）",
+     "file": "eiken2-27.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-28",
+     "name": "動詞（上級）（4）",
+     "file": "eiken2-28.csv",
+     "count": 20
+    },
+    {
+     "id": "eiken2-29",
+     "name": "動詞（上級）（5）",
+     "file": "eiken2-29.csv",
+     "count": 20
+    }
+   ]
+  },
+  {
+   "id": "esch",
+   "name": "小学校の英単語",
+   "icon": "🎒",
+   "lang": "en-US",
+   "speakField": "front",
+   "levels": [
+    {
+     "id": "esch-1",
+     "name": "曜日",
+     "file": "esch-1.csv",
+     "count": 19
+    },
+    {
+     "id": "esch-2",
+     "name": "色",
+     "file": "esch-2.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-3",
+     "name": "生きもの（1）",
+     "file": "esch-3.csv",
+     "count": 19
+    },
+    {
+     "id": "esch-4",
+     "name": "果物と野菜",
+     "file": "esch-4.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-5",
+     "name": "教科と時間割",
+     "file": "esch-5.csv",
+     "count": 19
+    },
+    {
+     "id": "esch-6",
+     "name": "文房具と教室",
+     "file": "esch-6.csv",
+     "count": 19
+    },
+    {
+     "id": "esch-7",
+     "name": "学校の行事",
+     "file": "esch-7.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-8",
+     "name": "遊びと放課後",
+     "file": "esch-8.csv",
+     "count": 19
+    },
+    {
+     "id": "esch-9",
+     "name": "身の回りのもの",
+     "file": "esch-9.csv",
+     "count": 19
+    },
+    {
+     "id": "esch-10",
+     "name": "数と量（小学校）",
+     "file": "esch-10.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-11",
+     "name": "気持ちと反応（小学校）",
+     "file": "esch-11.csv",
+     "count": 18
+    },
+    {
+     "id": "esch-12",
+     "name": "基本の代名詞",
+     "file": "esch-12.csv",
+     "count": 19
+    },
+    {
+     "id": "esch-13",
+     "name": "基本の動詞（穴埋め1）",
+     "file": "esch-13.csv",
+     "count": 18
+    },
+    {
+     "id": "esch-14",
+     "name": "基本の名詞（穴埋め1）",
+     "file": "esch-14.csv",
+     "count": 19
+    },
+    {
+     "id": "esch-15",
+     "name": "基本の形容詞（穴埋め1）",
+     "file": "esch-15.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-16",
+     "name": "学校生活の語（穴埋め）",
+     "file": "esch-16.csv",
+     "count": 17
+    },
+    {
+     "id": "esch-17",
+     "name": "A1の語（1）",
+     "file": "esch-17.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-18",
+     "name": "A1の語（2）",
+     "file": "esch-18.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-19",
+     "name": "A1の語（3）",
+     "file": "esch-19.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-20",
+     "name": "A1の語（4）",
+     "file": "esch-20.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-21",
+     "name": "A1の語（5）",
+     "file": "esch-21.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-22",
+     "name": "A1の語（6）",
+     "file": "esch-22.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-23",
+     "name": "A1の語（7）",
+     "file": "esch-23.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-24",
+     "name": "A1の語（8）",
+     "file": "esch-24.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-25",
+     "name": "A1の語（9）",
+     "file": "esch-25.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-26",
+     "name": "A1の語（10）",
+     "file": "esch-26.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-27",
+     "name": "A1の語（11）",
+     "file": "esch-27.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-28",
+     "name": "A1の語（12）",
+     "file": "esch-28.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-29",
+     "name": "A1の語（13）",
+     "file": "esch-29.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-30",
+     "name": "A1の語（14）",
+     "file": "esch-30.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-31",
+     "name": "A1の語（15）",
+     "file": "esch-31.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-32",
+     "name": "A1の語（16）",
+     "file": "esch-32.csv",
+     "count": 20
+    },
+    {
+     "id": "esch-33",
+     "name": "A1の語（17）",
+     "file": "esch-33.csv",
+     "count": 20
+    }
+   ]
+  },
+  {
+   "id": "jsch",
+   "name": "中学校の英単語",
+   "icon": "🏫",
+   "lang": "en-US",
+   "speakField": "front",
+   "levels": [
+    {
+     "id": "jsch-1",
+     "name": "理科（1）",
+     "file": "jsch-1.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-2",
+     "name": "理科（2）",
+     "file": "jsch-2.csv",
+     "count": 19
+    },
+    {
+     "id": "jsch-3",
+     "name": "数学",
+     "file": "jsch-3.csv",
+     "count": 19
+    },
+    {
+     "id": "jsch-4",
+     "name": "社会科",
+     "file": "jsch-4.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-5",
+     "name": "音楽・美術・技術家庭",
+     "file": "jsch-5.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-6",
+     "name": "英語の授業で使う語",
+     "file": "jsch-6.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-7",
+     "name": "保健体育",
+     "file": "jsch-7.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-8",
+     "name": "技術と情報",
+     "file": "jsch-8.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-9",
+     "name": "国語と読み書き",
+     "file": "jsch-9.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-10",
+     "name": "防災と安全",
+     "file": "jsch-10.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-11",
+     "name": "職業と進路",
+     "file": "jsch-11.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-12",
+     "name": "地域と社会のしくみ",
+     "file": "jsch-12.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-13",
+     "name": "食と暮らし",
+     "file": "jsch-13.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-14",
+     "name": "環境と地域学習",
+     "file": "jsch-14.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-15",
+     "name": "話す・聞くの授業",
+     "file": "jsch-15.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-16",
+     "name": "基本の動詞（穴埋め2）",
+     "file": "jsch-16.csv",
+     "count": 10
+    },
+    {
+     "id": "jsch-17",
+     "name": "基本の名詞（穴埋め2）",
+     "file": "jsch-17.csv",
+     "count": 15
+    },
+    {
+     "id": "jsch-18",
+     "name": "基本の形容詞（穴埋め2）",
+     "file": "jsch-18.csv",
+     "count": 14
+    },
+    {
+     "id": "jsch-19",
+     "name": "数量と程度（穴埋め）",
+     "file": "jsch-19.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-20",
+     "name": "学習と情報（穴埋め）",
+     "file": "jsch-20.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-21",
+     "name": "よく出る名詞（1）",
+     "file": "jsch-21.csv",
+     "count": 5
+    },
+    {
+     "id": "jsch-22",
+     "name": "よく出る名詞（2）",
+     "file": "jsch-22.csv",
+     "count": 11
+    },
+    {
+     "id": "jsch-23",
+     "name": "よく出る動詞（穴埋め）",
+     "file": "jsch-23.csv",
+     "count": 7
+    },
+    {
+     "id": "jsch-24",
+     "name": "よく出る形容詞（穴埋め）",
+     "file": "jsch-24.csv",
+     "count": 14
+    },
+    {
+     "id": "jsch-25",
+     "name": "A2の語（1）",
+     "file": "jsch-25.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-26",
+     "name": "A2の語（2）",
+     "file": "jsch-26.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-27",
+     "name": "A2の語（3）",
+     "file": "jsch-27.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-28",
+     "name": "A2の語（4）",
+     "file": "jsch-28.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-29",
+     "name": "A2の語（5）",
+     "file": "jsch-29.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-30",
+     "name": "A2の語（6）",
+     "file": "jsch-30.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-31",
+     "name": "A2の語（7）",
+     "file": "jsch-31.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-32",
+     "name": "A2の語（8）",
+     "file": "jsch-32.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-33",
+     "name": "A2の語（9）",
+     "file": "jsch-33.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-34",
+     "name": "A2の語（10）",
+     "file": "jsch-34.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-35",
+     "name": "A2の語（11）",
+     "file": "jsch-35.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-36",
+     "name": "A2の語（12）",
+     "file": "jsch-36.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-37",
+     "name": "A2の語（13）",
+     "file": "jsch-37.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-38",
+     "name": "A2の語（14）",
+     "file": "jsch-38.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-39",
+     "name": "A2の語（15）",
+     "file": "jsch-39.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-40",
+     "name": "A2の語（16）",
+     "file": "jsch-40.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-41",
+     "name": "A2の語（17）",
+     "file": "jsch-41.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-42",
+     "name": "A2の語（18）",
+     "file": "jsch-42.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-43",
+     "name": "A2の語（19）",
+     "file": "jsch-43.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-44",
+     "name": "A2の語（20）",
+     "file": "jsch-44.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-45",
+     "name": "A2の語（21）",
+     "file": "jsch-45.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-46",
+     "name": "A2の語（22）",
+     "file": "jsch-46.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-47",
+     "name": "A2の語（23）",
+     "file": "jsch-47.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-48",
+     "name": "A2の語（24）",
+     "file": "jsch-48.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-49",
+     "name": "A2の語（25）",
+     "file": "jsch-49.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-50",
+     "name": "A2の語（26）",
+     "file": "jsch-50.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-51",
+     "name": "A2の語（27）",
+     "file": "jsch-51.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-52",
+     "name": "A2の語（28）",
+     "file": "jsch-52.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-53",
+     "name": "A2の語（29）",
+     "file": "jsch-53.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-54",
+     "name": "A2の語（30）",
+     "file": "jsch-54.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-55",
+     "name": "A2の語（31）",
+     "file": "jsch-55.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-56",
+     "name": "A2の語（32）",
+     "file": "jsch-56.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-57",
+     "name": "A2の語（33）",
+     "file": "jsch-57.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-58",
+     "name": "A2の語（34）",
+     "file": "jsch-58.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-59",
+     "name": "A2の語（35）",
+     "file": "jsch-59.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-60",
+     "name": "A2の語（36）",
+     "file": "jsch-60.csv",
+     "count": 20
+    },
+    {
+     "id": "jsch-61",
+     "name": "A2の語（37）",
+     "file": "jsch-61.csv",
+     "count": 19
+    }
+   ]
+  },
+  {
+   "id": "hsch",
+   "name": "高校の英単語",
+   "icon": "🎓",
+   "lang": "en-US",
+   "speakField": "front",
+   "levels": [
+    {
+     "id": "hsch-1",
+     "name": "物理と化学",
+     "file": "hsch-1.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-2",
+     "name": "生物と地学",
+     "file": "hsch-2.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-3",
+     "name": "数学（高校）",
+     "file": "hsch-3.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-4",
+     "name": "現代社会と公民",
+     "file": "hsch-4.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-5",
+     "name": "読解でよく出る語",
+     "file": "hsch-5.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-6",
+     "name": "世界史",
+     "file": "hsch-6.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-7",
+     "name": "地理",
+     "file": "hsch-7.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-8",
+     "name": "倫理と哲学",
+     "file": "hsch-8.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-9",
+     "name": "情報とデータ",
+     "file": "hsch-9.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-10",
+     "name": "探究と論述",
+     "file": "hsch-10.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-11",
+     "name": "入試読解の動詞",
+     "file": "hsch-11.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-12",
+     "name": "入試読解の名詞",
+     "file": "hsch-12.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-13",
+     "name": "入試読解の形容詞と副詞",
+     "file": "hsch-13.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-14",
+     "name": "芸術と表現（高校）",
+     "file": "hsch-14.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-15",
+     "name": "抽象名詞（穴埋め1）",
+     "file": "hsch-15.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-16",
+     "name": "抽象名詞（穴埋め2）",
+     "file": "hsch-16.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-17",
+     "name": "動詞（穴埋め・高校）",
+     "file": "hsch-17.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-18",
+     "name": "形容詞と副詞（穴埋め・高校）",
+     "file": "hsch-18.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-19",
+     "name": "B1の語（1）",
+     "file": "hsch-19.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-20",
+     "name": "B1の語（2）",
+     "file": "hsch-20.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-21",
+     "name": "B1の語（3）",
+     "file": "hsch-21.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-22",
+     "name": "B1の語（4）",
+     "file": "hsch-22.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-23",
+     "name": "B1の語（5）",
+     "file": "hsch-23.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-24",
+     "name": "B1の語（6）",
+     "file": "hsch-24.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-25",
+     "name": "B1の語（7）",
+     "file": "hsch-25.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-26",
+     "name": "B1の語（8）",
+     "file": "hsch-26.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-27",
+     "name": "B1の語（9）",
+     "file": "hsch-27.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-28",
+     "name": "B1の語（10）",
+     "file": "hsch-28.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-29",
+     "name": "B1の語（11）",
+     "file": "hsch-29.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-30",
+     "name": "B1の語（12）",
+     "file": "hsch-30.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-31",
+     "name": "B1の語（13）",
+     "file": "hsch-31.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-32",
+     "name": "B1の語（14）",
+     "file": "hsch-32.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-33",
+     "name": "B1の語（15）",
+     "file": "hsch-33.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-34",
+     "name": "B1の語（16）",
+     "file": "hsch-34.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-35",
+     "name": "B1の語（17）",
+     "file": "hsch-35.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-36",
+     "name": "B1の語（18）",
+     "file": "hsch-36.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-37",
+     "name": "B1の語（19）",
+     "file": "hsch-37.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-38",
+     "name": "B1の語（20）",
+     "file": "hsch-38.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-39",
+     "name": "B1の語（21）",
+     "file": "hsch-39.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-40",
+     "name": "B1の語（22）",
+     "file": "hsch-40.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-41",
+     "name": "B1の語（23）",
+     "file": "hsch-41.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-42",
+     "name": "B1の語（24）",
+     "file": "hsch-42.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-43",
+     "name": "B1の語（25）",
+     "file": "hsch-43.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-44",
+     "name": "B1の語（26）",
+     "file": "hsch-44.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-45",
+     "name": "B1の語（27）",
+     "file": "hsch-45.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-46",
+     "name": "B1の語（28）",
+     "file": "hsch-46.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-47",
+     "name": "B1の語（29）",
+     "file": "hsch-47.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-48",
+     "name": "B1の語（30）",
+     "file": "hsch-48.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-49",
+     "name": "B1の語（31）",
+     "file": "hsch-49.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-50",
+     "name": "B1の語（32）",
+     "file": "hsch-50.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-51",
+     "name": "B1の語（33）",
+     "file": "hsch-51.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-52",
+     "name": "B1の語（34）",
+     "file": "hsch-52.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-53",
+     "name": "B1の語（35）",
+     "file": "hsch-53.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-54",
+     "name": "B1の語（36）",
+     "file": "hsch-54.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-55",
+     "name": "B1の語（37）",
+     "file": "hsch-55.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-56",
+     "name": "B1の語（38）",
+     "file": "hsch-56.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-57",
+     "name": "B1の語（39）",
+     "file": "hsch-57.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-58",
+     "name": "B1の語（40）",
+     "file": "hsch-58.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-59",
+     "name": "B1の語（41）",
+     "file": "hsch-59.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-60",
+     "name": "B1の語（42）",
+     "file": "hsch-60.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-61",
+     "name": "B1の語（43）",
+     "file": "hsch-61.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-62",
+     "name": "B1の語（44）",
+     "file": "hsch-62.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-63",
+     "name": "B1の語（45）",
+     "file": "hsch-63.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-64",
+     "name": "B1の語（46）",
+     "file": "hsch-64.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-65",
+     "name": "B1の語（47）",
+     "file": "hsch-65.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-66",
+     "name": "B1の語（48）",
+     "file": "hsch-66.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-67",
+     "name": "B1の語（49）",
+     "file": "hsch-67.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-68",
+     "name": "B1の語（50）",
+     "file": "hsch-68.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-69",
+     "name": "B1の語（51）",
+     "file": "hsch-69.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-70",
+     "name": "B1の語（52）",
+     "file": "hsch-70.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-71",
+     "name": "B1の語（53）",
+     "file": "hsch-71.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-72",
+     "name": "B1の語（54）",
+     "file": "hsch-72.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-73",
+     "name": "B1の語（55）",
+     "file": "hsch-73.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-74",
+     "name": "B1の語（56）",
+     "file": "hsch-74.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-75",
+     "name": "B1の語（57）",
+     "file": "hsch-75.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-76",
+     "name": "B1の語（58）",
+     "file": "hsch-76.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-77",
+     "name": "B1の語（59）",
+     "file": "hsch-77.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-78",
+     "name": "B1の語（60）",
+     "file": "hsch-78.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-79",
+     "name": "B1の語（61）",
+     "file": "hsch-79.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-80",
+     "name": "B1の語（62）",
+     "file": "hsch-80.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-81",
+     "name": "B1の語（63）",
+     "file": "hsch-81.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-82",
+     "name": "B1の語（64）",
+     "file": "hsch-82.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-83",
+     "name": "B1の語（65）",
+     "file": "hsch-83.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-84",
+     "name": "B1の語（66）",
+     "file": "hsch-84.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-85",
+     "name": "B1の語（67）",
+     "file": "hsch-85.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-86",
+     "name": "B1の語（68）",
+     "file": "hsch-86.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-87",
+     "name": "B1の語（69）",
+     "file": "hsch-87.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-88",
+     "name": "B1の語（70）",
+     "file": "hsch-88.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-89",
+     "name": "B1の語（71）",
+     "file": "hsch-89.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-90",
+     "name": "B1の語（72）",
+     "file": "hsch-90.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-91",
+     "name": "B1の語（73）",
+     "file": "hsch-91.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-92",
+     "name": "B1の語（74）",
+     "file": "hsch-92.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-93",
+     "name": "B1の語（75）",
+     "file": "hsch-93.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-94",
+     "name": "B1の語（76）",
+     "file": "hsch-94.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-95",
+     "name": "B1の語（77）",
+     "file": "hsch-95.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-96",
+     "name": "B1の語（78）",
+     "file": "hsch-96.csv",
+     "count": 20
+    },
+    {
+     "id": "hsch-97",
+     "name": "B1の語（79）",
+     "file": "hsch-97.csv",
+     "count": 13
+    }
+   ]
+  },
+  {
+   "id": "shakai",
+   "name": "社会",
+   "icon": "🗾",
+   "lang": "ja-JP",
+   "speakField": "reading",
+   "levels": [
+    {
+     "id": "shakai-1",
+     "name": "日本地図（全国47都道府県）",
+     "file": "shakai-1.csv",
+     "count": 47
+    },
+    {
+     "id": "shakai-2",
+     "name": "北海道・東北地方（01〜07）",
+     "file": "shakai-2.csv",
+     "count": 7
+    },
+    {
+     "id": "shakai-3",
+     "name": "関東地方（08〜14）",
+     "file": "shakai-3.csv",
+     "count": 7
+    },
+    {
+     "id": "shakai-4",
+     "name": "中部地方（15〜23）",
+     "file": "shakai-4.csv",
+     "count": 9
+    },
+    {
+     "id": "shakai-5",
+     "name": "近畿地方（24〜30）",
+     "file": "shakai-5.csv",
+     "count": 7
+    },
+    {
+     "id": "shakai-6",
+     "name": "中国・四国地方（31〜39）",
+     "file": "shakai-6.csv",
+     "count": 9
+    },
+    {
+     "id": "shakai-7",
+     "name": "九州地方・沖縄（40〜47）",
+     "file": "shakai-7.csv",
+     "count": 8
+    }
+   ]
+  }
+ ]
 }
